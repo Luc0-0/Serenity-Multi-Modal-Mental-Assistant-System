@@ -1,3 +1,10 @@
+#
+# Copyright (c) 2026 Nipun Sujesh. All rights reserved.
+# Licensed under the AGPLv3. See LICENSE file in the project root for details.
+#
+# This software is the confidential and proprietary information of Nipun Sujesh.
+#
+
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.sql import func
 from app.db.base import Base

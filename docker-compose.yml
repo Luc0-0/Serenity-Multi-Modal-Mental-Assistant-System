@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: serenity-postgres
+    environment:
+      POSTGRES_USER: serenity_user
+      POSTGRES_PASSWORD: serenity_password
+      POSTGRES_DB: serenity_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U serenity_user -d serenity_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - serenity_network
+
+  # pgAdmin - Database Management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: serenity-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - serenity_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: serenity-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://serenity_user:serenity_password@postgres:5432/serenity_db
+      OLLAMA_ENDPOINT: ${OLLAMA_ENDPOINT}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      CORS_ORIGINS: '["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"]'
+      ENVIRONMENT: development
+      DEBUG: "True"
+      USE_XLNET: ${USE_XLNET:-false}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "alembic upgrade head && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./backend:/app
+      - huggingface_cache:/root/.cache/huggingface
+    networks:
+      - serenity_network
+
+  # Frontend (optional - for local development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: serenity-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      BACKEND_URL: http://serenity-backend:8000
+      VITE_API_URL: http://serenity-backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - serenity_network
+
+volumes:
+  postgres_data:
+  huggingface_cache:
+
+networks:
+  serenity_network:
+    driver: bridge

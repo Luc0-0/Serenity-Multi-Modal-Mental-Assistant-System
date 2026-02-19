@@ -1,0 +1,46 @@
+/* Minimal Loading Spinner */
+
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.spinnerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #d4a574;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.spinnerDot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.spinnerDot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.spinnerDot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .spinnerDot {
+    animation: none;
+    opacity: 0.6;
+  }
+}

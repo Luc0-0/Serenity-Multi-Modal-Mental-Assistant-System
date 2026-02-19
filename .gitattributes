@@ -1,0 +1,18 @@
+# Text files
+*.md text
+*.txt text
+*.py text diff=python
+*.js text
+*.jsx text
+*.css text
+*.html text
+*.json text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.db binary

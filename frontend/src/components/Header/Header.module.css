@@ -1,0 +1,29 @@
+.header {
+    width: 100%;
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.title {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(180deg, #fff 0%, #e8c9a0 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: #a0a0a0;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.5;
+}

@@ -1,0 +1,346 @@
+/* 
+  SERENITY - LANDING PAGE STYLES 
+  Visual Refinement: "Dark Water/Horizon" Aesthetic
+*/
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #050505;
+  /* Deepest black */
+
+  /* Static Image Background */
+  background-image: url("/images/serenity-background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* Enable smooth cursor glow following */
+  --x: 50%;
+  --y: 50%;
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   CURSOR-FOLLOWING GLOW
+   ━━━━━━━━━━━━━━━━━━ */
+
+.cursorGlow {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle,
+      rgba(212, 180, 131, 0.35) 0%,
+      rgba(212, 180, 131, 0.22) 35%,
+      rgba(212, 180, 131, 0.08) 65%,
+      transparent 90%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 5;
+  transition: top 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    left 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: top, left;
+  mix-blend-mode: screen;
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   BACKGROUND STACK
+   ━━━━━━━━━━━━━━━━━━ */
+
+.backgroundContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 
+  Layer 1: The "Spotlight" - Top Center Warmth 
+  Simulates the light source above the title - Brighter & Warmer
+*/
+.bgLayerGradient {
+  position: absolute;
+  top: -25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140vh;
+  height: 120vh;
+  background: radial-gradient(ellipse at 50% 0%,
+      rgba(196, 155, 107, 0.25) 0%,
+      /* Brighter Gold */
+      rgba(148, 110, 70, 0.15) 30%,
+      rgba(21, 16, 12, 0.6) 60%,
+      transparent 80%);
+  filter: blur(80px);
+  /* Softer blur */
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 
+  Layer 2: The "Horizon" / Water Reflection
+  Bottom glow that looks like light hitting water - Much Stronger
+*/
+.bgLayerGlowDepth {
+  position: absolute;
+  bottom: -10%;
+  left: 0;
+  width: 100%;
+  height: 55%;
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(196, 155, 107, 0.05) 15%,
+      rgba(196, 155, 107, 0.15) 40%,
+      rgba(196, 155, 107, 0.25) 70%,
+      rgba(10, 10, 10, 0.95) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 
+  Layer 3: Ripples / Surface Reflection
+  The light band on the water
+*/
+.bgLayerGlowAmbient {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  /* Wider to cover edges */
+  height: 20%;
+  /* Taller spread */
+  background: radial-gradient(ellipse at 50% 100%,
+      rgba(196, 155, 107, 0.15) 0%,
+      transparent 70%);
+  filter: blur(40px);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Layer 4: Grain / Noise */
+.bgLayerNoise {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  filter: contrast(120%) brightness(100%);
+  mix-blend-mode: overlay;
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   CONTENT LAYOUT
+   ━━━━━━━━━━━━━━━━━━ */
+
+.content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  transform: translateY(-20px);
+  /* Visual balancing */
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   TYPOGRAPHY
+   ━━━━━━━━━━━━━━━━━━ */
+
+.title {
+  font-family: "Playfair Display", serif;
+  font-weight: 400;
+  /* Lighter weight for elegance */
+  color: #d9ceb0;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+
+  /* 3D effect with darker shadow and subtle glow */
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 2px 0 rgba(0, 0, 0, 0.7),
+    0 3px 0 rgba(0, 0, 0, 0.6),
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    0 5px 10px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(212, 180, 131, 0.3),
+    0 0 40px rgba(212, 180, 131, 0.15);
+
+  font-size: 56px;
+  transition: text-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: default;
+}
+
+.title:hover {
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.9),
+    0 2px 0 rgba(0, 0, 0, 0.8),
+    0 3px 0 rgba(0, 0, 0, 0.7),
+    0 4px 0 rgba(0, 0, 0, 0.6),
+    0 5px 15px rgba(0, 0, 0, 1),
+    0 0 30px rgba(212, 180, 131, 0.5),
+    0 0 60px rgba(212, 180, 131, 0.3);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 82px;
+    /* Much larger as per image reference */
+  }
+}
+
+.subtitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  line-height: 1.6;
+  color: #bda17b;
+  /* More muted, earthy grey-gold */
+  margin: 0;
+  margin-top: 32px;
+  padding-bottom: 8px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  position: relative;
+
+  /* 3D effect with darker shadow and subtle glow */
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    0 3px 5px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(196, 168, 130, 0.25),
+    0 0 30px rgba(196, 168, 130, 0.1);
+
+  /* Reflective shadow below */
+  filter: drop-shadow(0 8px 12px rgba(196, 168, 130, 0.15));
+}
+
+.subtitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(196, 168, 130, 0.4) 50%, transparent);
+  box-shadow: 0 0 8px rgba(196, 168, 130, 0.3);
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   CTA BUTTON WRAPPER & OVERRIDES
+   ━━━━━━━━━━━━━━━━━━ */
+
+.buttonWrapper {
+  margin-top: 48px;
+  /* Ensure animation visibility */
+  opacity: 0;
+  animation: fadeInUpButton 1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+  will-change: transform;
+}
+
+/* Custom styling for the Landing page button to match the specific "Begin" aesthetic */
+.landingBtn {
+  height: 52px;
+  padding: 0 36px;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.1em !important;
+  background: rgba(26, 22, 18, 0.4) !important;
+  border: 1px solid rgba(150, 120, 78, 0.5) !important;
+  box-shadow:
+    inset 0 0 20px rgba(168, 116, 68, 0.05),
+    0 0 40px rgba(0, 0, 0, 0.4),
+    0 0 80px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(4px);
+  color: #bd9e7a !important;
+}
+
+.landingBtn:hover {
+  background: rgba(40, 32, 24, 0.6) !important;
+  border-color: rgba(168, 116, 68, 0.8) !important;
+  box-shadow: 0 0 30px rgba(168, 116, 68, 0.15) !important;
+  transform: translateY(-2px);
+  color: #e6dcc3 !important;
+}
+
+.arrow {
+  display: inline-block;
+  opacity: 0.8;
+  font-size: 1.1em;
+  transition: transform 0.3s ease;
+  font-family: var(--font-family-sans);
+  margin-left: 8px;
+}
+
+.landingBtn:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   ENTRANCE ANIMATIONS
+   ━━━━━━━━━━━━━━━━━━ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUpSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeInUpButton {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Title enters first - elegant and prominent */
+.title.animateIn {
+  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Subtitle follows with slight delay via CSS */
+.subtitle.animateIn {
+  animation: fadeInUpSubtle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+  opacity: 0;
+}
+
+/* Smooth transition for parallax */
+.subtitle {
+  transition: transform 0.08s ease-out;
+  will-change: transform;
+}

@@ -1,0 +1,114 @@
+.container {
+    position: relative;
+    min-height: 100vh;
+    background-color: #0a0a0b;
+    color: #f5f5f5;
+    font-family: "Inter", -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+.backgroundImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("/images/background2.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Overlay gradient for readability */
+.backgroundImage::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent 0%, #0a0a0b 90%);
+}
+
+.contentWrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.glassCard {
+    position: relative;
+    /* Layered Backgrounds for "Shader" Effect */
+    background:
+        /* 1. The Light Source: Warm glow from top-center */
+        radial-gradient(80% 60% at 50% -10%,
+            rgba(212, 165, 116, 0.12) 0%,
+            transparent 100%),
+        /* 2. The Glass Body: Subtle vertical gradient */
+        linear-gradient(180deg,
+            rgba(255, 255, 255, 0.02) 0%,
+            rgba(0, 0, 0, 0.2) 100%);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    /* Rim Light Borders */
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    /* Faint overall border */
+    border-top: 1px solid rgba(212, 165, 116, 0.3);
+    /* Strong Top Specular Highlight */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    /* Shadowy bottom edge */
+
+    border-radius: 20px;
+    padding: 1.5rem;
+
+    /* Deep Shadow + Internal Reflection */
+    box-shadow:
+        0 16px 40px -10px rgba(0, 0, 0, 0.5),
+        /* Drop shadow */
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Top inner edge highlight */
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-top-color 0.3s ease;
+}
+
+.glassNavbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 3rem;
+
+    /* Lighter version of the card effect for Nav */
+    background:
+        radial-gradient(60% 100% at 50% 0%,
+            rgba(212, 165, 116, 0.08) 0%,
+            transparent 100%),
+        rgba(10, 10, 11, 0.2);
+
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glassCard:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 20px 50px -10px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(212, 165, 116, 0.5);
+    /* Brighter highlight on hover */
+
+    /* Intensify the light source on hover */
+    background:
+        radial-gradient(80% 60% at 50% -10%,
+            rgba(212, 165, 116, 0.18) 0%,
+            transparent 100%),
+        linear-gradient(180deg,
+            rgba(255, 255, 255, 0.04) 0%,
+            rgba(0, 0, 0, 0.2) 100%);
+}

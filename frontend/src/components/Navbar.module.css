@@ -2,39 +2,43 @@
   Global Navbar - Hybrid Design 
   Layout/Size: Compact (from Insights)
   Style/Typography: Cormorant Garamond / Gold (from CheckIn)
+  
+  z-index: 100 (above page content, below sidebar at 2000)
 */
 
 .navbar {
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 100;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 3rem;
-    background: rgba(10, 10, 11, 0.15);
-    /* Significantly more transparent */
-    backdrop-filter: blur(16px);
-    /* Increased blur for better readability */
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    /* Subtle border */
+    padding: 1rem 3rem;
+    /* No extra padding needed — sidebar uses edge-tab arrow now */
+    background: rgba(8, 8, 10, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    /* Soft shadow for depth */
+    box-shadow: none;
+    min-height: 60px;
 }
 
 /* Logo Section */
 .logo {
     font-family: "Cormorant Garamond", serif;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: #d4cfc0;
-    /* Beige/Gold from CheckIn */
     letter-spacing: 0.05em;
     font-weight: 600;
-    text-shadow: 0 0 20px rgba(196, 168, 130, 0.2);
+    text-shadow: 0 0 20px rgba(196, 168, 130, 0.15);
     cursor: pointer;
     text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.logo:hover {
+    color: #f0ede3;
 }
 
 /* Navigation Links Container */
@@ -47,15 +51,13 @@
 /* Individual Link - CheckIn Style */
 .navLink {
     font-family: "Cormorant Garamond", serif;
-    font-size: 17px;
-    /* Sizing from CheckIn */
+    font-size: 16px;
     font-weight: 400;
-    color: #a0a0a0;
-    /* Muted default */
+    color: #8a8a8a;
     text-decoration: none;
     letter-spacing: 0.03em;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     background: none;
     border: none;
@@ -64,10 +66,9 @@
 
 .navLink.active {
     color: #d4cfc0;
-    /* Active gold */
 }
 
-/* CheckIn Underline Effect */
+/* Underline Effect */
 .navLink::after {
     content: "";
     position: absolute;
@@ -76,7 +77,7 @@
     width: 0;
     height: 1px;
     background: linear-gradient(to right, #d4cfc0, transparent);
-    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navLink:hover {
@@ -89,23 +90,23 @@
 
 .navLink.active::after {
     width: 100%;
-    background: linear-gradient(to right, #d4cfc0, rgba(212, 207, 192, 0.2));
+    background: linear-gradient(to right, #d4cfc0, rgba(212, 207, 192, 0.15));
 }
 
-/* Resources Dropdown - From CheckIn */
+/* Resources Dropdown */
 .resourcesDropdown {
     background: none;
     border: none;
     font-family: "Cormorant Garamond", serif;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 400;
-    color: #a0a0a0;
+    color: #8a8a8a;
     letter-spacing: 0.03em;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.4s;
+    transition: all 0.35s;
     padding: 0;
 }
 
@@ -113,14 +114,13 @@
     color: #f0ede3;
 }
 
-/* Settings Icon - Simple Gear from Insights */
+/* Settings Icon */
 .settingsButton {
     background: none;
     border: none;
     cursor: pointer;
-    color: #a0a0a0;
-    font-size: 1.2rem;
-    /* Adjusted for balance */
+    color: #8a8a8a;
+    font-size: 1.1rem;
     transition: all 0.3s ease;
     padding: 0;
     display: flex;
@@ -138,4 +138,23 @@
     display: flex;
     align-items: center;
     gap: 2.5rem;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem 1.5rem;
+        padding-left: 4rem;
+    }
+
+    .navLinks {
+        gap: 1.5rem;
+    }
+
+    .navLink {
+        font-size: 14px;
+    }
+
+    .rightGroup {
+        gap: 1.5rem;
+    }
 }

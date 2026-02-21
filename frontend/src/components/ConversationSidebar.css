@@ -1,44 +1,82 @@
-/* 
-  SERENITY CONVERSATION SIDEBAR
-  Overlay drawer with collapsible arrow button
-  Luxury minimal design, smooth animations
-*/
+/* Sidebar z-index: 2000 | Edge-tab: 2100 */
 
+/* Edge-tab arrow toggle */
+.sidebarEdgeTab {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(14, 12, 10, 0.75);
+  border: 1px solid rgba(196, 168, 130, 0.15);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  color: #d4a574;
+  padding: 16px 8px;
+  cursor: pointer;
+  z-index: 2100;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 3px 0 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarEdgeTab:hover {
+  padding-left: 12px;
+  background: rgba(212, 165, 116, 0.08);
+  color: #f0ede3;
+  box-shadow: 4px 0 20px rgba(212, 165, 116, 0.08);
+}
+
+.sidebarEdgeTab.open {
+  left: 320px;
+}
+
+.sidebarEdgeTab svg {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Sidebar drawer */
 .conversationSidebar {
   position: fixed;
   left: 0;
   top: 0;
   width: 320px;
   height: 100vh;
-  background: rgba(5, 5, 5, 0.7);
-  border-right: 1px solid rgba(196, 168, 130, 0.2);
+  background: rgba(8, 8, 8, 0.55);
+  border-right: 1px solid rgba(196, 168, 130, 0.1);
   display: flex;
   flex-direction: column;
-  z-index: 160;
+  z-index: 2000;
   transform: translateX(-100%);
   transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s ease;
   visibility: hidden;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
 }
 
 .conversationSidebar.open {
   transform: translateX(0);
   visibility: visible;
-  background: rgba(5, 5, 5, 0.85);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    8px 0 40px rgba(0, 0, 0, 0.4),
+    20px 0 80px rgba(0, 0, 0, 0.2);
 }
 
+/* Header */
 .sidebarHeader {
   position: relative;
-  padding: 20px 16px;
-  border-bottom: 1px solid rgba(196, 168, 130, 0.1);
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.06);
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  min-height: 70px;
+  min-height: 72px;
 }
 
 .sidebarHeader h2 {
@@ -46,20 +84,17 @@
   font-size: 18px;
   color: #d9ceb0;
   margin: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  font-weight: 500;
 }
 
-/* New Conversation Button */
+/* New conversation button */
 .newConvBtn {
   margin: 12px 16px;
-  padding: 10px 14px;
-  background: linear-gradient(
-    135deg,
-    rgba(212, 181, 110, 0.15),
-    rgba(184, 148, 79, 0.1)
-  );
-  border: 1px solid rgba(212, 181, 110, 0.4);
-  border-radius: 6px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, rgba(212, 181, 110, 0.1), rgba(184, 148, 79, 0.04));
+  border: 1px solid rgba(212, 181, 110, 0.25);
+  border-radius: 10px;
   color: #d9ceb0;
   font-family: "Cormorant Garamond", serif;
   font-size: 14px;
@@ -71,24 +106,21 @@
 }
 
 .newConvBtn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(212, 181, 110, 0.25),
-    rgba(184, 148, 79, 0.15)
-  );
-  border-color: rgba(212, 181, 110, 0.6);
-  box-shadow: 0 0 16px rgba(212, 181, 110, 0.15);
+  background: linear-gradient(135deg, rgba(212, 181, 110, 0.2), rgba(184, 148, 79, 0.1));
+  border-color: rgba(212, 181, 110, 0.45);
+  box-shadow: 0 0 20px rgba(212, 181, 110, 0.06);
+  transform: translateY(-1px);
 }
 
 .newConvBtn:active {
   transform: scale(0.98);
 }
 
-/* Conversations List */
+/* Conversations list */
 .conversationsList {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -99,21 +131,21 @@
   text-align: center;
   color: #bda17b;
   font-size: 13px;
-  padding: 20px 16px;
+  padding: 24px 16px;
   font-family: "Cormorant Garamond", serif;
   letter-spacing: 0.01em;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
-/* Conversation Item */
+/* Conversation item */
 .conversationItem {
-  padding: 12px 12px;
+  padding: 12px 14px;
   margin-bottom: 0;
-  background: rgba(26, 22, 18, 0.3);
-  border: 1px solid rgba(196, 168, 130, 0.1);
-  border-radius: 6px;
+  background: rgba(26, 22, 18, 0.15);
+  border: 1px solid rgba(196, 168, 130, 0.04);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -121,24 +153,22 @@
 }
 
 .conversationItem:hover {
-  background: rgba(26, 22, 18, 0.5);
-  border-color: rgba(196, 168, 130, 0.3);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  background: rgba(26, 22, 18, 0.4);
+  border-color: rgba(196, 168, 130, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .conversationItem.active {
-  background: rgba(212, 181, 110, 0.1);
-  border-color: rgba(212, 181, 110, 0.4);
-  box-shadow: 0 0 12px rgba(212, 181, 110, 0.1);
+  background: rgba(212, 181, 110, 0.06);
+  border-color: rgba(212, 181, 110, 0.25);
 }
 
-/* Conversation Content */
 .convContent {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .convTitle {
@@ -159,24 +189,24 @@
   color: #bda17b;
   margin: 0;
   letter-spacing: 0.005em;
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
-/* Delete Button */
+/* Delete button */
 .deleteBtn {
   background: none;
   border: none;
   color: #bda17b;
   cursor: pointer;
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 24px;
   min-height: 24px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .conversationItem:hover .deleteBtn {
@@ -185,16 +215,16 @@
 
 .deleteBtn:hover {
   color: #d9a0a0;
-  background: rgba(217, 160, 160, 0.1);
+  background: rgba(217, 160, 160, 0.08);
 }
 
 .deleteBtn:active {
   transform: scale(0.9);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar */
 .conversationsList::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .conversationsList::-webkit-scrollbar-track {
@@ -202,29 +232,22 @@
 }
 
 .conversationsList::-webkit-scrollbar-thumb {
-  background: rgba(196, 168, 130, 0.2);
+  background: rgba(196, 168, 130, 0.12);
   border-radius: 2px;
 }
 
 .conversationsList::-webkit-scrollbar-thumb:hover {
-  background: rgba(196, 168, 130, 0.4);
+  background: rgba(196, 168, 130, 0.25);
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   RESPONSIVE
-   ━━━━━━━━━━━━━━━━━━ */
-
+/* Responsive */
 @media (max-width: 768px) {
   .conversationSidebar {
-    width: 280px;
+    width: 85vw;
+    max-width: 320px;
   }
 
-  .convTitle {
-    font-size: 13px;
-  }
-
-  .newConvBtn {
-    font-size: 12px;
-    padding: 8px 12px;
+  .sidebarEdgeTab.open {
+    left: min(85vw, 320px);
   }
 }

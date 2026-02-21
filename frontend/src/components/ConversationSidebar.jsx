@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./ConversationSidebar.css";
-import SidebarToggleButton from "./SidebarToggleButton";
-import { TrashIcon, CloseIcon } from "./Icons";
+import { TrashIcon } from "./Icons";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 
 export function ConversationSidebar({
@@ -9,10 +8,11 @@ export function ConversationSidebar({
   onSelectConversation,
   onNewConversation,
   userId = 1,
+  isOpen = false,
+  onToggle,
 }) {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const { refreshTrigger } = useConversationRefresh();
 
   useEffect(() => {
@@ -28,7 +28,6 @@ export function ConversationSidebar({
       const response = await fetch(`/api/conversations/`, { headers });
       if (response.ok) {
         const data = await response.json();
-        // Sort by most recent first
         const sorted = (Array.isArray(data) ? data : []).sort(
           (a, b) =>
             new Date(b.updated_at || b.created_at) -
@@ -45,14 +44,13 @@ export function ConversationSidebar({
 
   const handleNewConversation = () => {
     onNewConversation();
-    setIsOpen(false);
+    onToggle?.(false);
   };
 
   const getConversationTitle = (conv) => {
     if (conv.title && conv.title.trim()) {
       return conv.title;
     }
-    // Use first message as fallback
     if (conv.first_message) {
       const msg = conv.first_message.trim();
       return msg.length > 40 ? msg.substring(0, 37) + "..." : msg;
@@ -67,7 +65,6 @@ export function ConversationSidebar({
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      // Check if today
       if (date.toDateString() === today.toDateString()) {
         return date.toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -75,12 +72,10 @@ export function ConversationSidebar({
         });
       }
 
-      // Check if yesterday
       if (date.toDateString() === yesterday.toDateString()) {
         return "Yesterday";
       }
 
-      // Same year
       if (date.getFullYear() === today.getFullYear()) {
         return date.toLocaleDateString("en-US", {
           month: "short",
@@ -88,7 +83,6 @@ export function ConversationSidebar({
         });
       }
 
-      // Different year
       return date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -101,7 +95,7 @@ export function ConversationSidebar({
 
   const handleSelectConversation = (id) => {
     onSelectConversation(id);
-    setIsOpen(false);
+    onToggle?.(false);
   };
 
   const handleDeleteConversation = async (id, e) => {
@@ -127,7 +121,23 @@ export function ConversationSidebar({
 
   return (
     <>
-      <SidebarToggleButton isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
+      {/* Edge-tab arrow toggle */}
+      <button
+        className={`sidebarEdgeTab ${isOpen ? "open" : ""}`}
+        onClick={() => onToggle?.(!isOpen)}
+        title={isOpen ? "Close History" : "Chat History"}
+        aria-label={isOpen ? "Close chat history" : "Open chat history"}
+      >
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+          <path
+            d={isOpen ? "M7 2L2 8L7 14" : "M3 2L8 8L3 14"}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
       <div className={`conversationSidebar ${isOpen ? "open" : "collapsed"}`}>
         <div className="sidebarHeader">

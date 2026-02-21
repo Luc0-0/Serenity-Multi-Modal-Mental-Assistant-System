@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import { useAuth } from '../context/AuthContext';
-import { CrisisAlert } from '../components/CrisisAlert';
-import { ConversationSidebar } from '../components/ConversationSidebar';
-import { EmotionalStatusCard } from '../components/EmotionalStatusCard';
-import { sendChatMessage, getErrorDisplay } from '../services/api';
-import { fetchEmotionInsights } from '../services/emotionService';
-import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
-import styles from './CheckIn.module.css';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import { useAuth } from "../context/AuthContext";
+import { CrisisAlert } from "../components/CrisisAlert";
+import { ConversationSidebar } from "../components/ConversationSidebar";
+import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
+import { sendChatMessage, getErrorDisplay } from "../services/api";
+import { fetchEmotionInsights } from "../services/emotionService";
+import { useEdgeSwipe } from "../hooks/useEdgeSwipe";
+import styles from "./CheckIn.module.css";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export function CheckIn() {
 
   // Left edge swipe opens sidebar
   useEdgeSwipe({
-    edge: 'left',
+    edge: "left",
     isOpen: sidebarOpen,
     onOpen: () => setSidebarOpen(true),
     onClose: () => setSidebarOpen(false),
@@ -41,7 +41,7 @@ export function CheckIn() {
 
   // Right edge swipe opens insights (chat mode only)
   useEdgeSwipe({
-    edge: 'right',
+    edge: "right",
     isOpen: showInsights,
     onOpen: () => setShowInsights(true),
     onClose: () => setShowInsights(false),
@@ -146,7 +146,7 @@ export function CheckIn() {
   const handleSendMessage = async () => {
     if (!userId) {
       setError("You must be logged in to send messages.");
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -278,13 +278,12 @@ export function CheckIn() {
   const handleSelectConversation = async (convId) => {
     try {
       if (streamingRef.current) clearTimeout(streamingRef.current);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(
-        `/api/conversations/${convId}/messages`,
-        { headers },
-      );
+      const response = await fetch(`/api/conversations/${convId}/messages`, {
+        headers,
+      });
       if (response.ok) {
         const data = await response.json();
         setConversationId(convId);
@@ -393,14 +392,14 @@ export function CheckIn() {
             <div className={styles.actionButtons}>
               <button
                 className={styles.actionBtn}
-                onClick={() => navigate('/journal')}
+                onClick={() => navigate("/journal")}
                 aria-label="Open journal"
               >
                 Journal
               </button>
               <button
                 className={styles.actionBtn}
-                onClick={() => navigate('/meditate')}
+                onClick={() => navigate("/meditate")}
                 aria-label="Meditation"
               >
                 Meditate
@@ -409,7 +408,6 @@ export function CheckIn() {
           </main>
         )}
 
-        {/* Chat mode */}
         {isInChat && (
           <>
             <div className={styles.chatContentWrapper}>
@@ -425,31 +423,39 @@ export function CheckIn() {
                     key={msg.id}
                     className={`${styles.message} ${styles[msg.sender]}`}
                   >
-
                     <div className={styles.messageAvatar}>
-                      {msg.sender === 'assistant' ? (
+                      {msg.sender === "assistant" ? (
                         <div className={styles.aiAvatar}>✦</div>
                       ) : (
                         <div className={styles.userAvatar}>
-                          {user?.name?.[0]?.toUpperCase() || '⊘'}
+                          {user?.name?.[0]?.toUpperCase() || "⊘"}
                         </div>
                       )}
                     </div>
 
                     <div className={styles.messageBubble}>
                       <div className={styles.messageContent}>
-
                         {msg.isTyping ? (
                           <div className={styles.typingIndicator}>
                             <span></span>
                             <span></span>
                             <span></span>
                           </div>
-                        ) : msg.sender === 'assistant' ? (
+                        ) : msg.sender === "assistant" ? (
                           <ReactMarkdown
                             components={{
-                              strong: ({ node, ...props }) => <strong style={{ fontWeight: 600, color: '#d4a574' }} {...props} />,
-                              em: ({ node, ...props }) => <em style={{ fontStyle: 'italic', opacity: 0.9 }} {...props} />,
+                              strong: ({ node, ...props }) => (
+                                <strong
+                                  style={{ fontWeight: 600, color: "#d4a574" }}
+                                  {...props}
+                                />
+                              ),
+                              em: ({ node, ...props }) => (
+                                <em
+                                  style={{ fontStyle: "italic", opacity: 0.9 }}
+                                  {...props}
+                                />
+                              ),
                               p: ({ node, ...props }) => <span {...props} />,
                             }}
                           >
@@ -460,12 +466,11 @@ export function CheckIn() {
                         )}
                       </div>
 
-
                       {!msg.isTyping && (
                         <div className={styles.messageTime}>
-                          {msg.timestamp?.toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
+                          {msg.timestamp?.toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
                           })}
                         </div>
                       )}
@@ -486,7 +491,10 @@ export function CheckIn() {
                       <p className={styles.errorText}>{error}</p>
                       <div className={styles.errorActions}>
                         {isRetryable && (
-                          <button className={styles.retryBtn} onClick={handleRetry}>
+                          <button
+                            className={styles.retryBtn}
+                            onClick={handleRetry}
+                          >
                             Retry
                           </button>
                         )}
@@ -518,7 +526,7 @@ export function CheckIn() {
 
             {/* Insights toggle */}
             <button
-              className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ''}`}
+              className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ""}`}
               onClick={() => setShowInsights(!showInsights)}
               title={showInsights ? "Hide Insights" : "Show Insights"}
             >
@@ -553,7 +561,12 @@ export function CheckIn() {
                   title="New Conversation"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path
+                      d="M8 3V13M3 8H13"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
                   </svg>
                 </button>
                 <button
@@ -563,7 +576,13 @@ export function CheckIn() {
                   disabled={(isLoading && !isStreaming) || !inputValue.trim()}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M9 14V4M9 4L5 8M9 4L13 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M9 14V4M9 4L5 8M9 4L13 8"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </div>

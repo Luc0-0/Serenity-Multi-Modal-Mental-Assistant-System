@@ -14,18 +14,9 @@ Assessment: TypeAlias = tuple[int, str]
 
 
 class OllamaService:
-    """
-    Ollama Cloud API integration service.
-    
-    This service handles:
-    - Dynamic system prompt generation based on emotional insights
-    - Adaptive response personality (Best Friend, Older Sibling, etc.)
-    - Smart token allocation based on query complexity
-    - Crisis detection and safe response handling
-    """
+    """Integration with Ollama LLM API for chat responses."""
     
     def __init__(self):
-        # Load configuration
         self.endpoint = settings.ollama_endpoint
         self.api_key = settings.ollama_api_key
         self.model = settings.ollama_model
@@ -42,31 +33,13 @@ class OllamaService:
             logger.error("OLLAMA_API_KEY not set in .env or environment!")
     
     async def get_response(
-        self,
-        user_message: str,
-        conversation_history: List[Dict],
-        emotional_insight: Optional[EmotionInsight] = None,
-        crisis_detected: bool = False
-    ) -> str:
-        """
-        Get LLM response with comprehensive emotional context injection.
-        
-        This main entry point orchestrates:
-        1. Crisis check (immediate return if high risk)
-        2. System prompt construction with adaptive personality
-        3. Conversation history formatting
-        4. API execution with error handling and fallback
-        
-        Args:
-            user_message: Current user message content
-            conversation_history: List of previous message dictionaries for context
-            emotional_insight: Detailed analysis object containing emotion distribution,
-                             trends, and personality adaptation suggestions
-            crisis_detected: Boolean flag from the crisis detection service
-        
-        Returns:
-            str: The assistant's response text, or a fallback message on failure.
-        """
+         self,
+         user_message: str,
+         conversation_history: List[Dict],
+         emotional_insight: Optional[EmotionInsight] = None,
+         crisis_detected: bool = False
+     ) -> str:
+        """Generate response with emotional context and conversation history."""
         
         logger.info(f"get_response called: insight={'present' if emotional_insight else 'none'}, crisis={crisis_detected}")
         

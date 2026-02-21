@@ -5,8 +5,22 @@
  * This software is the confidential and proprietary information of Nipun Sujesh.
  */
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Landing, CheckIn, Journal, Login, Signup, Profile, Insights, Meditate } from "./pages";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import {
+  Landing,
+  CheckIn,
+  Journal,
+  Login,
+  Signup,
+  Profile,
+  Insights,
+  Meditate,
+} from "./pages";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ChatProvider } from "./contexts/ChatContext";
 import { ConversationRefreshProvider } from "./contexts/ConversationRefreshContext";
@@ -18,20 +32,13 @@ import "./App.css";
 import { Navbar } from "./components/Navbar";
 import { CustomCursor } from "./components/CustomCursor";
 
-// Auth wrapper
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading, token } = useAuth();
-
-  // Debug check
-  if (!isAuthenticated && token) {
-    console.warn("Token exists but isAuthenticated is false. Forcing authentication check.");
-  }
 
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
 
-  // Fallback check
   const isAuthed = isAuthenticated || !!token;
 
   return isAuthed ? (
@@ -51,7 +58,6 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* Protected Routes */}
       <Route
         path="/check-in"
         element={
@@ -93,8 +99,6 @@ function AppRoutes() {
         }
       />
 
-
-      {/* Catch-all redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,7 +1,3 @@
-"""
-Emotion detection service.
-"""
-
 from typing import Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -24,17 +20,8 @@ def _get_emotion_classifier():
 
 
 class EmotionService:
-    """
-    Analyzes messages for emotional content and logs to database.
-    
-    Responsibilities:
-    - Detect emotion using baseline (later: XLNet)
-    - Log emotions to emotion_logs table with proper foreign keys
-    - Handle database transactions safely
-    - Never block chat flow on failure
-    """
-    
-    # Emotion keyword mapping
+    """Detects emotion from text and logs to database."""
+     
     EMOTION_KEYWORDS = {
         "sadness": [
             "sad", "depressed", "down", "hopeless", "blue", "miserable", "unhappy",

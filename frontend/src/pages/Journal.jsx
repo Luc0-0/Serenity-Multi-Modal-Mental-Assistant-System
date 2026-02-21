@@ -9,18 +9,51 @@ export function Journal() {
   const [entries, setEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [todayMood, setTodayMood] = useState(null);
+  const [todayRating, setTodayRating] = useState(null);
   const [todayContent, setTodayContent] = useState("");
-  const [isTextAreaFocused, setIsTextAreaFocused] = useState(false);
+  const [textAreaExpanded, setTextAreaExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [filterType, setFilterType] = useState("all");
   const textAreaRef = useRef(null);
 
-  const moodOptions = [
-    { value: "stressed", label: "Stressed", emoji: "😰" },
-    { value: "sad", label: "Sad", emoji: "😢" },
-    { value: "neutral", label: "Neutral", emoji: "😐" },
-    { value: "happy", label: "Happy", emoji: "😊" },
-    { value: "grateful", label: "Grateful", emoji: "🙏" },
+  // Rating system with custom SVG styling
+  const ratingOptions = [
+    {
+      key: "worst",
+      label: "Worst",
+      color: "#d4a0a0",
+      path: "M24,18 L36,18 M24,30 Q30,36 36,30",
+    },
+    {
+      key: "bad",
+      label: "Bad",
+      color: "#d4a8a0",
+      path: "M24,18 L36,18 M24,32 L36,32",
+    },
+    {
+      key: "neutral",
+      label: "Neutral",
+      color: "#a8a8a8",
+      path: "M24,18 L36,18 M24,32 L36,32",
+    },
+    {
+      key: "good",
+      label: "Good",
+      color: "#a8c5a0",
+      path: "M24,18 L36,18 M24,32 Q30,26 36,32",
+    },
+    {
+      key: "great",
+      label: "Great",
+      color: "#a8d5a0",
+      path: "M24,18 L36,18 M20,32 Q30,24 40,32",
+    },
+    {
+      key: "best",
+      label: "Best+",
+      color: "#d4af37",
+      path: "M30,16 L33,24 L42,24 L35,30 L38,38 L30,32 L22,38 L25,30 L18,24 L27,24 Z",
+    },
   ];
 
   useEffect(() => {
@@ -50,12 +83,13 @@ export function Journal() {
       const newEntry = await journalService.createEntry({
         title,
         content: todayContent,
-        emotion: todayMood || "neutral",
+        emotion: todayRating || "neutral",
         tags: [],
       });
       setEntries([newEntry, ...entries]);
       setTodayContent("");
-      setTodayMood(null);
+      setTodayRating(null);
+      setTextAreaExpanded(false);
       setError(null);
     } catch (err) {
       console.error("Failed to save entry:", err);
@@ -102,168 +136,289 @@ export function Journal() {
     });
   };
 
+  // Calculate stats
+  const totalEntries = entries.length;
+  const thisWeekEntries = entries.filter((e) => {
+    const entryDate = new Date(e.created_at || e.date);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return entryDate >= weekAgo;
+  }).length;
+
+  // Get dominant emotion this week
+  const thisWeekEmotions = entries
+    .filter((e) => {
+      const entryDate = new Date(e.created_at || e.date);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate >= weekAgo;
+    })
+    .map((e) => e.emotion || e.mood || "neutral");
+
+  const emotionCounts = {};
+  thisWeekEmotions.forEach((emotion) => {
+    emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
+  });
+
+  const topEmotion =
+    Object.keys(emotionCounts).length > 0
+      ? Object.keys(emotionCounts).reduce((a, b) =>
+          emotionCounts[a] > emotionCounts[b] ? a : b,
+        )
+      : "neutral";
+
+  const EmotionIcon = ({ emotion, size = 96 }) => {
+    const color = emotionColors[emotion] || emotionColors.neutral;
+    return (
+      <div
+        className={styles.emotionIcon}
+        style={{ borderColor: color, width: size, height: size }}
+      >
+        <svg
+          width={size * 0.7}
+          height={size * 0.7}
+          viewBox="0 0 64 64"
+          role="img"
+        >
+          <circle cx="32" cy="32" r="28" fill={color} opacity="0.12" />
+          <text x="32" y="40" textAnchor="middle" fontSize="32" fill={color}>
+            {emotionEmojis[emotion] || "😐"}
+          </text>
+        </svg>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.backgroundImage} />
 
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <div>
-            <h1 className={styles.pageTitle}>Journal</h1>
-            <p className={styles.pageSubtitle}>How are you feeling today?</p>
-          </div>
+          <h1 className={styles.pageTitle}>Journal</h1>
+          <p className={styles.pageSubtitle}>Your thoughts, your story</p>
         </div>
       </header>
 
       {error && (
-        <div
-          style={{
-            position: "fixed",
-            top: "1.5rem",
-            right: "1.5rem",
-            padding: "0.75rem 1.25rem",
-            background: "rgba(168, 90, 90, 0.15)",
-            border: "1px solid rgba(168, 90, 90, 0.4)",
-            borderRadius: "10px",
-            fontSize: "0.85rem",
-            color: "#c97b7b",
-            zIndex: 2000,
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-          }}
-        >
+        <div className={styles.errorNotification}>
           <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#c97b7b",
-              cursor: "pointer",
-              fontSize: "1.1rem",
-            }}
-          >
+          <button onClick={() => setError(null)} className={styles.closeButton}>
             ×
           </button>
         </div>
       )}
 
       <main className={styles.content}>
-        <div className={styles.dateDisplay}>
-          <h2 className={styles.dateText}>
-            {new Date().toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </h2>
-        </div>
+        {/* Analytics Cards */}
+        {!isLoading && entries.length > 0 && (
+          <section className={styles.analyticsSection}>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statValue}>{totalEntries}</div>
+                <div className={styles.statLabel}>Total Entries</div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={styles.statValue}>{thisWeekEntries}</div>
+                <div className={styles.statLabel}>This Week</div>
+              </div>
+              <div className={styles.statCard}>
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 48 48"
+                  style={{ margin: "0 auto" }}
+                >
+                  <path
+                    d={topRatingOption?.path || "M24,18 L36,18 M24,32 L36,32"}
+                    stroke={topRatingOption?.color || "#a8a8a8"}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
+                <div className={styles.statLabel}>Top Day Rating</div>
+              </div>
+            </div>
+          </section>
+        )}
 
+        {/* Today's Entry Section */}
         <section className={styles.todaySection}>
           <div className={styles.entryCard}>
-            <div className={styles.rateYourDay}>
-              <label className={styles.rateLabel}>Rate Your Day</label>
-              <div className={styles.moodSelector}>
-                {moodOptions.map((mood) => (
+            <h2 className={styles.sectionTitle}>Today's Entry</h2>
+
+            <div className={styles.emotionSection}>
+              <label className={styles.emotionLabel}>How was your day?</label>
+              <div className={styles.emotionGrid}>
+                {ratingOptions.map((rating) => (
                   <button
-                    key={mood.value}
-                    className={`${styles.moodBtn} ${todayMood === mood.value ? styles.selected : ""}`}
-                    onClick={() => setTodayMood(mood.value)}
-                    title={mood.label}
+                    key={rating.key}
+                    className={`${styles.emotionBtn} ${
+                      todayRating === rating.key ? styles.selected : ""
+                    }`}
+                    onClick={() => setTodayRating(rating.key)}
+                    title={rating.label}
                   >
-                    <span className={styles.moodEmoji}>{mood.emoji}</span>
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 48 48"
+                      className={styles.ratingIcon}
+                    >
+                      <path
+                        d={rating.path}
+                        stroke={rating.color}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                    </svg>
+                    <span className={styles.emotionName}>{rating.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Text Area with Button */}
-            <div className={styles.textAreaWrapper}>
-              <textarea
-                ref={textAreaRef}
-                className={`${styles.textArea} ${isTextAreaFocused || todayContent ? styles.expanded : ""}`}
-                placeholder="Write about what's on your mind..."
-                value={todayContent}
-                onChange={(e) => setTodayContent(e.target.value)}
-                onFocus={() => setIsTextAreaFocused(true)}
-                onBlur={() => setIsTextAreaFocused(false)}
-              />
+            <div className={styles.textAreaSection}>
+              <label className={styles.textAreaLabel}>Your thoughts</label>
+              <div className={styles.textAreaWrapper}>
+                <textarea
+                  ref={textAreaRef}
+                  className={`${styles.textArea} ${
+                    textAreaExpanded ? styles.expanded : styles.collapsed
+                  }`}
+                  placeholder="Write about what's on your mind..."
+                  value={todayContent}
+                  onChange={(e) => setTodayContent(e.target.value)}
+                  onFocus={() => setTextAreaExpanded(true)}
+                  onBlur={() => {
+                    if (!todayContent.trim()) {
+                      setTextAreaExpanded(false);
+                    }
+                  }}
+                />
+                <div className={styles.wordCount}>
+                  {todayContent.split(/\s+/).filter((w) => w.length > 0).length}{" "}
+                  words
+                </div>
+              </div>
+            </div>
 
+            <div className={styles.buttonGroup}>
               <Button
                 onClick={handleAddEntry}
                 disabled={!todayContent.trim() || isSaving}
+                className={styles.saveBtn}
               >
-                {isSaving ? "Saving..." : "Add Entry"}
+                {isSaving ? "Saving..." : "Save Entry"}
               </Button>
             </div>
           </div>
         </section>
 
+        {/* Recent Entries */}
         {isLoading && (
-          <div
-            style={{ textAlign: "center", padding: "2rem", color: "#bda17b" }}
-          >
-            Loading entries...
+          <div className={styles.loading}>
+            <div className={styles.loadingSpinner} />
+            <p>Loading entries...</p>
           </div>
         )}
 
         {!isLoading && entries.length === 0 && (
-          <div
-            style={{ textAlign: "center", padding: "2rem", color: "#7a7a7a" }}
-          >
-            <p>No journal entries yet. Write your first entry above.</p>
+          <div className={styles.emptyState}>
+            <p>No journal entries yet.</p>
+            <p className={styles.emptySubtext}>
+              Create your first entry above to begin your journey.
+            </p>
           </div>
         )}
 
         {!isLoading && entries.length > 0 && (
           <section className={styles.recentSection}>
-            <h2 className={styles.sectionTitle}>Recent Entries</h2>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Recent Entries</h2>
+
+              <div className={styles.filterTabs}>
+                <button
+                  className={`${styles.filterBtn} ${filterType === "all" ? styles.active : ""}`}
+                  onClick={() => setFilterType("all")}
+                >
+                  All ({entries.length})
+                </button>
+                <button
+                  className={`${styles.filterBtn} ${filterType === "ai" ? styles.active : ""}`}
+                  onClick={() => setFilterType("ai")}
+                >
+                  AI Extracted ({aiExtractedCount})
+                </button>
+                <button
+                  className={`${styles.filterBtn} ${filterType === "user" ? styles.active : ""}`}
+                  onClick={() => setFilterType("user")}
+                >
+                  User Written ({userWrittenCount})
+                </button>
+              </div>
+            </div>
 
             <div className={styles.entriesList}>
-              {entries.map((entry) => (
-                <div key={entry.id} className={styles.entryItem}>
-                  <div className={styles.entryHeader}>
-                    <div>
-                      <p className={styles.entryDate}>
-                        {formatDate(entry.created_at || entry.date)}
-                      </p>
-                      <h3 className={styles.entryTitle}>{entry.title}</h3>
+              {filteredEntries.map((entry) => {
+                const ratingOption = ratingOptions.find(
+                  (r) => r.key === (entry.emotion || entry.mood || "neutral"),
+                );
+                return (
+                  <div key={entry.id} className={styles.entryItem}>
+                    <div className={styles.entryHeader}>
+                      <div className={styles.entryTitleSection}>
+                        <p className={styles.entryDate}>
+                          {formatDate(entry.created_at || entry.date)}
+                        </p>
+                        <h3 className={styles.entryTitle}>{entry.title}</h3>
+                      </div>
+                      <button
+                        className={styles.deleteBtn}
+                        title="Delete entry"
+                        onClick={() => handleDeleteEntry(entry.id)}
+                      >
+                        Delete
+                      </button>
                     </div>
-                    <button
-                      className={styles.moreBtn}
-                      aria-label="Delete entry"
-                      onClick={() => handleDeleteEntry(entry.id)}
-                    >
-                      ✕
-                    </button>
-                  </div>
 
-                  <p className={styles.entryContent}>{entry.content}</p>
+                    <p className={styles.entryContent}>{entry.content}</p>
 
-                  <div className={styles.entryFooter}>
-                    <div className={styles.entryMeta}>
-                      <span className={styles.heart}>♥</span>
-                      <span className={styles.time}>
-                        {formatTime(entry.created_at || entry.date)}
-                      </span>
-                      <span className={styles.mood}>
-                        <span className={styles.moodIcon}>
-                          {
-                            moodOptions.find(
-                              (m) => m.value === (entry.emotion || entry.mood),
-                            )?.emoji
-                          }
+                    <div className={styles.entryFooter}>
+                      <span
+                        className={styles.emotionBadge}
+                        style={{
+                          borderColor: ratingOption?.color || "#a8a8a8",
+                        }}
+                      >
+                        <span style={{ fontSize: "12px" }}>
+                          <svg width="14" height="14" viewBox="0 0 48 48">
+                            <path
+                              d={
+                                ratingOption?.path ||
+                                "M24,18 L36,18 M24,32 L36,32"
+                              }
+                              stroke={ratingOption?.color || "#a8a8a8"}
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              fill="none"
+                            />
+                          </svg>
                         </span>
-                        {
-                          moodOptions.find(
-                            (m) => m.value === (entry.emotion || entry.mood),
-                          )?.label
-                        }
+                        <span>{ratingOption?.label || "Neutral"}</span>
                       </span>
+                      {entry.ai_extracted && (
+                        <div className={styles.aiBadge}>
+                          <span>✨ AI Extracted</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON, Boolean, Float
 from sqlalchemy.sql import func
 from app.db.base import Base
 
@@ -19,6 +19,12 @@ class JournalEntry(Base):
     tags = Column(JSON, nullable=True, default=[])
     
     extracted_insights = Column(Text, nullable=True)
+    
+    # Additional metadata fields
+    ai_extracted = Column(Boolean, default=True, nullable=False)
+    ai_summary = Column(Text, nullable=True)
+    ai_confidence = Column(Float, nullable=True)
+    extraction_method = Column(String(50), default="ai", nullable=False)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

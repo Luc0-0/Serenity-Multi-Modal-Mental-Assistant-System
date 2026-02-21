@@ -150,6 +150,113 @@ Examples:
             # Fallback token limit
             return 2000, f"Assessment error: {str(e)}"
     
+    async def should_create_journal_entry_ai(
+        self,
+        conversation_history: List[Dict],
+        user_message: str,
+        emotion_label: str = None
+    ) -> Dict:
+        """
+        AI-based decision on whether to create journal entry from conversation.
+        
+        Analyzes last 5-10 messages (conversation context) to decide if content
+        is worth journaling. Non-blocking: returns safe defaults on error.
+        
+        Args:
+            conversation_history: List of dicts [{role: "user|assistant", content: "..."}]
+            user_message: Current user message
+            emotion_label: Detected emotion (optional context)
+        
+        Returns:
+            {
+                "should_extract": bool,
+                "confidence": float (0.0-1.0),
+                "summary": str (AI-generated summary if should_extract=True),
+                "reason": str (brief explanation)
+            }
+        """
+        
+        # Prepare conversation section (last 5-10 messages)
+        conversation_section = "\n".join([
+            f"{msg['role'].upper()}: {msg['content'][:200]}"
+            for msg in conversation_history[-10:]
+        ])
+        
+        # Build the journal assessment prompt
+        journal_prompt = f"""You are analyzing a conversation to determine if it contains journaling-worthy content.
+
+GOAL: Decide if the recent messages contain personal reflections, emotional processing, or meaningful life events worth preserving as a journal entry.
+
+NOT journaling-worthy:
+- Small talk, casual chat, questions about facts
+- Quick answers, surface-level replies
+- Routine updates without emotion or reflection
+
+IS journaling-worthy:
+- Processing emotions or life challenges
+- Self-reflection or personal growth moments
+- Discussing relationships, work struggles, achievements
+- Expressing fears, hopes, dreams, concerns
+- Making decisions or realizing something important
+
+CONVERSATION SECTION (last messages):
+{conversation_section}
+
+Current emotion detected: {emotion_label or 'unknown'}
+
+RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
+{{"should_extract": true|false, "confidence": 0.0, "summary": "1-2 sentence summary if true, empty string if false", "reason": "brief reason"}}"""
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": journal_prompt}],
+                "max_tokens": 250,  # Keep this lightweight
+                "temperature": 0.3,  # Low value for deterministic output
+            }
+            
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.post(
+                    self.endpoint,
+                    json=payload,
+                    headers=headers
+                )
+                response.raise_for_status()
+                data = response.json()
+                raw_response = data["choices"][0]["message"]["content"].strip()
+                
+                logger.info(f"[JOURNAL_AI] Raw response: {raw_response[:100]}")
+                
+                # Parse JSON response
+                import json
+                ai_decision = json.loads(raw_response)
+                
+                logger.info(f"[JOURNAL_AI] Decision: extract={ai_decision.get('should_extract')}, confidence={ai_decision.get('confidence')}, reason={ai_decision.get('reason')}")
+                
+                return {
+                    "should_extract": ai_decision.get("should_extract", False),
+                    "confidence": float(ai_decision.get("confidence", 0.0)),
+                    "summary": ai_decision.get("summary", ""),
+                    "reason": ai_decision.get("reason", "AI assessment")
+                }
+                
+        except Exception as e:
+            logger.warning(f"[JOURNAL_AI] Assessment failed (non-blocking): {type(e).__name__}: {str(e)}")
+            import traceback
+            logger.warning(traceback.format_exc())
+            # Fallback: don't extract if AI fails
+            return {
+                "should_extract": False,
+                "confidence": 0.0,
+                "summary": "",
+                "reason": f"AI error: {str(e)}"
+            }
+    
     async def _call_ollama_cloud(
         self,
         system_prompt: str,

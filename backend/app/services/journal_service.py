@@ -284,7 +284,7 @@ class JournalService:
                 mood=mood,
                 tags=",".join(tags) if tags else None,
                 extracted_insights=extracted_summary,
-                ai_extracted=True,
+                auto_extract=True,
                 ai_summary=ai_summary,
                 ai_confidence=ai_confidence,
                 extraction_method=extraction_method

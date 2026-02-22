@@ -1,18 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap");
 
 :root {
-  --glass-bg: rgba(26, 22, 18, 0.08);
-  --glass-border: 1px solid rgba(150, 120, 78, 0.15);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(15, 12, 8, 0.7);
+  --glass-border: 1px solid rgba(150, 120, 78, 0.2);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --gold: #d4af37;
-  --green-accent: #a8c5a0;
+  --green-accent: #9bc399;
   --text-primary: #e6dcc3;
   --text-secondary: rgba(230, 220, 195, 0.75);
   --text-muted: #7a7a7a;
   --bg-base: #0b0c0f;
+
+  /* Emotion colors */
+  --emotion-worst: #9b6b6b;
+  --emotion-bad: #a89080;
+  --emotion-neutral: #a8a8a8;
+  --emotion-good: #9bc399;
+  --emotion-great: #a8d9a0;
+  --emotion-best: #d4af37;
 }
 
 /* ==================== CONTAINER & BACKGROUND ==================== */
@@ -37,12 +45,14 @@
   width: 100%;
   height: 100%;
   background-color: var(--bg-base);
-  background-image: url("/images/background3.png");
+  background-image: url("/images/journalbg.png");
   background-size: cover;
-  background-position: center;
+  background-position: center -100px;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   pointer-events: none;
   z-index: 0;
+  object-fit: cover;
 }
 
 .backgroundImage::after {
@@ -50,28 +60,56 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(6, 6, 8, 0.5) 0%, rgba(6, 6, 8, 0.75) 100%),
     radial-gradient(
-      circle at 50% 10%,
-      rgba(212, 175, 55, 0.04) 0%,
-      transparent 30%
-    );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+      circle 600px at 20% 15%,
+      rgba(197, 149, 92, 0.02) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle 400px at 80% 60%,
+      rgba(197, 149, 92, 0.01) 0%,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle 300px at 60% 30%,
+      rgba(212, 175, 55, 0.005) 0%,
+      transparent 40%
+    ),
+    linear-gradient(180deg, rgba(6, 6, 8, 0.6) 0%, rgba(6, 6, 8, 0.8) 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   pointer-events: none;
   z-index: 1;
+  animation: ambientGlow 8s ease-in-out infinite;
+}
+
+@keyframes ambientGlow {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ==================== HEADER ==================== */
 
 .header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 100;
-  padding: 32px 48px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: var(--glass-border);
-  background: rgba(26, 22, 18, 0.04);
+  padding: 1.5rem 3rem;
+  background:
+    radial-gradient(
+      60% 100% at 50% 0%,
+      rgba(212, 165, 116, 0.08) 0%,
+      transparent 100%
+    ),
+    rgba(10, 10, 11, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .headerContent {
@@ -89,22 +127,26 @@
 }
 
 .pageTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 48px;
-  font-weight: 400;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.75rem;
+  font-weight: 300;
+  background: linear-gradient(180deg, #fff 0%, #e8c9a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.75rem 0;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .pageSubtitle {
   font-family: "Cormorant Garamond", serif;
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 300;
+  color: #a0a0a0;
   margin: 0;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* ==================== CONTENT ==================== */
@@ -120,12 +162,12 @@
 
 .sectionTitle {
   font-family: "Cormorant Garamond", serif;
-  font-size: 16px;
+  font-size: 1.35rem;
   font-weight: 500;
   color: var(--text-primary);
   margin: 0 0 24px 0;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* ==================== ANALYTICS SECTION ==================== */
@@ -142,38 +184,71 @@
 }
 
 .statCard {
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: var(--glass-shadow);
+  position: relative;
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.12) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(212, 165, 116, 0.3);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-top-color 0.3s ease;
 }
 
 .statCard:hover {
-  background: rgba(26, 22, 18, 0.15);
-  border-color: rgba(150, 120, 78, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 20px 50px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(212, 165, 116, 0.5);
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.18) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
 }
 
 .statValue {
-  font-family: "Playfair Display", serif;
-  font-size: 36px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.25rem;
   font-weight: 500;
   color: var(--gold);
   margin-bottom: 8px;
-  line-height: 1.2;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .statLabel {
   font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
-  color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #6b6b6b;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -192,15 +267,40 @@
 }
 
 .entryCard {
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  box-shadow: var(--glass-shadow);
+  position: relative;
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.12) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(212, 165, 116, 0.3);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-top-color 0.3s ease;
+}
+
+.entryCard > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ==================== EMOTION/RATING SELECTOR ==================== */
@@ -209,14 +309,55 @@
   margin-bottom: 32px;
 }
 
-.emotionLabel {
-  display: block;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
-  color: var(--text-secondary);
+.emotionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
-  letter-spacing: 0.02em;
+  gap: 16px;
+}
+
+.emotionLabel {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b6b6b;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  display: block;
+  margin: 0;
+}
+
+.emotionPreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(26, 22, 18, 0.3);
+  border: 1.5px solid;
+  border-radius: 12px;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  animation: slideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .emotionGrid {
@@ -233,24 +374,49 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(26, 22, 18, 0.08);
-  border: 1.5px solid rgba(150, 120, 78, 0.15);
+  background: rgba(26, 22, 18, 0.3);
+  border: 1.5px solid rgba(150, 120, 78, 0.3);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
+  overflow: hidden;
+}
+
+.emotionBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  border-radius: var(--radius-md);
+  transition: background 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
 .emotionBtn:hover {
   background: rgba(26, 22, 18, 0.15);
   border-color: rgba(150, 120, 78, 0.35);
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .emotionBtn.selected {
   background: rgba(168, 160, 100, 0.15);
-  border-color: var(--gold);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+  border-color: rgba(197, 149, 92, 0.6);
+  box-shadow:
+    0 0 30px rgba(197, 149, 92, 0.4),
+    0 0 50px rgba(197, 149, 92, 0.2),
+    0 0 80px rgba(197, 149, 92, 0.1),
+    inset 0 0 20px rgba(197, 149, 92, 0.15);
+  transform: scale(1.02);
+}
+
+.emotionBtn.selected::before {
+  background: radial-gradient(
+    circle at center,
+    rgba(197, 149, 92, 0.2) 0%,
+    transparent 70%
+  );
 }
 
 .ratingIcon {
@@ -263,12 +429,13 @@
 
 .emotionName {
   font-family: "Cormorant Garamond", serif;
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #6b6b6b;
   text-align: center;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.12em;
   line-height: 1.2;
-  text-transform: capitalize;
+  text-transform: uppercase;
 }
 
 /* ==================== TEXTAREA SECTION ==================== */
@@ -280,10 +447,11 @@
 .textAreaLabel {
   display: block;
   font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b6b6b;
   margin-bottom: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -296,10 +464,21 @@
 
 .textArea {
   width: 100%;
-  padding: 16px 20px;
-  background: rgba(26, 22, 18, 0.08);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
+  padding: 1rem;
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.08) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.01) 0%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(212, 165, 116, 0.2);
+  border-radius: 12px;
   color: var(--text-primary);
   font-family:
     "Inter",
@@ -308,16 +487,12 @@
     "Segoe UI",
     sans-serif;
   font-size: 14px;
-  font-weight: 400;
-  line-height: 1.8;
-  letter-spacing: 0.003em;
+  line-height: 1.6;
   resize: none;
   outline: none;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   overflow: hidden;
 }
 
@@ -331,22 +506,43 @@
 }
 
 .textArea::placeholder {
-  color: rgba(230, 220, 195, 0.4);
+  color: rgba(230, 220, 195, 0.35);
+}
+
+.textArea:hover {
+  border-top-color: rgba(212, 165, 116, 0.3);
+  box-shadow:
+    0 8px 24px -5px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .textArea:focus {
-  background: rgba(26, 22, 18, 0.12);
-  border-color: rgba(168, 160, 100, 0.3);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
+  border-top-color: rgba(212, 165, 116, 0.4);
+  box-shadow:
+    0 12px 32px -5px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.15) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
 }
 
 .wordCount {
   align-self: flex-end;
   font-family: "Cormorant Garamond", serif;
-  font-size: 12px;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #6b6b6b;
+  letter-spacing: 0.12em;
   margin-top: 4px;
+  text-transform: none;
 }
 
 /* ==================== BUTTONS ==================== */
@@ -368,9 +564,10 @@
   border-radius: var(--radius-sm);
   color: var(--gold);
   font-family: "Cormorant Garamond", serif;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -388,8 +585,10 @@
   border-radius: var(--radius-sm);
   color: rgba(200, 100, 100, 0.7);
   font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
+  font-size: 0.75rem;
   font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -417,7 +616,7 @@
 .filterTabs {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid rgba(150, 120, 78, 0.1);
+  border-bottom: 1px solid rgba(150, 120, 78, 0.05);
   padding-bottom: 12px;
   flex-wrap: wrap;
 }
@@ -427,13 +626,13 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: var(--text-secondary);
+  color: #a0a0a0;
   font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  letter-spacing: 0.01em;
+  transition: all 0.3s ease;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -455,16 +654,40 @@
 }
 
 .entryItem {
-  padding: 24px;
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.1) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.015) 0%,
+      rgba(0, 0, 0, 0.15) 100%
+    );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(212, 165, 116, 0.25);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow:
+    0 12px 32px -5px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-top-color 0.3s ease;
   animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  overflow: hidden;
   opacity: 0;
+}
+
+.entryItem > * {
+  position: relative;
+  z-index: 1;
 }
 
 .entryItem:nth-child(1) {
@@ -478,10 +701,22 @@
 }
 
 .entryItem:hover {
-  background: rgba(26, 22, 18, 0.12);
-  border-color: rgba(150, 120, 78, 0.25);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  box-shadow:
+    0 16px 48px -5px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(212, 165, 116, 0.4);
+  background:
+    radial-gradient(
+      80% 60% at 50% -10%,
+      rgba(212, 165, 116, 0.15) 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(0, 0, 0, 0.15) 100%
+    );
 }
 
 .entryHeader {
@@ -498,20 +733,21 @@
 
 .entryDate {
   font-family: "Cormorant Garamond", serif;
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #6b6b6b;
   margin: 0 0 6px 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .entryTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 18px;
-  font-weight: 400;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   line-height: 1.3;
 }
 
@@ -525,8 +761,8 @@
   font-size: 13px;
   font-weight: 400;
   color: var(--text-secondary);
-  line-height: 1.7;
-  letter-spacing: 0.003em;
+  line-height: 1.6;
+  letter-spacing: 0.002em;
   margin: 12px 0 0 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -7,9 +7,13 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.routers.auth import get_current_user
+from app.services.ollama_service import OllamaService
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+# Initialize Ollama service for title generation
+ollama_service = OllamaService()
 
 router = APIRouter(prefix="/api/journal", tags=["journal"])
 
@@ -41,20 +45,51 @@ class JournalEntryResponse(BaseModel):
         from_attributes = True
 
 
+async def generate_smart_title(content: str) -> str:
+    """
+    Generate a meaningful title from journal content using Ollama.
+    
+    Falls back to first sentence if Ollama fails (non-blocking).
+    """
+    try:
+        # If content is short, don't call Ollama
+        if len(content) < 50:
+            return content.split("\n")[0][:100]
+        
+        # Call Ollama to generate title
+        title = await ollama_service.generate_conversation_title(content)
+        
+        # Ensure title isn't empty and isn't too long
+        if not title or len(title.strip()) == 0:
+            return content.split(".")[0][:100]
+        
+        return title[:100]  # Max 100 chars
+        
+    except Exception as e:
+        # Non-blocking: fallback to first sentence
+        logger.warning(f"Failed to generate smart title with Ollama: {str(e)}")
+        first_sentence = content.split(".")[0]
+        return first_sentence[:100] if first_sentence else "Journal Entry"
+
+
 @router.get("/entries/", response_model=dict)
 async def list_entries(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     emotion: str = Query(None),
+    auto_extract: bool = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """List journal entries."""
+    """List journal entries with optional filtering by emotion and auto_extract status."""
     try:
         query = select(JournalEntry).where(JournalEntry.user_id == current_user.id)
         
         if emotion:
             query = query.where(JournalEntry.emotion == emotion)
+        
+        if auto_extract is not None:
+            query = query.where(JournalEntry.auto_extract == auto_extract)
         
         query = query.order_by(JournalEntry.created_at.desc()).offset(skip).limit(limit)
         
@@ -64,6 +99,8 @@ async def list_entries(
         count_stmt = select(func.count(JournalEntry.id)).where(JournalEntry.user_id == current_user.id)
         if emotion:
             count_stmt = count_stmt.where(JournalEntry.emotion == emotion)
+        if auto_extract is not None:
+            count_stmt = count_stmt.where(JournalEntry.auto_extract == auto_extract)
         
         count_result = await db.execute(count_stmt)
         total = count_result.scalar()
@@ -76,6 +113,7 @@ async def list_entries(
                     "content": e.content[:200] + "..." if len(e.content or "") > 200 else e.content,
                     "emotion": e.emotion,
                     "tags": e.tags or [],
+                    "auto_extract": e.auto_extract,
                     "created_at": e.created_at.isoformat() if e.created_at else None,
                     "updated_at": e.updated_at.isoformat() if e.updated_at else None
                 }
@@ -96,19 +134,31 @@ async def create_entry(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create journal entry."""
+    """Create journal entry with AI-generated smart title if not provided."""
     try:
+        # Use provided title or generate smart one from content
+        title = payload.title
+        auto_extract = False
+        
+        if not title or title == "Today's Entry":
+            title = await generate_smart_title(payload.content)
+            auto_extract = True  # Mark as auto-extracted if title was generated
+        
         entry = JournalEntry(
             user_id=current_user.id,
-            title=payload.title,
+            title=title,
             content=payload.content,
             emotion=payload.emotion,
-            tags=payload.tags
+            tags=payload.tags,
+            auto_extract=auto_extract,
+            extraction_method="manual" if not auto_extract else "ai"
         )
         
         db.add(entry)
         await db.commit()
         await db.refresh(entry)
+        
+        logger.info(f"Journal entry created: ID={entry.id}, title='{title}', emotion={payload.emotion}, auto_extract={auto_extract}")
         
         return {
             "id": entry.id,
@@ -116,6 +166,7 @@ async def create_entry(
             "content": entry.content,
             "emotion": entry.emotion,
             "tags": entry.tags or [],
+            "auto_extract": entry.auto_extract,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None
         }
@@ -150,6 +201,7 @@ async def get_entry(
             "content": entry.content,
             "emotion": entry.emotion,
             "tags": entry.tags or [],
+            "auto_extract": entry.auto_extract,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None
         }
@@ -198,6 +250,7 @@ async def update_entry(
             "content": entry.content,
             "emotion": entry.emotion,
             "tags": entry.tags or [],
+            "auto_extract": entry.auto_extract,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None
         }
@@ -267,6 +320,7 @@ async def search_entries(
                     "title": e.title,
                     "content": e.content[:200] + "..." if len(e.content or "") > 200 else e.content,
                     "emotion": e.emotion,
+                    "auto_extract": e.auto_extract,
                     "created_at": e.created_at.isoformat() if e.created_at else None
                 }
                 for e in entries

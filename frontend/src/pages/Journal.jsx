@@ -1,8 +1,28 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { journalService } from "../services/journalService";
 import { Button } from "../components/Button";
 import styles from "./Journal.module.css";
+
+// Emotion color palette - aligned with luxury dark theme
+const emotionColors = {
+  worst: "#9B6B6B",
+  bad: "#A89080",
+  neutral: "#A8A8A8",
+  good: "#9BC399",
+  great: "#A8D9A0",
+  best: "#D4AF37",
+};
+
+// Emotion emojis for fallback
+const emotionEmojis = {
+  worst: "😢",
+  bad: "😔",
+  neutral: "😐",
+  good: "🙂",
+  great: "😊",
+  best: "✨",
+};
 
 export function Journal() {
   const navigate = useNavigate();
@@ -16,43 +36,110 @@ export function Journal() {
   const [filterType, setFilterType] = useState("all");
   const textAreaRef = useRef(null);
 
-  // Rating system with custom SVG styling
+  // Premium emotion rating system with refined SVG icons
+  // Each emotion has a sophisticated appearance with:
+  // - Subtle background circles for premium feel
+  // - Refined facial expressions with smooth curves
+  // - Consistent stroke styling (rounded caps & joins)
+  // - Optional decorative elements for contrast states
   const ratingOptions = [
     {
       key: "worst",
       label: "Worst",
-      color: "#d4a0a0",
-      path: "M24,18 L36,18 M24,30 Q30,36 36,30",
+      color: emotionColors.worst,
+      // Sorrowful face - deep sadness with downturned mouth and tears
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.08" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.2" />
+        <circle cx="22" cy="26" r="2.5" fill="${color}" />
+        <circle cx="42" cy="26" r="2.5" fill="${color}" />
+        <path d="M 20 30 Q 22 28 24 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 40 30 Q 42 28 44 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 22 40 Q 32 35 42 40" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <line x1="20" y1="42" x2="18" y2="48" stroke="${color}" stroke-width="1.5" stroke-linecap="round" opacity="0.6" />
+        <line x1="44" y1="42" x2="46" y2="48" stroke="${color}" stroke-width="1.5" stroke-linecap="round" opacity="0.6" />
+      `,
     },
     {
       key: "bad",
       label: "Bad",
-      color: "#d4a8a0",
-      path: "M24,18 L36,18 M24,32 L36,32",
+      color: emotionColors.bad,
+      // Unhappy face - frowning expression
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.08" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.15" />
+        <circle cx="22" cy="26" r="2.5" fill="${color}" />
+        <circle cx="42" cy="26" r="2.5" fill="${color}" />
+        <path d="M 20 30 Q 22 28 24 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 40 30 Q 42 28 44 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 24 40 Q 32 34 40 40" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      `,
     },
     {
       key: "neutral",
       label: "Neutral",
-      color: "#a8a8a8",
-      path: "M24,18 L36,18 M24,32 L36,32",
+      color: emotionColors.neutral,
+      // Neutral face - calm, centered expression
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.06" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.1" />
+        <circle cx="22" cy="26" r="2.5" fill="${color}" />
+        <circle cx="42" cy="26" r="2.5" fill="${color}" />
+        <line x1="22" y1="40" x2="42" y2="40" stroke="${color}" stroke-width="2" stroke-linecap="round" />
+      `,
     },
     {
       key: "good",
       label: "Good",
-      color: "#a8c5a0",
-      path: "M24,18 L36,18 M24,32 Q30,26 36,32",
+      color: emotionColors.good,
+      // Peaceful smile - gentle, calm expression
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.08" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.15" />
+        <circle cx="22" cy="26" r="2.5" fill="${color}" />
+        <circle cx="42" cy="26" r="2.5" fill="${color}" />
+        <path d="M 20 30 Q 22 28 24 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 40 30 Q 42 28 44 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 24 37 Q 32 42 40 37" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      `,
     },
     {
       key: "great",
       label: "Great",
-      color: "#a8d5a0",
-      path: "M24,18 L36,18 M20,32 Q30,24 40,32",
+      color: emotionColors.great,
+      // Joyful smile - warm, bright expression
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.1" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.2" />
+        <circle cx="20" cy="26" r="2.5" fill="${color}" />
+        <circle cx="44" cy="26" r="2.5" fill="${color}" />
+        <path d="M 18 30 Q 20 27 22 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 42 30 Q 44 27 46 30" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 22 36 Q 32 44 42 36" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M 26 34 Q 32 37 38 34" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5" />
+      `,
     },
     {
       key: "best",
       label: "Best+",
-      color: "#d4af37",
-      path: "M30,16 L33,24 L42,24 L35,30 L38,38 L30,32 L22,38 L25,30 L18,24 L27,24 Z",
+      color: emotionColors.best,
+      // Radiant joy - celebratory with luminous elements
+      svg: (color) => `
+        <circle cx="32" cy="32" r="26" fill="${color}" opacity="0.12" />
+        <circle cx="32" cy="32" r="24" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.25" />
+        <circle cx="20" cy="25" r="2.5" fill="${color}" />
+        <circle cx="44" cy="25" r="2.5" fill="${color}" />
+        <path d="M 18 29 Q 20 26 22 29" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 42 29 Q 44 26 46 29" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M 20 36 Q 32 46 44 36" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M 24 34 Q 32 39 40 34" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6" />
+        <g opacity="0.7">
+          <path d="M 14 20 L 16 22 L 14 24" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 50 20 L 52 22 L 50 24" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 10 32 L 12 32" stroke="${color}" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+          <path d="M 52 32 L 54 32" stroke="${color}" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+        </g>
+      `,
     },
   ];
 
@@ -136,36 +223,62 @@ export function Journal() {
     });
   };
 
-  // Calculate stats
+  // Calculate stats and filtered data
   const totalEntries = entries.length;
-  const thisWeekEntries = entries.filter((e) => {
-    const entryDate = new Date(e.created_at || e.date);
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return entryDate >= weekAgo;
-  }).length;
-
-  // Get dominant emotion this week
-  const thisWeekEmotions = entries
-    .filter((e) => {
+  
+  const thisWeekEntries = useMemo(() => {
+    return entries.filter((e) => {
       const entryDate = new Date(e.created_at || e.date);
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       return entryDate >= weekAgo;
-    })
-    .map((e) => e.emotion || e.mood || "neutral");
+    }).length;
+  }, [entries]);
 
-  const emotionCounts = {};
-  thisWeekEmotions.forEach((emotion) => {
-    emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
-  });
+  // Get dominant emotion this week
+  const topRatingOption = useMemo(() => {
+    const thisWeekEmotions = entries
+      .filter((e) => {
+        const entryDate = new Date(e.created_at || e.date);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return entryDate >= weekAgo;
+      })
+      .map((e) => e.emotion || e.mood || "neutral");
 
-  const topEmotion =
-    Object.keys(emotionCounts).length > 0
-      ? Object.keys(emotionCounts).reduce((a, b) =>
-          emotionCounts[a] > emotionCounts[b] ? a : b,
-        )
-      : "neutral";
+    const emotionCounts = {};
+    thisWeekEmotions.forEach((emotion) => {
+      emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
+    });
+
+    const topEmotion =
+      Object.keys(emotionCounts).length > 0
+        ? Object.keys(emotionCounts).reduce((a, b) =>
+            emotionCounts[a] > emotionCounts[b] ? a : b,
+          )
+        : "neutral";
+
+    return ratingOptions.find((r) => r.key === topEmotion) || ratingOptions[2];
+  }, [entries, ratingOptions]);
+
+  // Filter entries based on type
+  const autoExtractCount = useMemo(() => {
+    return entries.filter((e) => e.auto_extract === true).length;
+  }, [entries]);
+
+  const userWrittenCount = useMemo(() => {
+    return entries.filter((e) => e.auto_extract === false).length;
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    if (filterType === "auto") {
+      return entries.filter((e) => e.auto_extract === true);
+    }
+    if (filterType === "user") {
+      return entries.filter((e) => e.auto_extract === false);
+    }
+    return entries;
+  }, [entries, filterType]);
 
   const EmotionIcon = ({ emotion, size = 96 }) => {
     const color = emotionColors[emotion] || emotionColors.neutral;
@@ -226,15 +339,13 @@ export function Journal() {
                 <svg
                   width="48"
                   height="48"
-                  viewBox="0 0 48 48"
+                  viewBox="0 0 64 64"
                   style={{ margin: "0 auto" }}
                 >
-                  <path
-                    d={topRatingOption?.path || "M24,18 L36,18 M24,32 L36,32"}
-                    stroke={topRatingOption?.color || "#a8a8a8"}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    fill="none"
+                  <g
+                    dangerouslySetInnerHTML={{
+                      __html: topRatingOption?.svg(topRatingOption?.color) || "",
+                    }}
                   />
                 </svg>
                 <div className={styles.statLabel}>Top Day Rating</div>
@@ -249,7 +360,32 @@ export function Journal() {
             <h2 className={styles.sectionTitle}>Today's Entry</h2>
 
             <div className={styles.emotionSection}>
-              <label className={styles.emotionLabel}>How was your day?</label>
+              <div className={styles.emotionHeader}>
+                <label className={styles.emotionLabel}>How was your day?</label>
+                {todayRating && (
+                   <div
+                     className={styles.emotionPreview}
+                     style={{
+                       borderColor: emotionColors[todayRating] || emotionColors.neutral,
+                       color: emotionColors[todayRating] || emotionColors.neutral,
+                     }}
+                   >
+                     <svg width="16" height="16" viewBox="0 0 64 64">
+                       <g
+                         dangerouslySetInnerHTML={{
+                           __html:
+                             ratingOptions.find((r) => r.key === todayRating)
+                               ?.svg(emotionColors[todayRating] || emotionColors.neutral) ||
+                             "",
+                         }}
+                       />
+                     </svg>
+                     <span>
+                       {ratingOptions.find((r) => r.key === todayRating)?.label}
+                     </span>
+                   </div>
+                 )}
+              </div>
               <div className={styles.emotionGrid}>
                 {ratingOptions.map((rating) => (
                   <button
@@ -261,18 +397,15 @@ export function Journal() {
                     title={rating.label}
                   >
                     <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 48 48"
+                      width="40"
+                      height="40"
+                      viewBox="0 0 64 64"
                       className={styles.ratingIcon}
                     >
-                      <path
-                        d={rating.path}
-                        stroke={rating.color}
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
+                      <g
+                        dangerouslySetInnerHTML={{
+                          __html: rating.svg(rating.color),
+                        }}
                       />
                     </svg>
                     <span className={styles.emotionName}>{rating.label}</span>
@@ -348,10 +481,10 @@ export function Journal() {
                   All ({entries.length})
                 </button>
                 <button
-                  className={`${styles.filterBtn} ${filterType === "ai" ? styles.active : ""}`}
-                  onClick={() => setFilterType("ai")}
+                  className={`${styles.filterBtn} ${filterType === "auto" ? styles.active : ""}`}
+                  onClick={() => setFilterType("auto")}
                 >
-                  AI Extracted ({aiExtractedCount})
+                  Auto Extract ({autoExtractCount})
                 </button>
                 <button
                   className={`${styles.filterBtn} ${filterType === "user" ? styles.active : ""}`}
@@ -388,34 +521,31 @@ export function Journal() {
                     <p className={styles.entryContent}>{entry.content}</p>
 
                     <div className={styles.entryFooter}>
-                      <span
-                        className={styles.emotionBadge}
-                        style={{
-                          borderColor: ratingOption?.color || "#a8a8a8",
-                        }}
-                      >
-                        <span style={{ fontSize: "12px" }}>
-                          <svg width="14" height="14" viewBox="0 0 48 48">
-                            <path
-                              d={
-                                ratingOption?.path ||
-                                "M24,18 L36,18 M24,32 L36,32"
-                              }
-                              stroke={ratingOption?.color || "#a8a8a8"}
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              fill="none"
-                            />
-                          </svg>
-                        </span>
-                        <span>{ratingOption?.label || "Neutral"}</span>
-                      </span>
-                      {entry.ai_extracted && (
-                        <div className={styles.aiBadge}>
-                          <span>✨ AI Extracted</span>
-                        </div>
-                      )}
-                    </div>
+                       <span
+                         className={styles.emotionBadge}
+                         style={{
+                           borderColor: ratingOption?.color || "#a8a8a8",
+                         }}
+                       >
+                         <span style={{ fontSize: "12px" }}>
+                           <svg width="14" height="14" viewBox="0 0 64 64">
+                             <g
+                               dangerouslySetInnerHTML={{
+                                 __html:
+                                   ratingOption?.svg(ratingOption?.color) ||
+                                   "",
+                               }}
+                             />
+                           </svg>
+                         </span>
+                         <span>{ratingOption?.label || "Neutral"}</span>
+                       </span>
+                       {entry.auto_extract && (
+                         <div className={styles.aiBadge}>
+                           <span>✨ Auto Extract</span>
+                         </div>
+                       )}
+                     </div>
                   </div>
                 );
               })}

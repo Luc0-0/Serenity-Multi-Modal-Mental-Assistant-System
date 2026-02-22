@@ -21,10 +21,10 @@ class JournalEntry(Base):
     extracted_insights = Column(Text, nullable=True)
     
     # Additional metadata fields
-    ai_extracted = Column(Boolean, default=True, nullable=False)
+    auto_extract = Column(Boolean, default=False, nullable=False)
     ai_summary = Column(Text, nullable=True)
     ai_confidence = Column(Float, nullable=True)
-    extraction_method = Column(String(50), default="ai", nullable=False)
+    extraction_method = Column(String(50), default="manual", nullable=False)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

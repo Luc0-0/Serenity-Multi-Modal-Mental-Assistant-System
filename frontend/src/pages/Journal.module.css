@@ -75,7 +75,7 @@
       rgba(212, 175, 55, 0.005) 0%,
       transparent 40%
     ),
-    linear-gradient(180deg, rgba(6, 6, 8, 0.6) 0%, rgba(6, 6, 8, 0.8) 100%);
+    linear-gradient(180deg, rgba(6, 6, 8, 0.8) 0%, rgba(6, 6, 8, 0.95) 100%);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   pointer-events: none;

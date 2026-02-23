@@ -5,30 +5,24 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.conversation_service import ConversationService
-from app.services.ollama_service import OllamaService
-from app.services.emotion_service import EmotionService
 from app.services.journal_service import JournalService
-from app.services.crisis_service import CrisisService
 from app.services.emotion_analytics_service import EmotionAnalyticsService
 from app.services.context_manager import ContextManager
 from app.db.session import get_db
+import app.main as main_app
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 conversation_service = ConversationService()
-ollama_service = OllamaService()
-emotion_service = EmotionService()
 journal_service = JournalService()
-crisis_service = CrisisService()
 emotion_analytics_service = EmotionAnalyticsService()
 context_manager = ContextManager()
 
 
 @router.post("/", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)):
-    
     try:
         if request.conversation_id is None:
             conversation_id = await conversation_service.create_conversation(db, request.user_id)
@@ -43,7 +37,7 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    crisis_assessment = await crisis_service.assess_threat(
+    crisis_assessment = await main_app.crisis_service.assess_threat(
         message=request.message,
         emotion_label=None,  # Detection pending
         conversation_history=None,  # Retrieval pending
@@ -55,8 +49,8 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
             db, conversation_id, "user", request.message
         )
         try:
-            emotion = await emotion_service.detect_emotion(request.message)
-            await emotion_service.log_emotion(
+            emotion = await main_app.emotion_service.detect_emotion(request.message)
+            await main_app.emotion_service.log_emotion(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
                 confidence=emotion["confidence"]
@@ -64,7 +58,7 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         except Exception as e:
             print(f"✗ Failed to log emotion in crisis response: {str(e)}")
         try:
-            await crisis_service.log_crisis_event(
+            await main_app.crisis_service.log_crisis_event(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
                 message_id=user_message_id, assessment=crisis_assessment
             )
@@ -89,15 +83,15 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     
     if request.conversation_id is None:
         try:
-            title = await ollama_service.generate_conversation_title(request.message)
+            title = await main_app.llm_service.generate_title(request.message)
             await conversation_service.update_conversation_title(db, conversation_id, title)
         except Exception as e:
             logger.warning(f"Failed to generate title: {str(e)}")
     
     emotion = {"label": "neutral", "confidence": 0.5}
     try:
-        emotion = await emotion_service.detect_emotion(request.message)
-        await emotion_service.log_emotion(
+        emotion = await main_app.emotion_service.detect_emotion(request.message)
+        await main_app.emotion_service.log_emotion(
             db=db, user_id=request.user_id, conversation_id=conversation_id,
             message_id=user_message_id, label=emotion["label"],
             confidence=emotion["confidence"]
@@ -108,7 +102,7 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     # AI-based journal extraction (analyze last 5-10 messages)
     try:
         should_extract, ai_summary, confidence = await journal_service.should_create_entry_ai(
-            ollama_service=ollama_service,
+            ollama_service=main_app.llm_service,
             conversation_history=history,
             user_message=request.message,
             emotion_label=emotion["label"]
@@ -153,7 +147,7 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         logger.info(f"[DEBUG] Last history message: role={history[-1].get('role')}, content_len={len(history[-1].get('content', ''))}")
     logger.info(f"[DEBUG] Current user message: {request.message[:50]}...")
     
-    reply = await ollama_service.get_response(
+    reply = await main_app.llm_service.get_response(
         user_message=request.message,
         conversation_history=history,
         emotional_insight=insight,

@@ -1,6 +1,7 @@
 import logging
 from typing import Optional, List, Dict
 from app.schemas.emotion_insight import EmotionInsight
+from app.schemas.memory import MemoryBundle
 from app.services.engines.factory import get_llm_engine
 
 logger = logging.getLogger(__name__)
@@ -12,12 +13,40 @@ class LLMService:
     def __init__(self):
         self.engine = get_llm_engine()
     
+    async def should_create_journal_entry(
+        self,
+        conversation_summary: str,
+        user_message: str,
+    ) -> bool:
+        """Ask LLM if conversation is journal-worthy."""
+        prompt = f"""Given this conversation snippet, is it emotionally significant enough to journal?
+        
+User message: {user_message}
+Summary: {conversation_summary}
+
+Respond with only: YES or NO
+
+Consider these criteria:
+- Significant emotional insight or realization
+- Important life event or decision
+- Breakthrough in understanding
+- Meaningful reflection on challenges
+- Progress or growth moment"""
+        
+        try:
+            response = await self.engine.generate(prompt, [])
+            return "yes" in response.lower().strip()[:20]
+        except Exception as e:
+            logger.warning(f"Journal detection failed: {e}")
+            return False
+    
     async def get_response(
         self,
         user_message: str,
         conversation_history: List[Dict],
         emotional_insight: Optional[EmotionInsight] = None,
-        crisis_detected: bool = False
+        crisis_detected: bool = False,
+        memory_bundle: Optional[MemoryBundle] = None,
     ) -> str:
         """Generate response with emotional context and conversation history."""
         
@@ -25,7 +54,7 @@ class LLMService:
             logger.warning("Crisis detected - returning safety response")
             return self._get_crisis_response()
         
-        system_prompt = self._build_system_prompt(emotional_insight)
+        system_prompt = self._build_system_prompt(emotional_insight, memory_bundle)
         messages = self._build_message_history(conversation_history, user_message)
         
         try:
@@ -44,7 +73,11 @@ class LLMService:
             logger.warning(f"Title generation failed: {e}")
             return "New Conversation"
     
-    def _build_system_prompt(self, insight: Optional[EmotionInsight]) -> str:
+    def _build_system_prompt(
+        self,
+        insight: Optional[EmotionInsight],
+        memory_bundle: Optional[MemoryBundle],
+    ) -> str:
         """Build adaptive system prompt based on emotional context."""
         base_prompt = """You're a shapeshifter. You adapt to what they need right now.
 
@@ -52,38 +85,34 @@ CORE RULE: Always respond directly to their CURRENT message. Don't assume based 
 
 PERSONALITY MIX (Choose based on vibe):
 
-1. BEST FRIEND MODE (Default, casual convos)
-   - "honestly" / "wait" / "oof" / "ngl"
-   - Playful, light, fun
-   - "lol okay but" / "that's wild"
+1. BEST FRIEND MODE (Default)
+   - Direct, conversational
+   - "Here's what I think..." / "so real" / "totally get it"
+   - Playful, light, engaging
    - Match their energy
 
-2. OLDER SIBLING MODE (When they need guidance)
-   - Protective but real
-   - "Look, here's the thing..."
-   - Tough love: "You know that's not gonna work, right?"
-   - "I got you" energy
-   - Call them out lovingly
+2. OLDER SIBLING MODE (Guidance needed)
+   - Protective, practical
+   - "Look, here's what I'd do..." / "let's break this down"
+   - Real perspective, not harsh
+   - Problem-solving focused
 
-3. 3AM CONFIDANT MODE (Deep/vulnerable moments)
-   - Slower, deeper
+3. CONFIDANT MODE (Deep moments)
+   - Thoughtful, slower paced
+   - "That sounds really heavy"
    - Philosophical but grounded
-   - "Can I be real with you?"
-   - Share hints of your own "experience"
-   - Make them feel less alone
+   - Validation + perspective
 
-4. HYPE PERSON MODE (Wins, excitement)
-   - ALL CAPS sometimes
-   - "WAIT WHAT??" / "YES!"
-   - Over-the-top celebration
-   - "I'm so proud of you"
-   - Match their excitement x2
+4. CELEBRATORY MODE (Good news)
+   - Enthusiastic but genuine
+   - "That's genuinely impressive" / "proud of you for that"
+   - Celebrate specifically, not generically
+   - Match their excitement naturally
 
 ADAPTIVE RULES:
-- First message = Best Friend (warm, casual)
-- They're excited = Hype Person
-- They're struggling = Older Sibling (if advice needed) or 3AM Confidant (if just venting)
-- They're deep/philosophical = 3AM Confidant
+- First message = Best Friend
+- They're excited = Celebratory
+- They're struggling = Confidant (if venting) or Older Sibling (if advice needed)
 - They're casual = Best Friend
 
 CORE TRAITS (Always):
@@ -188,7 +217,45 @@ Pattern: They tend toward {insight.dominant_emotion} ({insight.dominance_pct:.0%
 Use this to anticipate what they need. "I know you usually..." or "Remember when you..."
 Show you've been paying attention."""
         
-        return base_prompt + emotional_context + tone_adaptation + memory_note
+        memory_section = self._format_memory_context(memory_bundle)
+        return base_prompt + emotional_context + tone_adaptation + memory_note + memory_section
+
+    def _format_memory_context(self, memory_bundle: Optional[MemoryBundle]) -> str:
+        if not memory_bundle:
+            return ""
+
+        short_term = ""
+        if memory_bundle.short_term.summary:
+            short_term = f"\n\nSHORT TERM CONTEXT\n{memory_bundle.short_term.summary}"
+
+        semantic = ""
+        if memory_bundle.semantic_memories:
+            items = "\n".join(
+                [
+                    f"- ({mem.match_score:.2f}) {mem.content[:180]}"
+                    for mem in memory_bundle.semantic_memories
+                ]
+            )
+            semantic = f"\n\nLONG TERM MEMORIES\nUse only if relevant:\n{items}"
+
+        profile = ""
+        if memory_bundle.emotional_profile:
+            ep = memory_bundle.emotional_profile
+            profile = (
+                f"\n\nEMOTIONAL PROFILE\n"
+                f"Dominant emotion: {ep.dominant_emotion} ({ep.dominance_pct:.0%}). "
+                f"Resilience: {ep.resilience_score:.0%}. "
+                f"Trend: {ep.trend}."
+            )
+
+        reflection = ""
+        if memory_bundle.meta_reflection and memory_bundle.meta_reflection.summary:
+            reflection = (
+                f"\n\nMETA REFLECTION\n"
+                f"{memory_bundle.meta_reflection.summary}"
+            )
+
+        return short_term + semantic + profile + reflection
     
     def _build_message_history(
         self,
@@ -233,3 +300,93 @@ Show you've been paying attention."""
             return "I hear you. Let's take this one step at a time. What's on your mind?"
         else:
             return "I'm listening. Tell me more about that."
+    
+    async def generate_journal_title(self, conversation_history: List[Dict]) -> str:
+        """Generate one-sentence journal title from conversation."""
+        # Build conversation summary for context
+        messages = [msg.get("content", "") for msg in conversation_history if msg.get("role") == "user"]
+        conversation_text = " ".join(messages[:3])  # First 3 user messages for context
+        
+        prompt = f"""Based on this conversation, generate a concise, meaningful journal entry title.
+
+Conversation:
+{conversation_text[:500]}
+
+Requirements:
+- One sentence only (max 10 words)
+- Captures the emotional or thematic essence
+- Professional yet personal
+- Present tense or gerund form (e.g., "Navigating Difficult Conversations", "Finding Peace in Uncertainty")
+
+Respond with ONLY the title, nothing else."""
+        
+        try:
+            response = await self.engine.generate(prompt, [])
+            title = response.strip()
+            # Ensure it's concise
+            if len(title) > 100:
+                title = title[:100]
+            return title if title else "Conversation Reflection"
+        except Exception as e:
+            logger.warning(f"Title generation failed: {e}")
+            return "Conversation Reflection"
+    
+    async def generate_journal_summary(self, conversation_history: List[Dict]) -> str:
+        """Generate full conversation summary for journal content."""
+        # Build full conversation
+        conversation_text = ""
+        for msg in conversation_history:
+            role = msg.get("role", "user").upper()
+            content = msg.get("content", "")
+            conversation_text += f"{role}: {content}\n"
+        
+        prompt = f"""Summarize this conversation as a journal entry. 
+
+Conversation:
+{conversation_text[:2000]}
+
+Requirements:
+- Capture key themes, realizations, and emotional journey
+- 200-400 words
+- First person perspective (from user's viewpoint)
+- Professional yet warm tone
+- Include any breakthrough moments or insights
+- Organize into clear paragraphs
+
+Write the journal entry summary directly."""
+        
+        try:
+            response = await self.engine.generate(prompt, [])
+            summary = response.strip()
+            return summary if summary else "Conversation summary"
+        except Exception as e:
+            logger.warning(f"Summary generation failed: {e}")
+            return "Conversation summary"
+    
+    async def generate_serenity_thought(self, summary: str, emotion_label: str = "neutral") -> str:
+        """Generate professional insight/reflection as Serenity Thought."""
+        prompt = f"""Based on this conversation summary and emotional context, generate a brief, professional insight.
+
+Summary:
+{summary[:500]}
+
+Emotion: {emotion_label}
+
+Requirements:
+- One short paragraph (3-5 sentences max)
+- Professional yet compassionate tone
+- Focus on insight, wisdom, or forward-looking perspective
+- Start with a reflective phrase like "In this moment..." or "This journey reveals..."
+- Avoid being preachy or dismissive
+- Contribute wisdom without judgment
+
+Write only the insight paragraph."""
+        
+        try:
+            response = await self.engine.generate(prompt, [])
+            thought = response.strip()
+            return thought if thought else ""
+        except Exception as e:
+            logger.warning(f"Serenity Thought generation failed: {e}")
+            return ""
+

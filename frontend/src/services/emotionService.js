@@ -161,20 +161,19 @@ export const parseEmotionData = (detectedEmotions) => {
  */
 export const getEmotionColor = (emotion, score = 0.5) => {
   const colors = {
-    joy: '#d4b85f',
-    sadness: '#5a8c87',
-    anger: '#c97777',
-    anxiety: '#e6b85e',
-    fear: '#7b6ba1',
-    surprise: '#6fa8b8',
-    disgust: '#8b9e7e',
-    trust: '#a8a866',
-    anticipation: '#b8a458',
-    neutral: '#8a8a8a',
+    joy: '#c4a882',        // warm cream/gold
+    sadness: '#6b7f8e',    // muted slate blue
+    anger: '#9e6b6b',      // muted mauve/burgundy
+    anxiety: '#b8956a',    // warm tan
+    fear: '#8b7ba8',       // soft muted purple
+    surprise: '#7a9e8b',   // soft sage/teal
+    disgust: '#8b9570',    // muted olive
+    trust: '#a8b89a',      // soft sage cream
+    anticipation: '#7a9eb5', // muted teal
+    neutral: '#8a8a7e',    // warm taupe gray
   };
 
-  const baseColor = colors[emotion] || '#bda17b';
-  // Could adjust opacity based on score
+  const baseColor = colors[emotion] || '#9a9a8e';
   return baseColor;
 };
 

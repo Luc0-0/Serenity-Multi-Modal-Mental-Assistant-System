@@ -1,21 +1,33 @@
 import logging
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from datetime import datetime
+from sqlalchemy import select, func, or_
 from app.db.session import get_db
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.routers.auth import get_current_user
 from app.services.ollama_service import OllamaService
+from app.services.journal_service import JournalService
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
 # Initialize Ollama service for title generation
 ollama_service = OllamaService()
+journal_service = JournalService()
 
 router = APIRouter(prefix="/api/journal", tags=["journal"])
+
+SERENITY_QUOTES = [
+    {"text": "Every storm ends. This moment is just a cloud drifting by.", "author": "Serenity"},
+    {"text": "Softness is not weakness; it is proof that you survived.", "author": "Serenity"},
+    {"text": "Small steps still count as forward. Honor the inch you moved today.", "author": "Serenity"},
+    {"text": "Let go of the timeline. Your heart heals on its own tempo.", "author": "Serenity"},
+    {"text": "You can rewrite the story even in the middle of the page.", "author": "Serenity"},
+    {"text": "Rest is sacred work. It is how courage grows back.", "author": "Serenity"},
+    {"text": "Offer yourself the same grace you extend to everyone else.", "author": "Serenity"},
+]
 
 
 class JournalEntryCreate(BaseModel):
@@ -43,6 +55,62 @@ class JournalEntryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+def format_tags(value):
+    def _clean(text):
+        if text is None:
+            return None
+        normalized = str(text).strip()
+        if not normalized or normalized.lower() in {"null", "none", "undefined", "[]"}:
+            return None
+        return normalized
+
+    if isinstance(value, list):
+        cleaned = []
+        seen = set()
+        for t in value:
+            cleaned_value = _clean(t)
+            if cleaned_value and cleaned_value not in seen:
+                seen.add(cleaned_value)
+                cleaned.append(cleaned_value)
+        return cleaned
+    if isinstance(value, str):
+        cleaned = [_clean(part) for part in value.split(",")]
+        deduped = []
+        for c in cleaned:
+            if c and c not in deduped:
+                deduped.append(c)
+        return deduped
+    return []
+
+
+def get_quote_of_day(reference: datetime | None = None):
+    day = reference or datetime.utcnow()
+    if not SERENITY_QUOTES:
+        return None
+    index = day.toordinal() % len(SERENITY_QUOTES)
+    return SERENITY_QUOTES[index]
+
+
+async def get_dominant_emotion_summary(db: AsyncSession, user_id: int):
+    stmt = (
+        select(JournalEntry.emotion, func.count(JournalEntry.id))
+        .where(JournalEntry.user_id == user_id)
+        .group_by(JournalEntry.emotion)
+        .order_by(func.count(JournalEntry.id).desc())
+    )
+    result = await db.execute(stmt)
+    row = result.first()
+    if not row:
+        return None
+    raw_emotion, count = row
+    normalized = journal_service.normalize_emotion_label(raw_emotion)
+    return {
+        "emotion": normalized,
+        "display": normalized.capitalize(),
+        "count": count
+    }
 
 
 async def generate_smart_title(content: str) -> str:
@@ -105,15 +173,34 @@ async def list_entries(
         count_result = await db.execute(count_stmt)
         total = count_result.scalar()
         
+        manual_stmt = select(func.count(JournalEntry.id)).where(
+            JournalEntry.user_id == current_user.id
+        ).where(or_(JournalEntry.auto_extract == False, JournalEntry.auto_extract.is_(None)))
+
+        auto_stmt = select(func.count(JournalEntry.id)).where(
+            (JournalEntry.user_id == current_user.id) &
+            (JournalEntry.auto_extract == True)
+        )
+
+        manual_count = (await db.execute(manual_stmt)).scalar() or 0
+        auto_count = (await db.execute(auto_stmt)).scalar() or 0
+        dominant_emotion = await get_dominant_emotion_summary(db, current_user.id)
+        quote_of_day = get_quote_of_day()
+
         return {
             "entries": [
                 {
                     "id": e.id,
                     "title": e.title,
                     "content": e.content[:200] + "..." if len(e.content or "") > 200 else e.content,
-                    "emotion": e.emotion,
-                    "tags": e.tags or [],
+                    "emotion": journal_service.normalize_emotion_label(e.emotion),
+                    "mood": e.mood,
+                    "tags": format_tags(e.tags),
                     "auto_extract": e.auto_extract,
+                    "serenity_thought": e.extracted_insights,
+                    "ai_summary": e.ai_summary,
+                    "ai_confidence": e.ai_confidence,
+                    "extraction_method": e.extraction_method,
                     "created_at": e.created_at.isoformat() if e.created_at else None,
                     "updated_at": e.updated_at.isoformat() if e.updated_at else None
                 }
@@ -121,7 +208,11 @@ async def list_entries(
             ],
             "total": total,
             "skip": skip,
-            "limit": limit
+            "limit": limit,
+            "manual_entries": manual_count,
+            "auto_entries": auto_count,
+            "dominant_emotion": dominant_emotion,
+            "quote_of_day": quote_of_day
         }
     except Exception as e:
         logger.error(f"Failed to list entries: {str(e)}")
@@ -136,36 +227,44 @@ async def create_entry(
 ):
     """Create journal entry with AI-generated smart title if not provided."""
     try:
-        # Use provided title or generate smart one from content
-        title = payload.title
-        auto_extract = False
-        
-        if not title or title == "Today's Entry":
-            title = await generate_smart_title(payload.content)
-            auto_extract = True  # Mark as auto-extracted if title was generated
+        requested_title = (payload.title or "").strip()
+        uses_auto_title = False
+        if not requested_title or requested_title.lower() in {"today's entry", "todays entry"}:
+            requested_title = await generate_smart_title(payload.content)
+            uses_auto_title = True
+
+        normalized_emotion = journal_service.normalize_emotion_label(payload.emotion)
+        mood = journal_service.extract_mood(normalized_emotion)
         
         entry = JournalEntry(
             user_id=current_user.id,
-            title=title,
+            title=requested_title,
             content=payload.content,
-            emotion=payload.emotion,
-            tags=payload.tags,
-            auto_extract=auto_extract,
-            extraction_method="manual" if not auto_extract else "ai"
+            emotion=normalized_emotion,
+            mood=mood,
+            tags=format_tags(payload.tags),
+            auto_extract=False,
+            extraction_method="manual_ai_title" if uses_auto_title else "manual"
         )
         
         db.add(entry)
         await db.commit()
         await db.refresh(entry)
         
-        logger.info(f"Journal entry created: ID={entry.id}, title='{title}', emotion={payload.emotion}, auto_extract={auto_extract}")
+        logger.info(
+            "Journal entry created: ID=%s, title='%s', emotion=%s, auto_extract=%s",
+            entry.id,
+            requested_title,
+            normalized_emotion,
+            entry.auto_extract,
+        )
         
         return {
             "id": entry.id,
             "title": entry.title,
             "content": entry.content,
-            "emotion": entry.emotion,
-            "tags": entry.tags or [],
+            "emotion": normalized_emotion,
+            "tags": format_tags(entry.tags),
             "auto_extract": entry.auto_extract,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None
@@ -182,7 +281,7 @@ async def get_entry(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Retrieve journal entry."""
+    """Retrieve full journal entry with all content and Serenity Thought."""
     try:
         stmt = select(JournalEntry).where(
             (JournalEntry.id == entry_id) &
@@ -198,10 +297,15 @@ async def get_entry(
         return {
             "id": entry.id,
             "title": entry.title,
-            "content": entry.content,
+            "content": entry.content,  # Full content, no truncation
             "emotion": entry.emotion,
-            "tags": entry.tags or [],
+            "mood": entry.mood,
+            "tags": format_tags(entry.tags),
             "auto_extract": entry.auto_extract,
+            "ai_summary": entry.ai_summary,
+            "serenity_thought": entry.extracted_insights,  # Professional insight
+            "ai_confidence": entry.ai_confidence,
+            "extraction_method": entry.extraction_method,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None
         }
@@ -233,13 +337,14 @@ async def update_entry(
             raise HTTPException(status_code=404, detail="Entry not found")
         
         if payload.title is not None:
-            entry.title = payload.title
+            entry.title = payload.title.strip()
         if payload.content is not None:
-            entry.content = payload.content
+            entry.content = payload.content.strip()
         if payload.emotion is not None:
-            entry.emotion = payload.emotion
+            entry.emotion = journal_service.normalize_emotion_label(payload.emotion)
+            entry.mood = journal_service.extract_mood(entry.emotion)
         if payload.tags is not None:
-            entry.tags = payload.tags
+            entry.tags = format_tags(payload.tags)
         
         await db.commit()
         await db.refresh(entry)
@@ -249,7 +354,7 @@ async def update_entry(
             "title": entry.title,
             "content": entry.content,
             "emotion": entry.emotion,
-            "tags": entry.tags or [],
+            "tags": format_tags(entry.tags),
             "auto_extract": entry.auto_extract,
             "created_at": entry.created_at.isoformat() if entry.created_at else None,
             "updated_at": entry.updated_at.isoformat() if entry.updated_at else None

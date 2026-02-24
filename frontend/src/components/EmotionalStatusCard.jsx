@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './EmotionalStatusCard.module.css';
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./EmotionalStatusCard.module.css";
+import { getEmotionColor } from "../services/emotionService";
 
 /**
  * Emotional Status Card.
@@ -9,63 +10,72 @@ import styles from './EmotionalStatusCard.module.css';
 export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
   const navigate = useNavigate();
 
+  // Emotion color palette with gradient pairs (base → lighter)
   const emotionColors = {
-    sadness: '#8e7f7f',
-    anxiety: '#d4a574',
-    anger: '#a85a5a',
-    happy: '#e8c9a0',
-    grateful: '#a0c5a0',
-    calm: '#a0a8c5',
-    neutral: '#525252',
-    fear: '#5e4b35',
+    joy: { base: "#c4a882", light: "#d4b89a" },
+    sadness: { base: "#6b7f8e", light: "#8b9fae" },
+    anger: { base: "#9e6b6b", light: "#ae8b8b" },
+    anxiety: { base: "#b8956a", light: "#c8a57a" },
+    fear: { base: "#8b7ba8", light: "#ab9bc8" },
+    surprise: { base: "#7a9e8b", light: "#9abead" },
+    disgust: { base: "#8b9570", light: "#abb590" },
+    trust: { base: "#a8b89a", light: "#c8d8ba" },
+    anticipation: { base: "#7a9eb5", light: "#9abecf" },
+    neutral: { base: "#6a6a5e", light: "#8a8a7e" },
+    happy: { base: "#c4a882", light: "#d4b89a" },
+    grateful: { base: "#a8b89a", light: "#c8d8ba" },
+    calm: { base: "#a8b89a", light: "#c8d8ba" },
   };
 
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric'
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
   });
 
-  // Calculate chart segments
-  const chartSegments = useMemo(() => {
-    if (!emotionData?.emotion_frequency) return [{ color: '#333', value: 100 }];
+  // Calculate donut chart segments (stroke-based)
+  const donutSegments = useMemo(() => {
+    if (!emotionData?.emotion_frequency) {
+      return [
+        {
+          emotion: "neutral",
+          percentage: 100,
+          color: "#2a2a2a",
+          circumference: 100,
+        },
+      ];
+    }
 
     const total = emotionData.total_logs || 1;
-    const entries = Object.entries(emotionData.emotion_frequency)
-      .sort((a, b) => b[1] - a[1]); // Sort by frequency
+    const entries = Object.entries(emotionData.emotion_frequency).sort(
+      (a, b) => b[1] - a[1],
+    ); // Sort by frequency
 
-    let currentAngle = 0;
+    const radius = 12; // Inner edge of donut ring
+    const circumference = 2 * Math.PI * radius;
+
+    let rotationOffset = 0; // Track rotation offset for each segment
+
     return entries.map(([emotion, count]) => {
-      const percentage = (count / total);
-      const angle = percentage * 360;
-
-      // Calculate SVG arc path
-      const r = 16; // radius
-      const cx = 20; // center x
-      const cy = 20; // center y
-
-      const x1 = cx + r * Math.cos(Math.PI * currentAngle / 180);
-      const y1 = cy + r * Math.sin(Math.PI * currentAngle / 180);
-
-      const x2 = cx + r * Math.cos(Math.PI * (currentAngle + angle) / 180);
-      const y2 = cy + r * Math.sin(Math.PI * (currentAngle + angle) / 180);
-
-      // SVG Path command for arc
-      const largeArcFlag = angle > 180 ? 1 : 0;
-      const pathData = [
-        `M ${cx} ${cy}`,
-        `L ${x1} ${y1}`,
-        `A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-        'Z'
-      ].join(' ');
-
-      const segment = {
-        path: pathData,
-        color: emotionColors[emotion] || '#555',
-        emotion
+      const percentage = (count / total) * 100;
+      const dashLength = (percentage / 100) * circumference;
+      const colorPair = emotionColors[emotion] || {
+        base: "#555",
+        light: "#777",
       };
 
-      currentAngle += angle;
+      const segment = {
+        emotion,
+        percentage,
+        colorBase: colorPair.base,
+        colorLight: colorPair.light,
+        dashLength,
+        circumference,
+        radius,
+        rotationOffset,
+      };
+
+      rotationOffset += dashLength;
       return segment;
     });
   }, [emotionData]);
@@ -74,7 +84,10 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     return (
       <div className={styles.card}>
         <div className={styles.loading}>
-          <div className={styles.sun} style={{ position: 'relative', margin: '0 auto 1rem' }}></div>
+          <div
+            className={styles.sun}
+            style={{ position: "relative", margin: "0 auto 1rem" }}
+          ></div>
           <p>Reading the stars...</p>
         </div>
       </div>
@@ -83,9 +96,9 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
 
   // Fallback if no data
   const hasData = emotionData && emotionData.total_logs > 0;
-  const dominantEmotion = hasData ? emotionData.dominant_emotion : 'Neutral';
+  const dominantEmotion = hasData ? emotionData.dominant_emotion : "Neutral";
   const dominantPct = hasData ? Math.round(emotionData.dominance_pct * 100) : 0;
-  const trend = hasData ? emotionData.trend : 'Stable';
+  const trend = hasData ? emotionData.trend : "Stable";
 
   return (
     <div className={styles.card}>
@@ -112,59 +125,120 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
         <div className={styles.statItem}>
           <span className={`${styles.statDot} ${styles.gold}`}></span>
           <span className={styles.statLabel}>Emotion Detected:</span>
-          <span className={styles.statValue} style={{ textTransform: 'capitalize' }}>
+          <span
+            className={styles.statValue}
+            style={{ textTransform: "capitalize" }}
+          >
             {dominantEmotion}
           </span>
         </div>
         <div className={styles.statItem}>
-          <span className={`${styles.statDot} ${styles.dim}`} style={{ background: '#333' }}></span>
+          <span
+            className={`${styles.statDot} ${styles.dim}`}
+            style={{ background: "#333" }}
+          ></span>
           <span className={styles.statLabel}>Emotion Distribution:</span>
         </div>
       </div>
 
-      {/* 4. Pie Chart */}
+      {/* 4. Donut Chart (Emotion Ring) */}
       <div className={styles.chartContainer}>
-        <svg viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
-          {hasData ? (
-            chartSegments.map((seg, i) => (
-              <path key={i} d={seg.path} fill={seg.color} stroke="#121214" strokeWidth="0.5" />
-            ))
-          ) : (
-            <circle cx="20" cy="20" r="16" fill="#2a2a2a" stroke="#333" strokeWidth="1" />
-          )}
+        <svg viewBox="0 0 40 40" style={{ width: "100%", height: "100%" }}>
+          <defs>
+            <filter id="softGlow">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Emotion gradients */}
+            {donutSegments.map((seg, i) => (
+              <linearGradient
+                key={`grad-${i}`}
+                id={`emotionGradient-${i}`}
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor={seg.colorBase} stopOpacity="1" />
+                <stop
+                  offset="100%"
+                  stopColor={seg.colorLight}
+                  stopOpacity="0.95"
+                />
+              </linearGradient>
+            ))}
+          </defs>
+
+          {/* Background track circle (muted) */}
+          <circle
+            cx="20"
+            cy="20"
+            r="12"
+            fill="none"
+            stroke="#2a2a2a"
+            strokeWidth="2.5"
+            opacity="0.4"
+          />
+
+          {/* Emotion segments */}
+          {donutSegments.map((seg, i) => {
+            const isFirst = i === 0;
+            return (
+              <circle
+                key={i}
+                className={styles.emotionSegment}
+                data-index={i}
+                cx="20"
+                cy="20"
+                r={seg.radius}
+                fill="none"
+                stroke={`url(#emotionGradient-${i})`}
+                strokeWidth="2.5"
+                strokeDasharray={`${seg.dashLength} ${seg.circumference}`}
+                strokeDashoffset={-seg.rotationOffset}
+                strokeLinecap="round"
+                style={{
+                  transform: "rotate(-90deg)",
+                  transformOrigin: "20px 20px",
+                  "--dash-offset": -seg.rotationOffset,
+                }}
+              />
+            );
+          })}
+
+          {/* Inner glass core circle (subtle) */}
+          <circle
+            className={styles.innerCore}
+            cx="20"
+            cy="20"
+            r="6"
+            fill="#1a1a1c"
+          />
         </svg>
 
         <div className={styles.chartLabel}>
           <span className={styles.chartPercentage}>{dominantPct}%</span>
-          <span className={styles.chartSubtext} style={{ textTransform: 'capitalize' }}>{dominantEmotion}</span>
+          <span
+            className={styles.chartSubtext}
+            style={{ textTransform: "capitalize" }}
+          >
+            {dominantEmotion}
+          </span>
         </div>
       </div>
 
-      {/* Legend (Optional, showing top 2) */}
-      {hasData && (
-        <div className={styles.legend}>
-          {Object.entries(emotionData.emotion_frequency)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 2)
-            .map(([emo, count]) => (
-              <div key={emo} className={styles.legendItem}>
-                <div className={styles.legendDot} style={{ background: emotionColors[emo] || '#555' }}></div>
-                <span style={{ textTransform: 'capitalize' }}>{emo}</span>
-              </div>
-            ))
-          }
-        </div>
-      )}
-
       {/* 5. Trend */}
       <div className={styles.trendSection}>
-        <span className={styles.trendIcon}>⚡</span>
         <span>Trend: {trend}</span>
       </div>
 
       {/* 6. Footer Button */}
       <div className={styles.footer}>
-        <button className={styles.viewBtn} onClick={() => navigate('/journal')}>
+        <button className={styles.viewBtn} onClick={() => navigate("/journal")}>
           View Journal <span className={styles.arrow}>▼</span>
         </button>
       </div>

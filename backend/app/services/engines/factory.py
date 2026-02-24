@@ -2,7 +2,6 @@ import logging
 import os
 from typing import List, Optional
 from app.services.engines.base import EmotionEngine, LLMEngine, CrisisEngine
-from app.services.engines.emotion.xlnet import XLNetEmotionEngine
 from app.services.engines.emotion.keywords import KeywordEmotionEngine
 from app.services.engines.llm.ollama import OllamaLLMEngine
 from app.services.engines.llm.fallback import FallbackLLMEngine
@@ -21,9 +20,7 @@ class EngineFactory:
     @staticmethod
     def create_emotion_engine(provider: str) -> EmotionEngine:
         """Create emotion engine by provider name."""
-        if provider == 'xlnet':
-            return XLNetEmotionEngine()
-        elif provider == 'keywords':
+        if provider == 'keywords':
             return KeywordEmotionEngine()
         else:
             logger.warning(f"Unknown emotion provider: {provider}, using keywords")

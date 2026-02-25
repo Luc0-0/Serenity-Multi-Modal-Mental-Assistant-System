@@ -24,6 +24,7 @@ from app.models.user import User
 from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
 from app.models.emotion_log import EmotionLog
+from app.models.journal_entry import JournalEntry
 from app.models.memory import (
     SemanticMemory,
     EmotionalProfile,
@@ -407,41 +408,121 @@ async def send_chat_message(user_id: int, conversation_id: int, message: str) ->
             return {"content": "[Connection Error]", "error": True}
 
 
-async def create_backdated_conversations(user_id: int) -> List[int]:
-    """Create conversations backdated 2 weeks"""
-    print("\n📅 CREATING BACKDATED CONVERSATIONS")
-    print("="*70)
-    
-    database_url = settings.database_url or "sqlite+aiosqlite:///./serenity.db"
-    engine = create_async_engine(database_url, echo=False, future=True)
-    SessionLocal = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
-    )
-    
-    conversation_ids = []
-    day_offset = 14
-    
-    async with SessionLocal() as session:
-        for day_num, (day_label, day_data) in enumerate(CONVERSATION_SCRIPT.items(), 1):
-            timestamp = datetime.utcnow() - timedelta(days=day_offset)
-            day_offset -= 1
-            
-            conv = Conversation(
-                user_id=user_id,
-                title=day_data["title"],
-                created_at=timestamp,
-                updated_at=timestamp,
-            )
-            session.add(conv)
-            await session.flush()
-            conversation_ids.append(conv.id)
-            
-            print(f"[Day {day_num}] Conversation ID: {conv.id} - {day_data['title']}")
-        
-        await session.commit()
-    
-    await engine.dispose()
-    return conversation_ids
+async def create_backdated_conversations(user_id: int) -> Dict[int, datetime]:
+     """Create conversations backdated 2 weeks, return mapping of conv_id -> timestamp"""
+     print("\n📅 CREATING BACKDATED CONVERSATIONS")
+     print("="*70)
+     
+     database_url = settings.database_url or "sqlite+aiosqlite:///./serenity.db"
+     engine = create_async_engine(database_url, echo=False, future=True)
+     SessionLocal = sessionmaker(
+         engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+     )
+     
+     conversation_map = {}
+     day_offset = 14
+     
+     async with SessionLocal() as session:
+         for day_num, (day_label, day_data) in enumerate(CONVERSATION_SCRIPT.items(), 1):
+             timestamp = datetime.utcnow() - timedelta(days=day_offset)
+             day_offset -= 1
+             
+             conv = Conversation(
+                 user_id=user_id,
+                 title=day_data["title"],
+                 created_at=timestamp,
+                 updated_at=timestamp,
+             )
+             session.add(conv)
+             await session.flush()
+             conversation_map[conv.id] = timestamp
+             
+             print(f"[Day {day_num}] Conversation ID: {conv.id} - {day_data['title']}")
+         
+         await session.commit()
+     
+     await engine.dispose()
+     return conversation_map
+
+
+async def create_backdated_journals(user_id: int, conversation_map: Dict[int, datetime]):
+     """Create journal entries for each conversation with backdated timestamps"""
+     print("\n📔 CREATING BACKDATED JOURNAL ENTRIES")
+     print("="*70)
+     
+     database_url = settings.database_url or "sqlite+aiosqlite:///./serenity.db"
+     engine = create_async_engine(database_url, echo=False, future=True)
+     SessionLocal = sessionmaker(
+         engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+     )
+     
+     # Map emotions to moods
+     emotion_to_mood = {
+         "sadness": "sad",
+         "joy": "happy",
+         "anger": "angry",
+         "fear": "anxious",
+         "anxiety": "anxious",
+         "hopeless": "sad",
+         "neutral": "neutral",
+         "cautious_hope": "hopeful",
+         "thoughtful": "thoughtful",
+         "determined": "determined",
+         "tired_but_hopeful": "tired",
+         "empathetic": "empathetic",
+         "clarity": "clear",
+         "learning": "learning",
+         "resilient": "resilient",
+         "grateful": "grateful",
+         "confident": "confident",
+         "empowered": "empowered",
+         "balanced": "balanced",
+         "wise": "wise",
+         "connected": "connected",
+     }
+     
+     async with SessionLocal() as session:
+         for day_num, (day_label, day_data) in enumerate(CONVERSATION_SCRIPT.items(), 1):
+             # Get conversation ID and timestamp
+             conv_list = list(conversation_map.items())
+             if day_num - 1 < len(conv_list):
+                 conv_id, conv_timestamp = conv_list[day_num - 1]
+                 
+                 # Get dominant emotion from day's turns
+                 emotions = [turn.get("emotion", "neutral") for turn in day_data.get("turns", [])]
+                 dominant_emotion = emotions[0] if emotions else "neutral"
+                 mood = emotion_to_mood.get(dominant_emotion, "neutral")
+                 
+                 # Extract content from turns
+                 content = "\n\n".join([
+                     f"• {turn.get('user', '')}" 
+                     for turn in day_data.get("turns", [])
+                 ])
+                 
+                 # Format conversation date for the summary
+                 conv_date_str = conv_timestamp.strftime("%B %d, %Y")
+                 
+                 journal = JournalEntry(
+                     user_id=user_id,
+                     conversation_id=conv_id,
+                     title=day_data["title"],
+                     content=content,
+                     emotion=dominant_emotion,
+                     mood=mood,
+                     tags=["personal", "reflection"],
+                     auto_extract=True,
+                     ai_summary=f"Journal Entry – {conv_date_str}\n\nReflection on {day_label}'s experiences and emotions.",
+                     extraction_method="ai",
+                     ai_confidence=0.85,
+                     created_at=conv_timestamp,
+                     updated_at=conv_timestamp,
+                 )
+                 session.add(journal)
+                 print(f"[Day {day_num}] Journal for {day_label} created with timestamp {conv_timestamp.date()}")
+         
+         await session.commit()
+     
+     await engine.dispose()
 
 
 async def run_full_conversation_test():
@@ -459,7 +540,11 @@ async def run_full_conversation_test():
     user_id = user["id"]
     
     # Step 2: Create backdated conversations
-    conversation_ids = await create_backdated_conversations(user_id)
+    conversation_map = await create_backdated_conversations(user_id)
+    conversation_ids = list(conversation_map.keys())
+    
+    # Step 2.5: Create backdated journal entries
+    await create_backdated_journals(user_id, conversation_map)
     
     # Step 3: Run conversations
     print("\n💬 RUNNING CONVERSATIONS")

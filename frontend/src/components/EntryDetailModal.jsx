@@ -1,28 +1,36 @@
 import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import styles from "../pages/Journal.module.css";
 import { journalService } from "../services/journalService";
 
 const normalizeTags = (tags) => {
-  const clean = (value) => {
-    if (value === null || value === undefined) return null;
-    const text = String(value).trim();
-    if (!text || ["null", "none", "undefined", "[]"].includes(text.toLowerCase())) {
-      return null;
-    }
-    return text;
-  };
+   const clean = (value) => {
+     if (value === null || value === undefined) return null;
+     let text = String(value).trim();
+     // Remove escaped quotes and brackets
+     text = text.replace(/^\["/, "").replace(/"\]$/, "").replace(/["\[\]\\]/g, "");
+     text = text.trim();
+     if (!text || ["null", "none", "undefined", "[]"].includes(text.toLowerCase())) {
+       return null;
+     }
+     return text.toLowerCase();
+   };
 
-  if (Array.isArray(tags)) {
-    return tags.map(clean).filter(Boolean);
-  }
-  if (typeof tags === "string" && tags.trim()) {
-    return tags
-      .split(",")
-      .map(clean)
-      .filter(Boolean);
-  }
-  return [];
-};
+   let result = [];
+   if (Array.isArray(tags)) {
+     result = tags.map(clean).filter(Boolean);
+   } else if (typeof tags === "string" && tags.trim()) {
+     try {
+       const parsed = JSON.parse(tags);
+       result = Array.isArray(parsed) ? parsed.map(clean).filter(Boolean) : [clean(tags)];
+     } catch {
+       result = tags.split(",").map(clean).filter(Boolean);
+     }
+   }
+   
+   // Deduplicate
+   return [...new Set(result)];
+ };
 
 const emotionOptions = ["neutral", "sadness", "joy", "anger", "fear", "surprise", "disgust"];
 
@@ -95,9 +103,26 @@ export default function EntryDetailModal({ entryId, isOpen, onClose, onDelete, o
   }, [entryId, isOpen]);
 
   useEffect(() => {
-    if (isEditing && titleRef.current) {
-      titleRef.current.focus();
-      titleRef.current.setSelectionRange(
+     const handleKeyDown = (e) => {
+       if (!isEditing) return;
+       if (e.ctrlKey && e.key === 's') {
+         e.preventDefault();
+         handleSave();
+       }
+       if (e.key === 'Escape') {
+         handleCancelEditing();
+       }
+     };
+     if (isOpen && isEditing) {
+       document.addEventListener('keydown', handleKeyDown);
+       return () => document.removeEventListener('keydown', handleKeyDown);
+     }
+   }, [isEditing, isOpen, formValues]);
+
+   useEffect(() => {
+     if (isEditing && titleRef.current) {
+       titleRef.current.focus();
+       titleRef.current.setSelectionRange(
         titleRef.current.value.length,
         titleRef.current.value.length,
       );
@@ -158,66 +183,47 @@ export default function EntryDetailModal({ entryId, isOpen, onClose, onDelete, o
   const createdDate = entry?.created_at ? new Date(entry.created_at) : null;
 
   const renderActions = () => {
-    if (!entry) return null;
-    if (isEditing) {
-      return (
-        <>
-          <button
-            type="button"
-            className={`${styles.inlineIconBtn} ${styles.inlineIconBtnSave}`}
-            onClick={handleSave}
-            disabled={isSaving}
-            aria-label="Save entry"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 13l4 4L19 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className={`${styles.inlineIconBtn} ${styles.inlineIconBtnCancel}`}
-            onClick={handleCancelEditing}
-            disabled={isSaving}
-            aria-label="Cancel editing"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M6 6l12 12M18 6l-12 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-        </>
-      );
-    }
-    return (
-      <button
-        type="button"
-        className={`${styles.inlineIconBtn} ${styles.inlineIconBtnEdit}`}
-        onClick={handleStartEditing}
-        aria-label="Edit entry"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M4 16.5V20h3.5L20 7.5 16.5 4 4 16.5Z"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path d="M17.5 3.5l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-      </button>
-    );
-  };
+     if (!entry || !isEditing) return null;
+     return (
+       <div className={styles.editActions}>
+         <button
+           type="button"
+           className={`${styles.inlineIconBtn} ${styles.inlineIconBtnSave}`}
+           onClick={handleSave}
+           disabled={isSaving}
+           aria-label="Save changes (Ctrl+S)"
+           title="Save (Ctrl+S)"
+         >
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+             <path
+               d="M5 13l4 4L19 7"
+               stroke="currentColor"
+               strokeWidth="2"
+               strokeLinecap="round"
+               strokeLinejoin="round"
+             />
+           </svg>
+         </button>
+         <button
+           type="button"
+           className={`${styles.inlineIconBtn} ${styles.inlineIconBtnCancel}`}
+           onClick={handleCancelEditing}
+           disabled={isSaving}
+           aria-label="Cancel editing (Esc)"
+           title="Cancel (Esc)"
+         >
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+             <path
+               d="M6 6l12 12M18 6l-12 12"
+               stroke="currentColor"
+               strokeWidth="2"
+               strokeLinecap="round"
+             />
+           </svg>
+         </button>
+       </div>
+     );
+   };
 
   return (
     <div className={styles.modal} onClick={onClose}>
@@ -251,8 +257,20 @@ export default function EntryDetailModal({ entryId, isOpen, onClose, onDelete, o
               rows={2}
             />
           ) : (
-            <h2 className={styles.modalTitle}>{entry?.title || "Journal Entry"}</h2>
-          )}
+             <h2 
+               className={styles.modalTitle}
+               onClick={handleStartEditing}
+               role="button"
+               tabIndex={0}
+               onKeyDown={(e) => {
+                 if (e.key === 'Enter' || e.key === ' ') {
+                   handleStartEditing();
+                 }
+               }}
+             >
+               {entry?.title || "Journal Entry"}
+             </h2>
+           )}
         </div>
 
         <div className={styles.modalBody}>
@@ -334,8 +352,20 @@ export default function EntryDetailModal({ entryId, isOpen, onClose, onDelete, o
                   />
                 </div>
               ) : (
-                <div className={styles.fullContent}>
-                  <p>{entry.content}</p>
+                <div 
+                  className={styles.fullContent}
+                  onClick={handleStartEditing}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleStartEditing();
+                    }
+                  }}
+                >
+                  <ReactMarkdown>
+                    {entry.content || ""}
+                  </ReactMarkdown>
                 </div>
               )}
 

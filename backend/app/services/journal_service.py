@@ -188,7 +188,8 @@ class JournalService:
         conversation_history: List[Dict],
         emotion_label: str = "neutral",
         llm_service = None,
-        ai_confidence: float = 0.95
+        ai_confidence: float = 0.95,
+        conversation_date: str = None
     ) -> Optional[int]:
         """
         Create or update journal entry with LLM-generated content.
@@ -230,10 +231,10 @@ class JournalService:
             if llm_service:
                 try:
                     # Generate title (1 sentence)
-                    title = await llm_service.generate_journal_title(conversation_history)
+                    title = await llm_service.generate_journal_title(conversation_history, conversation_date)
                     
                     # Generate content (full summary)
-                    content = await llm_service.generate_journal_summary(conversation_history)
+                    content = await llm_service.generate_journal_summary(conversation_history, conversation_date)
                     
                     # Generate Serenity Thought (professional insight)
                     thought = await llm_service.generate_serenity_thought(content, emotion_label)

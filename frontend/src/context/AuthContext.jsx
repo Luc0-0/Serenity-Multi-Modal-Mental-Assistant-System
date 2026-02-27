@@ -1,5 +1,7 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -15,7 +17,7 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         try {
           // Fetch user profile to ensure validity and get user details
-          const response = await fetch('/api/auth/profile/', {
+          const response = await fetch(`${API_BASE_URL}/api/auth/profile/`, {
             headers: {
               'Authorization': `Bearer ${storedToken}`
             }
@@ -48,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/auth/login/', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -76,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/auth/signup/', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),

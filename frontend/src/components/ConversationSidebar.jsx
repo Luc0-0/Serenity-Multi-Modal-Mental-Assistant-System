@@ -3,6 +3,8 @@ import "./ConversationSidebar.css";
 import { TrashIcon } from "./Icons";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export function ConversationSidebar({
   currentConversationId,
   onSelectConversation,
@@ -26,7 +28,7 @@ export function ConversationSidebar({
       const token = localStorage.getItem('auth_token');
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(`/api/conversations/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/api/conversations/`, { headers });
       if (response.ok) {
         const data = await response.json();
         console.log("[Sidebar] Fetched conversations:", data.map(c => ({ id: c.id, title: c.title })));

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../context/AuthContext";
+import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 import { CrisisAlert } from "../components/CrisisAlert";
 import { ConversationSidebar } from "../components/ConversationSidebar";
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
@@ -13,6 +14,7 @@ import styles from "./CheckIn.module.css";
 export function CheckIn() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { triggerRefresh } = useConversationRefresh();
   const [conversationId, setConversationId] = useState(null);
   const userId = user?.id || null;
 
@@ -31,21 +33,12 @@ export function CheckIn() {
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
 
-  // Left edge swipe opens sidebar
+  // Left edge swipe only — right swipe removed (caused flickering)
   useEdgeSwipe({
     edge: "left",
     isOpen: sidebarOpen,
     onOpen: () => setSidebarOpen(true),
     onClose: () => setSidebarOpen(false),
-  });
-
-  // Right edge swipe opens insights (chat mode only)
-  useEdgeSwipe({
-    edge: "right",
-    isOpen: showInsights,
-    onOpen: () => setShowInsights(true),
-    onClose: () => setShowInsights(false),
-    enabled: isInChat,
   });
 
   const inputRef = useRef(null);
@@ -54,7 +47,6 @@ export function CheckIn() {
   const messagesAreaRef = useRef(null);
   const streamingRef = useRef(null);
 
-  // Auto-scroll to latest message
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
       if (chatEndRef.current) {
@@ -63,19 +55,16 @@ export function CheckIn() {
     });
   }, []);
 
-  // Scroll on new messages
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
 
-  // Focus input on chat entry
   useEffect(() => {
     if (isInChat && chatInputRef.current) {
       setTimeout(() => chatInputRef.current?.focus(), 300);
     }
   }, [isInChat]);
 
-  // Fetch emotion insights
   useEffect(() => {
     if (conversationId && isInChat && messages.length > 0) {
       const fetchEmotions = async () => {
@@ -89,15 +78,12 @@ export function CheckIn() {
           setEmotionLoading(false);
         }
       };
-
       const debounceTimer = setTimeout(fetchEmotions, 2000);
       return () => clearTimeout(debounceTimer);
     }
   }, [conversationId, messages.length, isInChat, userId]);
 
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
+  const handleInputChange = (e) => setInputValue(e.target.value);
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey && !isLoading) {
@@ -106,12 +92,8 @@ export function CheckIn() {
     }
   };
 
-  // Stream text character-by-character
   const displayTextStream = useCallback((messageIndex, fullText) => {
-    if (streamingRef.current) {
-      clearTimeout(streamingRef.current);
-    }
-
+    if (streamingRef.current) clearTimeout(streamingRef.current);
     setIsStreaming(true);
     let charIndex = 0;
     const charsPerTick = 2;
@@ -121,25 +103,18 @@ export function CheckIn() {
       if (charIndex < fullText.length) {
         charIndex = Math.min(charIndex + charsPerTick, fullText.length);
         const currentText = fullText.slice(0, charIndex);
-
         setMessages((prev) => {
           if (!prev[messageIndex]) return prev;
           const updated = [...prev];
-          updated[messageIndex] = {
-            ...updated[messageIndex],
-            text: currentText,
-            isTyping: false,
-          };
+          updated[messageIndex] = { ...updated[messageIndex], text: currentText, isTyping: false };
           return updated;
         });
-
         streamingRef.current = setTimeout(displayNextChunk, delay);
       } else {
         setIsStreaming(false);
         setIsLoading(false);
       }
     };
-
     displayNextChunk();
   }, []);
 
@@ -151,69 +126,33 @@ export function CheckIn() {
     }
 
     const trimmedMessage = inputValue.trim();
-
-    if (!trimmedMessage) {
-      setError("Please write something before sending.");
-      return;
-    }
-
-    if (trimmedMessage.length > 2000) {
-      setError("Message is too long. Please keep it under 2000 characters.");
-      return;
-    }
+    if (!trimmedMessage) { setError("Please write something before sending."); return; }
+    if (trimmedMessage.length > 2000) { setError("Message is too long. Please keep it under 2000 characters."); return; }
 
     setError(null);
 
-    const userMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: trimmedMessage,
-      timestamp: new Date(),
-    };
-
+    const userMessage = { id: Date.now(), sender: "user", text: trimmedMessage, timestamp: new Date() };
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
-
-    if (!isInChat) {
-      setIsInChat(true);
-    }
+    if (!isInChat) setIsInChat(true);
 
     const assistantMessageIndex = messages.length + 1;
-
-    // Placeholder message with typing indicator
-    const assistantMessage = {
-      id: Date.now() + 1,
-      sender: "assistant",
-      text: "",
-      timestamp: new Date(),
-      crisis: null,
-      isTyping: true,
-    };
-
+    const assistantMessage = { id: Date.now() + 1, sender: "assistant", text: "", timestamp: new Date(), crisis: null, isTyping: true };
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      const response = await sendChatMessage({
-        user_id: userId,
-        message: trimmedMessage,
-        conversation_id: conversationId,
-      });
+      const response = await sendChatMessage({ user_id: userId, message: trimmedMessage, conversation_id: conversationId });
 
       if (conversationId === null && response.conversation_id) {
         setConversationId(response.conversation_id);
         try {
-          localStorage.setItem(
-            "serenity_conversation_id",
-            response.conversation_id.toString(),
-          );
+          localStorage.setItem("serenity_conversation_id", response.conversation_id.toString());
           localStorage.setItem("serenity_user_id", userId.toString());
-        } catch (e) {
-          console.warn("Failed to save to localStorage:", e.message);
-        }
+        } catch (e) { console.warn("Failed to save to localStorage:", e.message); }
+        triggerRefresh();
       }
 
-      // Begin streaming response
       displayTextStream(assistantMessageIndex, response.reply);
 
       if (response.crisis_detected) {
@@ -224,11 +163,7 @@ export function CheckIn() {
             if (updated[assistantMessageIndex]) {
               updated[assistantMessageIndex] = {
                 ...updated[assistantMessageIndex],
-                crisis: {
-                  detected: true,
-                  severity: response.crisis_severity,
-                  resources: response.resources,
-                },
+                crisis: { detected: true, severity: response.crisis_severity, resources: response.resources },
               };
             }
             return updated;
@@ -239,19 +174,11 @@ export function CheckIn() {
       setIsLoading(false);
       setIsStreaming(false);
       setLastFailedMessage(trimmedMessage);
-
       const errorDisplay = getErrorDisplay(err);
       setError(errorDisplay.message);
       setIsRetryable(errorDisplay.isRetryable);
-
-      // Remove failed placeholder
       setMessages((prev) => prev.filter((_, i) => i !== assistantMessageIndex));
-
-      console.error("Chat error:", {
-        code: err.code,
-        message: err.message,
-        retryable: err.retryable,
-      });
+      console.error("Chat error:", { code: err.code, message: err.message, retryable: err.retryable });
     }
   };
 
@@ -262,7 +189,7 @@ export function CheckIn() {
     setInputValue(lastFailedMessage);
   };
 
-  const handleNewConversation = () => {
+  const finalizeAndReset = useCallback((convId, msgCount) => {
     if (streamingRef.current) clearTimeout(streamingRef.current);
     setConversationId(null);
     setMessages([]);
@@ -273,7 +200,26 @@ export function CheckIn() {
     setError(null);
     setIsRetryable(false);
     localStorage.removeItem("serenity_conversation_id");
-  };
+
+    if (convId && msgCount > 1) {
+      const token = localStorage.getItem("auth_token");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      fetch(`/api/conversations/${convId}/finalize-title`, { method: "POST", headers })
+        .then(() => triggerRefresh())
+        .catch((err) => { console.warn("Failed to finalize title:", err); triggerRefresh(); });
+    } else {
+      triggerRefresh();
+    }
+  }, [triggerRefresh]);
+
+  const handleNewConversation = useCallback(() => {
+    finalizeAndReset(conversationId, messages.length);
+  }, [finalizeAndReset, conversationId, messages.length]);
+
+  const handleGoHome = useCallback(() => {
+    finalizeAndReset(conversationId, messages.length);
+  }, [finalizeAndReset, conversationId, messages.length]);
 
   const handleSelectConversation = async (convId) => {
     try {
@@ -281,45 +227,32 @@ export function CheckIn() {
       const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(`/api/conversations/${convId}/messages`, {
-        headers,
-      });
+      const response = await fetch(`/api/conversations/${convId}/messages`, { headers });
       if (response.ok) {
         const data = await response.json();
         setConversationId(convId);
-        setMessages(
-          data.messages.map((msg) => ({
-            id: msg.id,
-            sender: msg.role === "assistant" ? "assistant" : "user",
-            text: msg.content,
-            timestamp: new Date(msg.created_at),
-          })),
-        );
+        setMessages(data.messages.map((msg) => ({
+          id: msg.id,
+          sender: msg.role === "assistant" ? "assistant" : "user",
+          text: msg.content,
+          timestamp: new Date(msg.created_at),
+        })));
         setIsInChat(true);
         setIsLoading(false);
         setIsStreaming(false);
         localStorage.setItem("serenity_conversation_id", convId.toString());
       }
-    } catch (err) {
-      console.error("Failed to load conversation:", err);
-    }
+    } catch (err) { console.error("Failed to load conversation:", err); }
   };
 
-  const handleClearError = () => {
-    setError(null);
-    setIsRetryable(false);
-  };
+  const handleClearError = () => { setError(null); setIsRetryable(false); };
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (streamingRef.current) clearTimeout(streamingRef.current);
-    };
+    return () => { if (streamingRef.current) clearTimeout(streamingRef.current); };
   }, []);
 
   return (
     <>
-      {/* Sidebar */}
       <ConversationSidebar
         currentConversationId={conversationId}
         onSelectConversation={handleSelectConversation}
@@ -330,84 +263,70 @@ export function CheckIn() {
       />
 
       <div className={`${styles.container} ${isInChat ? styles.chatMode : ""}`}>
+        {/* Background — no inline filter ever */}
         <div className={styles.backgroundImage} />
 
-        {/* Welcome screen */}
+        {/* ── Welcome screen with glowing orb ── */}
         {!isInChat && (
           <main className={styles.content}>
-            <h1 className={styles.welcomeHeading}>Welcome.</h1>
+            {/* The orb container holds the spinning ring + glass interior */}
+            <div className={styles.orbContainer}>
+              {/* Base dim ring */}
+              <div className={styles.orbRingBase} />
+              {/* Spinning conic bright arc */}
+              <div className={styles.orbRing} />
+              {/* Glass interior */}
+              <div className={styles.orb}>
+                <div className={styles.orbContent}>
+                  <h1 className={styles.welcomeHeading}>Welcome.</h1>
 
-            <p className={styles.subtitle}>
-              You can talk, write, or just sit here.
-            </p>
+                  <p className={styles.subtitle}>
+                    You can talk, write, or just sit here.
+                  </p>
 
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputContainer}>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="What's on your mind?"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  className={styles.input}
-                  aria-label="Express your thoughts"
-                  disabled={isLoading}
-                />
-                <button
-                  className={styles.submitArrow}
-                  onClick={handleSendMessage}
-                  aria-label="Send message"
-                  disabled={isLoading || !inputValue.trim()}
-                >
-                  →
-                </button>
+                  {/* Ornamental divider line */}
+                  <div className={styles.orbDivider} />
+
+                  <div className={styles.inputWrapper}>
+                    <div className={styles.inputContainer}>
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder="What's on your mind?"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        className={styles.minimalInput}
+                        aria-label="Express your thoughts"
+                        disabled={isLoading}
+                        autoFocus
+                      />
+                      <button
+                        className={styles.submitArrow}
+                        onClick={handleSendMessage}
+                        aria-label="Send"
+                        disabled={isLoading || !inputValue.trim()}
+                      >
+                        →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={styles.actionButtons}>
+                    <button className={styles.actionBtn} onClick={() => navigate("/journal")}>
+                      Journal
+                    </button>
+                    <button className={styles.actionBtn} onClick={() => navigate("/meditate")}>
+                      Meditate
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              <button
-                className={styles.micButton}
-                onClick={() => console.log("Voice coming soon")}
-                aria-label="Voice input (coming soon)"
-                title="Voice input"
-                disabled
-              >
-                <svg
-                  className={styles.micIcon}
-                  viewBox="0 0 24 24"
-                  width="28"
-                  height="28"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4Z" />
-                  <line x1="12" y1="14" x2="12" y2="20" />
-                  <line x1="8" y1="20" x2="16" y2="20" />
-                </svg>
-              </button>
-            </div>
-
-            <div className={styles.actionButtons}>
-              <button
-                className={styles.actionBtn}
-                onClick={() => navigate("/journal")}
-                aria-label="Open journal"
-              >
-                Journal
-              </button>
-              <button
-                className={styles.actionBtn}
-                onClick={() => navigate("/meditate")}
-                aria-label="Meditation"
-              >
-                Meditate
-              </button>
             </div>
           </main>
         )}
 
+        {/* ── Chat mode ── */}
         {isInChat && (
           <>
             <div className={styles.chatContentWrapper}>
@@ -419,42 +338,21 @@ export function CheckIn() {
                 )}
 
                 {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`${styles.message} ${styles[msg.sender]}`}
-                  >
-                    <div className={styles.messageAvatar}>
-                      {msg.sender === "assistant" ? (
-                        <div className={styles.aiAvatar}>✦</div>
-                      ) : (
-                        <div className={styles.userAvatar}>
-                          {user?.name?.[0]?.toUpperCase() || "⊘"}
-                        </div>
-                      )}
-                    </div>
-
+                  <div key={msg.id} className={`${styles.message} ${styles[msg.sender]}`}>
                     <div className={styles.messageBubble}>
                       <div className={styles.messageContent}>
                         {msg.isTyping ? (
                           <div className={styles.typingIndicator}>
-                            <span></span>
-                            <span></span>
-                            <span></span>
+                            <span /><span /><span />
                           </div>
                         ) : msg.sender === "assistant" ? (
                           <ReactMarkdown
                             components={{
                               strong: ({ node, ...props }) => (
-                                <strong
-                                  style={{ fontWeight: 600, color: "#d4a574" }}
-                                  {...props}
-                                />
+                                <strong style={{ fontWeight: 600, color: "#d4a574" }} {...props} />
                               ),
                               em: ({ node, ...props }) => (
-                                <em
-                                  style={{ fontStyle: "italic", opacity: 0.9 }}
-                                  {...props}
-                                />
+                                <em style={{ fontStyle: "italic", opacity: 0.9 }} {...props} />
                               ),
                               p: ({ node, ...props }) => <span {...props} />,
                             }}
@@ -468,19 +366,13 @@ export function CheckIn() {
 
                       {!msg.isTyping && (
                         <div className={styles.messageTime}>
-                          {msg.timestamp?.toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {msg.timestamp?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       )}
                     </div>
 
-                    {msg.crisis && msg.crisis.detected && (
-                      <CrisisAlert
-                        severity={msg.crisis.severity}
-                        resources={msg.crisis.resources}
-                      />
+                    {msg.crisis?.detected && (
+                      <CrisisAlert severity={msg.crisis.severity} resources={msg.crisis.resources} />
                     )}
                   </div>
                 ))}
@@ -491,19 +383,9 @@ export function CheckIn() {
                       <p className={styles.errorText}>{error}</p>
                       <div className={styles.errorActions}>
                         {isRetryable && (
-                          <button
-                            className={styles.retryBtn}
-                            onClick={handleRetry}
-                          >
-                            Retry
-                          </button>
+                          <button className={styles.retryBtn} onClick={handleRetry}>Retry</button>
                         )}
-                        <button
-                          className={styles.dismissBtn}
-                          onClick={handleClearError}
-                        >
-                          Dismiss
-                        </button>
+                        <button className={styles.dismissBtn} onClick={handleClearError}>Dismiss</button>
                       </div>
                     </div>
                   </div>
@@ -512,7 +394,6 @@ export function CheckIn() {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Insights panel */}
               {showInsights && (
                 <aside className={styles.insightsPanel}>
                   <EmotionalStatusCard
@@ -524,7 +405,7 @@ export function CheckIn() {
               )}
             </div>
 
-            {/* Insights toggle */}
+            {/* Insights toggle — SVG chevron */}
             <button
               className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ""}`}
               onClick={() => setShowInsights(!showInsights)}
@@ -556,17 +437,17 @@ export function CheckIn() {
                   disabled={isLoading && !isStreaming}
                 />
                 <button
-                  className={styles.newConversationBtn}
-                  onClick={handleNewConversation}
-                  title="New Conversation"
+                  className={styles.homeBtn}
+                  onClick={handleGoHome}
+                  title="Return home"
+                  aria-label="Return to welcome screen"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path
-                      d="M8 3V13M3 8H13"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
+                      d="M1.5 7.5L7.5 1.5L13.5 7.5V12.5C13.5 12.9142 13.3314 13.2893 13.0607 13.5607C12.7893 13.8314 12.4142 14 12 14H3C2.58579 14 2.21071 13.8314 1.93934 13.5607C1.66797 13.2893 1.5 12.9142 1.5 12.5V7.5Z"
+                      stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
                     />
+                    <path d="M5.5 14V8.5H9.5V14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
                 <button
@@ -576,13 +457,7 @@ export function CheckIn() {
                   disabled={(isLoading && !isStreaming) || !inputValue.trim()}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M9 14V4M9 4L5 8M9 4L13 8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                    <path d="M9 14V4M9 4L5 8M9 4L13 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               </div>
@@ -590,7 +465,6 @@ export function CheckIn() {
           </>
         )}
 
-        {/* Footer */}
         {!isInChat && (
           <footer className={styles.footer}>
             <p className={styles.disclaimer}>

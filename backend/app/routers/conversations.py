@@ -11,6 +11,7 @@ from app.models.crisis_event import CrisisEvent
 from app.models.user import User
 from app.routers.auth import get_current_user
 from sqlalchemy import select, delete
+import app.main as main_app
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,65 @@ async def get_conversation_messages(
     except Exception as e:
         logger.error(f"Failed to get messages: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch messages")
+
+
+@router.post("/{conversation_id}/finalize-title")
+async def finalize_conversation_title(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate comprehensive title based on entire conversation history."""
+    try:
+        # Verify conversation ownership
+        stmt = select(Conversation).where(
+            (Conversation.id == conversation_id) & 
+            (Conversation.user_id == current_user.id)
+        )
+        result = await db.execute(stmt)
+        conversation = result.scalar_one_or_none()
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Get all messages
+        messages_stmt = select(Message).where(
+            Message.conversation_id == conversation_id
+        ).order_by(Message.created_at.asc())
+        
+        messages_result = await db.execute(messages_stmt)
+        messages = messages_result.scalars().all()
+        
+        if not messages:
+            return {"title": conversation.title or f"Conversation {conversation_id}"}
+        
+        # Build conversation summary
+        conversation_text = "\n".join([
+            f"{m.content[:200]}" for m in messages[-10:]  # Last 10 messages
+        ])
+        
+        # Generate comprehensive title
+        try:
+            title = await main_app.llm_service.generate_title(conversation_text)
+            
+            if not title or title in ("New Conversation", "") or len(title) < 3:
+                # Fallback: Truncate first message to 5 words
+                words = conversation_text.split()
+                title = " ".join(words[:5]) if words else f"Conversation {conversation_id}"
+                
+            await conversation_service.update_conversation_title(db, conversation_id, title)
+            await db.commit()
+            logger.info(f"Finalized title for conversation {conversation_id}: {title}")
+            return {"title": title}
+        except Exception as e:
+            logger.warning(f"Failed to generate final title: {str(e)}")
+            return {"title": conversation.title or f"Conversation {conversation_id}"}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to finalize conversation title: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to finalize title")
 
 
 @router.delete("/{conversation_id}")

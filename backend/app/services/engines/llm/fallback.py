@@ -43,8 +43,7 @@ class FallbackLLMEngine(LLMEngine):
     
     async def generate_title(self, text: str) -> str:
         """Generate basic title from text."""
-        words = text.split()[:4]
-        return ' '.join(words) if words else "New Conversation"
+        return ""
     
     @property
     def provider_name(self) -> str:

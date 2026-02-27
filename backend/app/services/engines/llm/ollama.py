@@ -19,12 +19,10 @@ class OllamaLLMEngine(LLMEngine):
         self._available = self._check_availability()
     
     def _check_availability(self) -> bool:
-        if not self.api_key:
-            logger.error("OLLAMA_API_KEY not set")
-            return False
         if not self.endpoint:
-            logger.error("OLLAMA_ENDPOINT not set")
+            logger.error("OLLAMA_ENDPOINT not set - please configure in .env or docker-compose")
             return False
+        # API key is optional for local Ollama instances
         return True
     
     async def generate(
@@ -69,34 +67,52 @@ class OllamaLLMEngine(LLMEngine):
             raise
     
     async def generate_title(self, text: str) -> str:
-        """Generate short conversation title."""
-        prompt = f"Generate a short 3-5 word title for this message. Only return the title, nothing else.\n\nMessage: {text[:200]}"
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
+        """Generate short conversation title from text snippet."""
+        if not self._available:
+            raise RuntimeError("Ollama engine not available")
+
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+
         payload = {
             "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 20,
-            "temperature": 0.5
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a title generator. Given a conversation, identify the single core topic or theme and express it as a short, natural title (4-7 words). No reasoning, no explanation, no punctuation at the end. Just the title."
+                },
+                {
+                    "role": "user",
+                    "content": f"What is this conversation mainly about: {text[:1000]}"
+                }
+            ],
+            "temperature": 0.3,
         }
-        
+
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    self.endpoint,
-                    json=payload,
-                    headers=headers
-                )
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(self.endpoint, json=payload, headers=headers)
                 response.raise_for_status()
                 data = response.json()
-                return data['choices'][0]['message']['content'].strip()
         except Exception as e:
-            logger.warning(f"Title generation failed: {e}")
-            return "New Conversation"
+            logger.error(f"Title generation API call failed: {e}")
+            data = {}
+
+        title = ""
+        if "choices" in data and data["choices"]:
+            title = data["choices"][0].get("message", {}).get("content", "").strip()
+
+        if not title:
+            return ""
+
+        title = title.replace("\n", " ").strip().strip(".,;:")
+        title = title[:100]
+
+        logger.info(f"[TITLE_GEN] SUCCESS: '{title}'")
+        return title if title else ""
+
+
     
     @property
     def provider_name(self) -> str:

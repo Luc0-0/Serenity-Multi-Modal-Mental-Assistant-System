@@ -1,5 +1,20 @@
-/* z-index: bg 0 | content 5 | insights 10 | insights-tab 15 | input 20 */
+/* ─────────────────────────────────────────────
+   SERENITY — CHECK-IN
+   The orb: a glowing circle with an orbiting light
+   that travels the rim. All UI lives inside it.
+   ───────────────────────────────────────────── */
 
+:root {
+  --orb-size: min(560px, 82vmin);
+  --glow-amber: #e8a84a;
+  --glow-warm: #f5c87a;
+  --glow-dim: rgba(200, 148, 72, 0.18);
+  --text-white: #ffffff;
+  --text-cream: rgba(255, 248, 235, 0.92);
+  --text-muted: rgba(255, 240, 210, 0.55);
+}
+
+/* ── Container ── */
 .container {
   position: relative;
   width: 100%;
@@ -9,321 +24,438 @@
   flex-direction: column;
   z-index: 1;
   overscroll-behavior-x: none;
-  /* kill browser back/forward swipe arrow */
 }
 
 .container.chatMode {
   overflow: hidden;
 }
 
-/* Background */
+/* ── Background ── */
 .backgroundImage {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("/images/background1.png");
-  background-color: #050505;
+  background-image: url("/images/checkinpagebg.png");
+  background-color: #0d0a08;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: 0;
 }
 
-/* Welcome screen (non-scrollable, centered) */
+/* Gentle darkening overlay — keeps the photo visible but tames brightness */
+.backgroundImage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 50%,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.08) 50%,
+      rgba(0, 0, 0, 0.42) 100%),
+    linear-gradient(to bottom,
+      rgba(4, 3, 2, 0.30) 0%,
+      rgba(4, 3, 2, 0.05) 25%,
+      rgba(4, 3, 2, 0.05) 60%,
+      rgba(4, 3, 2, 0.50) 100%);
+  z-index: 1;
+}
+
+/* Film grain */
+.backgroundImage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.28;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   WELCOME SCREEN
+   ───────────────────────────────────────────── */
+
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 40px 20px;
+  padding: 20px;
   z-index: 5;
   overflow: hidden;
 }
 
-/* Typography */
+/* ═══════════════════════════════════════════
+   THE ORB — glowing circle container
+   
+   Technique:
+   - .orb is the visible circle (glass interior)
+   - .orbRing is position:absolute around it,
+     carries the rotating conic-gradient border
+   - Two separate keyframes:
+     1. orbSpin — rotates the conic bright spot
+     2. orbPulse — breathes the outer glow
+   ═══════════════════════════════════════════ */
+
+.orbContainer {
+  position: relative;
+  width: var(--orb-size);
+  height: var(--orb-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInScale 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+/* Outer soft glow bloom — radiates warmth from the ring */
+.orbContainer::before {
+  content: "";
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+      rgba(220, 170, 90, 0.06) 40%,
+      rgba(200, 148, 72, 0.03) 60%,
+      transparent 72%);
+  animation: orbPulse 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* The spinning border ring */
+.orbRing {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+      transparent 0deg,
+      rgba(180, 130, 60, 0.06) 30deg,
+      rgba(220, 175, 100, 0.35) 55deg,
+      rgba(245, 215, 150, 0.75) 72deg,
+      rgba(255, 235, 180, 1.0) 82deg,
+      rgba(245, 215, 150, 0.75) 92deg,
+      rgba(220, 175, 100, 0.35) 108deg,
+      rgba(180, 130, 60, 0.08) 135deg,
+      transparent 170deg,
+      transparent 360deg);
+  animation: orbSpin 10s linear infinite;
+  /* Show only the 1.5px rim */
+  -webkit-mask: radial-gradient(farthest-side,
+      transparent calc(100% - 1.5px),
+      #fff calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side,
+      transparent calc(100% - 1.5px),
+      #fff calc(100% - 1.5px));
+  z-index: 3;
+  /* Warm glow from the bright arc point */
+  filter: drop-shadow(0 0 8px rgba(245, 210, 140, 0.4)) drop-shadow(0 0 20px rgba(220, 170, 90, 0.2));
+}
+
+/* Base dim ring */
+.orbRingBase {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 148, 72, 0.14);
+  z-index: 2;
+}
+
+/* The glass orb interior — nearly transparent frosted glass */
+.orb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 42%,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(0, 0, 0, 0.04) 100%);
+  backdrop-filter: blur(2px) saturate(1.05);
+  -webkit-backdrop-filter: blur(2px) saturate(1.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12% 10%;
+  z-index: 4;
+}
+
+@keyframes orbSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1.3;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Content inside the orb ── */
+
+.orbContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  gap: 0;
+}
+
 .welcomeHeading {
   font-family: "Playfair Display", serif;
-  font-size: 64px;
+  font-size: clamp(2.6rem, 5vw, 4.2rem);
   font-weight: 400;
-  color: #d9ceb0;
-  margin: 0 0 24px 0;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  color: rgba(35, 28, 22, 0.88);
+  margin: 0 0 16px 0;
+  line-height: 1.08;
+  letter-spacing: 0.02em;
   text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.8),
-    0 2px 0 rgba(0, 0, 0, 0.7),
-    0 3px 0 rgba(0, 0, 0, 0.6),
-    0 4px 0 rgba(0, 0, 0, 0.5),
-    0 5px 10px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(212, 180, 131, 0.3),
-    0 0 40px rgba(212, 180, 131, 0.15);
-  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    0 1px 8px rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(255, 255, 255, 0.1);
+  animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
   opacity: 0;
 }
 
 .subtitle {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 28px;
-  line-height: 1.6;
-  color: #bda17b;
-  margin: 0 0 48px 0;
-  padding: 0;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-family: "Libre Baskerville", serif;
+  font-size: clamp(15px, 1.7vw, 17px);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(35, 28, 22, 0.78);
+  margin: 0 0 28px 0;
+  letter-spacing: 0.08em;
+  max-width: 100%;
   text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.7),
-    0 2px 0 rgba(0, 0, 0, 0.6),
-    0 3px 5px rgba(0, 0, 0, 0.8),
-    0 0 15px rgba(196, 168, 130, 0.25),
-    0 0 30px rgba(196, 168, 130, 0.1);
-  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+    0 1px 8px rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(255, 255, 255, 0.1);
+  animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
   opacity: 0;
 }
 
-/* Welcome input */
+/* Thin ornamental divider */
+.orbDivider {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom,
+      transparent,
+      rgba(120, 90, 50, 0.35),
+      transparent);
+  margin: 0 auto 28px;
+  animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards;
+  opacity: 0;
+}
+
+/* ── Input inside the orb ── */
 .inputWrapper {
-  display: flex;
-  align-items: flex-end;
   width: 100%;
-  max-width: 650px;
-  margin: 0 auto 48px;
-  gap: 20px;
+  max-width: 320px;
+  margin: 0 auto 28px;
   position: relative;
-  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
   opacity: 0;
 }
 
 .inputContainer {
+  position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  position: relative;
+  border-bottom: 1.5px solid rgba(35, 28, 22, 0.3);
+  transition: border-color 0.4s ease;
 }
 
-.input {
-  flex: 1;
-  padding: 16px 24px;
-  background: rgba(8, 4, 0, 0.3);
-  border: 1px solid rgba(150, 120, 78, 0.6);
-  border-radius: 60px;
-  color: #d9ceb0;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 20px;
-  letter-spacing: 0.02em;
+/* Pulsing cursor — always active, dark dot slides along the underline */
+.inputContainer::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(35, 28, 22, 0.65) 50%,
+      transparent 62%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: cursorPulse 3s ease-in-out infinite;
+}
+
+@keyframes cursorPulse {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.inputContainer:focus-within {
+  border-bottom-color: rgba(35, 28, 22, 0.5);
+}
+
+.minimalInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 28px 14px 0;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(35, 28, 22, 0.78);
+  text-align: center;
+  text-shadow:
+    0 1px 8px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.1);
   outline: none;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.25),
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    0 16px 32px rgba(0, 0, 0, 0.35),
-    0 24px 48px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.04em;
+  caret-color: rgba(35, 28, 22, 0.6);
 }
 
-.input::placeholder {
-  color: rgba(200, 188, 172, 0.5);
-  font-weight: 800;
-}
-
-.input:focus {
-  background: rgba(26, 22, 18, 0.5);
-  border-color: rgba(168, 116, 68, 0.7);
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.3),
-    0 8px 16px rgba(0, 0, 0, 0.35),
-    0 16px 32px rgba(0, 0, 0, 0.4),
-    0 28px 56px rgba(0, 0, 0, 0.35),
-    0 0 30px rgba(168, 116, 68, 0.1);
+.minimalInput::placeholder {
+  color: rgba(35, 28, 22, 0.42);
+  font-weight: 400;
+  text-shadow:
+    0 1px 6px rgba(255, 255, 255, 0.25);
 }
 
 .submitArrow {
   position: absolute;
-  right: 20px;
+  right: 2px;
   background: none;
   border: none;
-  color: #bd9e7a;
-  font-size: 30px;
+  color: rgba(120, 85, 40, 0.5);
+  font-size: 16px;
   cursor: pointer;
-  opacity: 0.6;
-  transition: all 0.3s ease;
   padding: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.submitArrow:hover {
+.inputContainer:focus-within .submitArrow {
   opacity: 1;
-  transform: translateX(5px);
+  pointer-events: auto;
 }
 
-/* Action buttons */
+.submitArrow:hover:not(:disabled) {
+  color: rgba(160, 120, 50, 0.9);
+  transform: translateX(3px);
+}
+
+.submitArrow:disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* ── Action links inside the orb ── */
 .actionButtons {
   display: flex;
-  gap: 28px;
+  gap: 44px;
   justify-content: center;
-  flex-wrap: wrap;
   align-items: center;
-  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.45s forwards;
+  animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.72s forwards;
   opacity: 0;
 }
 
 .actionBtn {
-  padding: 14px 36px;
-  background: rgba(26, 22, 18, 0.3);
-  border: 1px solid rgba(212, 207, 192, 0.25);
-  border-radius: 8px;
-  color: #d4cfc0;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow:
-    inset 0 0 20px rgba(168, 116, 68, 0.03),
-    0 0 40px rgba(0, 0, 0, 0.2),
-    0 10px 25px rgba(0, 0, 0, 0.35);
   position: relative;
-  overflow: hidden;
+  padding: 0;
+  background: none;
+  border: none;
+  color: rgba(35, 28, 22, 0.7);
+  font-family: "Libre Baskerville", serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.35s ease;
+  text-shadow:
+    0 1px 6px rgba(255, 255, 255, 0.25);
 }
 
-.actionBtn::before {
+/* Always-visible underline beneath each button */
+.actionBtn::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212, 207, 192, 0.1), transparent);
-  transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 1;
+  bottom: -5px;
+  left: 10%;
+  width: 80%;
+  height: 1px;
+  background: rgba(35, 28, 22, 0.25);
 }
 
-.actionBtn:hover::before {
-  left: 100%;
-}
-
-.actionBtn:hover {
-  background: rgba(40, 32, 24, 0.5);
-  border-color: rgba(212, 207, 192, 0.5);
-  color: #f0ede3;
-  box-shadow:
-    inset 0 0 20px rgba(168, 116, 68, 0.05),
-    0 0 50px rgba(212, 207, 192, 0.1),
-    0 0 80px rgba(0, 0, 0, 0.15),
-    0 15px 40px rgba(0, 0, 0, 0.4);
-  transform: translateY(-3px);
+.actionBtn:hover::after {
+  background: rgba(35, 28, 22, 0.5);
 }
 
 .actionBtn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-/* Mic button */
-.micButton {
-  width: 60px;
-  height: 60px;
-  min-width: 60px;
-  border-radius: 50%;
-  background: transparent;
-  border: 2px solid rgba(212, 207, 192, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow:
-    0 0 60px rgba(0, 0, 0, 0.25),
-    0 12px 30px rgba(0, 0, 0, 0.4);
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.micButton::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(212, 207, 192, 0.1), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 0;
-}
-
-.micButton:hover {
-  background: transparent;
-  border-color: rgba(212, 207, 192, 0.6);
-  box-shadow:
-    0 0 80px rgba(212, 207, 192, 0.15),
-    0 0 120px rgba(0, 0, 0, 0.2),
-    0 18px 45px rgba(0, 0, 0, 0.45);
-  transform: scale(1.08);
-}
-
-.micButton:hover::before {
-  opacity: 1;
-}
-
-.micButton:active {
-  transform: scale(0.95);
-}
-
-.micIcon {
-  position: relative;
-  z-index: 1;
-  color: #d4cfc0;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-}
-
-.micButton:hover .micIcon {
-  color: #f0ede3;
-  filter: drop-shadow(0 0 6px rgba(212, 207, 192, 0.4));
-  transform: scale(1.05);
-}
-
-/* Footer */
+/* ── Footer ── */
 .footer {
   position: relative;
   z-index: 5;
-  padding: 24px 48px;
+  padding: 20px 48px;
   text-align: center;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(196, 168, 130, 0.1);
-  margin-top: auto;
 }
 
 .disclaimer {
   font-family: "Cormorant Garamond", serif;
-  font-size: 14px;
-  color: #7a7a7a;
-  letter-spacing: 0.02em;
-  line-height: 1.6;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Animations */
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────── */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(14px);
   }
 
   to {
@@ -335,7 +467,7 @@
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: translateX(28px);
   }
 
   to {
@@ -347,7 +479,7 @@
 @keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(7px);
   }
 
   to {
@@ -356,12 +488,13 @@
   }
 }
 
-/* ── Chat mode ── */
+/* ─────────────────────────────────────────────
+   CHAT MODE
+   ───────────────────────────────────────────── */
 
 .chatContentWrapper {
   flex: 1;
   display: flex;
-  gap: 0;
   overflow: hidden;
   position: relative;
   z-index: 5;
@@ -369,118 +502,111 @@
   overscroll-behavior-x: none;
 }
 
-/* Messages area (scrollable) */
+/* Messages area */
 .messagesArea {
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: none;
-  padding: 28px 120px 160px 120px;
+  padding: 32px 52px 160px 52px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   height: 100%;
   width: 100%;
+  min-width: 0;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%,
+      black 5%,
+      black 88%,
+      transparent 100%);
+  mask-image: linear-gradient(to bottom,
+      transparent 0%,
+      black 5%,
+      black 88%,
+      transparent 100%);
 }
 
-/* Message bubbles */
+/* Insights sidebar — full-height glass panel */
+.insightsPanel {
+  width: 340px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 16px 140px;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Messages */
 .message {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 0;
-  animation: messageSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: messageSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
   width: 100%;
 }
 
 .message.user {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .message.assistant {
-  flex-direction: row;
-}
-
-.messageAvatar {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.aiAvatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(212, 165, 116, 0.12), rgba(168, 116, 68, 0.06));
-  border: 1px solid rgba(212, 165, 116, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: #d4a574;
-  backdrop-filter: blur(4px);
-}
-
-.userAvatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(168, 116, 68, 0.15), rgba(140, 90, 50, 0.08));
-  border: 1px solid rgba(168, 116, 68, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 500;
-  color: #f0ede3;
-  font-family: "Inter", sans-serif;
+  justify-content: flex-start;
 }
 
 .messageBubble {
-  max-width: 70%;
+  max-width: 65%;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .messageContent {
-  padding: 12px 18px;
-  border-radius: 16px;
-  font-family: "Inter", sans-serif;
-  font-size: 14.5px;
-  line-height: 1.7;
-  position: relative;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  padding: 14px 20px;
+  line-height: 1.85;
   word-wrap: break-word;
 }
 
 .message.user .messageContent {
-  background: rgba(168, 116, 68, 0.16);
-  border: 1px solid rgba(168, 116, 68, 0.22);
-  color: #f0ede3;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 250, 240, 0.92);
   border-radius: 16px 16px 4px 16px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.15);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.75;
 }
 
 .message.assistant .messageContent {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(0, 0, 0, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  color: #d4cfc0;
+  color: rgba(255, 245, 230, 0.9);
   border-radius: 16px 16px 16px 4px;
+  backdrop-filter: blur(24px) saturate(1.15);
+  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.9;
 }
 
 .messageTime {
-  font-size: 10px;
-  color: rgba(189, 161, 123, 0.35);
+  font-size: 11px;
+  color: rgba(255, 245, 230, 0.45);
   font-family: "Inter", sans-serif;
-  padding: 0 4px;
-  letter-spacing: 0.02em;
+  padding: 2px 4px;
+  letter-spacing: 0.03em;
 }
 
 .message.user .messageTime {
@@ -491,22 +617,21 @@
   text-align: left;
 }
 
-/* Typing indicator (inside bubble) */
+/* Typing indicator */
 .typingIndicator {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
-  padding: 2px 0;
+  padding: 3px 0;
 }
 
 .typingIndicator span {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: #bda17b;
-  opacity: 0.4;
-  animation: typingBounce 1.4s infinite;
+  background: rgba(196, 168, 130, 0.5);
+  animation: typingBounce 1.5s infinite;
 }
 
 .typingIndicator span:nth-child(2) {
@@ -523,16 +648,16 @@
   60%,
   100% {
     transform: translateY(0);
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
   30% {
-    transform: translateY(-6px);
-    opacity: 1;
+    transform: translateY(-4px);
+    opacity: 0.9;
   }
 }
 
-/* Chat input (fixed to viewport bottom) */
+/* Chat input bar */
 .chatInputArea {
   position: fixed;
   bottom: 0;
@@ -540,10 +665,10 @@
   right: 0;
   padding: 16px 48px 24px;
   background: linear-gradient(to top,
-      rgba(5, 5, 5, 1) 0%,
-      rgba(5, 5, 5, 0.97) 30%,
-      rgba(5, 5, 5, 0.85) 55%,
-      rgba(5, 5, 5, 0) 100%);
+      rgba(3, 2, 1, 0.97) 0%,
+      rgba(3, 2, 1, 0.88) 30%,
+      rgba(3, 2, 1, 0.6) 58%,
+      rgba(3, 2, 1, 0) 100%);
   z-index: 20;
   display: flex;
   justify-content: center;
@@ -556,221 +681,128 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 720px;
-  gap: 10px;
-  background: rgba(18, 16, 14, 0.65);
-  border: 1px solid rgba(196, 168, 130, 0.1);
-  border-radius: 16px;
-  padding: 6px 6px 6px 20px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  max-width: 700px;
+  gap: 8px;
+  background: rgba(10, 7, 4, 0.72);
+  border: 1px solid rgba(196, 168, 130, 0.12);
+  border-radius: 14px;
+  padding: 5px 5px 5px 20px;
+  backdrop-filter: blur(32px) saturate(1.3);
+  -webkit-backdrop-filter: blur(32px) saturate(1.3);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
-  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    0 8px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .chatInputContainer:focus-within {
-  background: rgba(22, 20, 17, 0.8);
-  border-color: rgba(196, 168, 130, 0.22);
+  background: rgba(14, 10, 6, 0.82);
+  border-color: rgba(196, 168, 130, 0.25);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 12px 48px rgba(0, 0, 0, 0.48),
     0 0 0 1px rgba(196, 168, 130, 0.06),
-    0 0 60px rgba(168, 116, 68, 0.03);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transform: translateY(-2px);
 }
 
 .chatInput {
   flex: 1;
-  padding: 10px 0;
+  padding: 11px 0;
   background: transparent;
   border: none;
-  color: #eaddcf;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 17px;
+  color: #e8dece;
+  font-family: "Libre Baskerville", serif;
+  font-size: 14.5px;
   letter-spacing: 0.01em;
   outline: none;
-  min-height: 22px;
   line-height: 1.5;
 }
 
 .chatInput::placeholder {
-  color: rgba(189, 161, 123, 0.3);
+  color: rgba(196, 168, 130, 0.28);
+  font-style: italic;
 }
 
-/* Send & new conversation buttons */
 .chatSubmitBtn {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  border-radius: 12px;
-  background: rgba(196, 168, 130, 0.1);
-  border: none;
-  color: #d4cfc0;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: rgba(196, 168, 130, 0.09);
+  border: 1px solid rgba(196, 168, 130, 0.12);
+  color: rgba(212, 192, 162, 0.6);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
 .chatSubmitBtn:hover:not(:disabled) {
-  background: rgba(196, 168, 130, 0.2);
-  color: #fff;
+  background: rgba(196, 168, 130, 0.18);
+  border-color: rgba(196, 168, 130, 0.28);
+  color: #ede4d3;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(196, 168, 130, 0.08);
 }
 
 .chatSubmitBtn:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: scale(0.93);
 }
 
 .chatSubmitBtn:disabled {
-  opacity: 0.2;
+  opacity: 0.15;
   cursor: default;
 }
 
-.newConversationBtn {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  border-radius: 10px;
-  background: rgba(196, 168, 130, 0.05);
-  border: 1px solid rgba(196, 168, 130, 0.12);
-  color: #bda17b;
+.homeBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid rgba(196, 168, 130, 0.08);
+  color: rgba(196, 168, 130, 0.32);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-  margin: 0;
-  padding: 0;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
-.newConversationBtn:hover {
-  background: rgba(196, 168, 130, 0.12);
-  border-color: rgba(196, 168, 130, 0.3);
-  color: #f0ede3;
-  transform: rotate(90deg);
+.homeBtn:hover {
+  background: rgba(196, 168, 130, 0.06);
+  border-color: rgba(196, 168, 130, 0.2);
+  color: rgba(212, 192, 162, 0.7);
+  transform: translateY(-1px);
 }
 
-/* Error message */
-.errorMessage {
-  padding: 14px 18px;
-  margin: 8px 0;
-  background: rgba(180, 100, 100, 0.06);
-  border: 1px solid rgba(180, 100, 100, 0.15);
-  border-radius: 12px;
-  animation: messageSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.errorContent {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.errorText {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 14px;
-  color: #d9a0a0;
-  margin: 0;
-  line-height: 1.5;
-  letter-spacing: 0.005em;
-}
-
-.errorActions {
-  display: flex;
-  gap: 8px;
-}
-
-.retryBtn,
-.dismissBtn {
-  padding: 6px 14px;
-  border: 1px solid rgba(180, 100, 100, 0.2);
-  border-radius: 8px;
-  background: transparent;
-  color: #d9a0a0;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  letter-spacing: 0.01em;
-}
-
-.retryBtn:hover {
-  background: rgba(180, 100, 100, 0.08);
-  border-color: rgba(180, 100, 100, 0.4);
-  color: #f0ede3;
-}
-
-.dismissBtn {
-  color: #bda17b;
-  border-color: rgba(196, 168, 130, 0.15);
-}
-
-.dismissBtn:hover {
-  background: rgba(196, 168, 130, 0.05);
-  border-color: rgba(196, 168, 130, 0.3);
-  color: #d4cfc0;
-}
-
-/* Empty state */
-.emptyState {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 60px 20px;
-}
-
-.emptyState p {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 17px;
-  color: rgba(189, 161, 123, 0.45);
-  text-align: center;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
-}
-
-/* Scrollbar */
-.messagesArea::-webkit-scrollbar {
-  width: 4px;
-}
-
-.messagesArea::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messagesArea::-webkit-scrollbar-thumb {
-  background: rgba(196, 168, 130, 0.12);
-  border-radius: 3px;
-}
-
-.messagesArea::-webkit-scrollbar-thumb:hover {
-  background: rgba(196, 168, 130, 0.25);
+.homeBtn:active {
+  transform: scale(0.92);
 }
 
 /* Insights panel */
 .insightsPanel {
-  width: 320px;
-  min-width: 320px;
-  padding: 20px 16px;
-  background: rgba(14, 12, 10, 0.3);
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  padding: 20px 14px 80px 14px;
+  background: rgba(6, 4, 2, 0.62);
   border-left: 1px solid rgba(196, 168, 130, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(32px) saturate(1.2);
+  -webkit-backdrop-filter: blur(32px) saturate(1.2);
   display: flex;
   flex-direction: column;
-  gap: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 10;
-  animation: slideInRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  flex-shrink: 0;
+  animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .insightsPanel::-webkit-scrollbar {
-  width: 3px;
+  width: 2px;
 }
 
 .insightsPanel::-webkit-scrollbar-track {
@@ -786,107 +818,179 @@
   background: rgba(196, 168, 130, 0.2);
 }
 
-/* Insights edge-tab arrow (mirrors sidebar pattern) */
+/* Insights edge tab */
 .insightsEdgeTab {
   position: fixed;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(14, 12, 10, 0.75);
-  border: 1px solid rgba(212, 165, 116, 0.12);
+  background: rgba(10, 8, 5, 0.85);
+  border: 1px solid rgba(196, 168, 130, 0.12);
   border-right: none;
-  border-radius: 10px 0 0 10px;
-  color: #d4a574;
-  padding: 16px 8px;
+  border-radius: 8px 0 0 8px;
+  color: rgba(196, 168, 130, 0.55);
+  padding: 14px 7px;
   cursor: pointer;
   z-index: 15;
-  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: -3px 0 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: -2px 0 16px rgba(0, 0, 0, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .insightsEdgeTab:hover {
-  padding-left: 14px;
-  background: rgba(212, 165, 116, 0.06);
-  color: #f0ede3;
-  box-shadow: -4px 0 20px rgba(212, 165, 116, 0.06);
+  padding-left: 12px;
+  background: rgba(196, 168, 130, 0.06);
+  color: rgba(220, 196, 158, 0.9);
 }
 
 .insightsEdgeTab.insightsTabOpen {
-  right: 320px;
+  right: 300px;
 }
 
-/* Responsive */
+/* Errors */
+.errorMessage {
+  padding: 12px 16px;
+  margin: 6px 0;
+  background: rgba(80, 20, 20, 0.55);
+  border: 1px solid rgba(180, 90, 90, 0.2);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  animation: messageSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.errorText {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 15px;
+  color: rgba(230, 170, 170, 0.9);
+  margin: 0;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.errorActions {
+  display: flex;
+  gap: 8px;
+}
+
+.retryBtn,
+.dismissBtn {
+  padding: 5px 14px;
+  border: 1px solid rgba(180, 90, 90, 0.22);
+  border-radius: 5px;
+  background: transparent;
+  color: rgba(230, 170, 170, 0.8);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.retryBtn:hover {
+  background: rgba(180, 90, 90, 0.1);
+  border-color: rgba(180, 90, 90, 0.4);
+  color: #ede4d3;
+}
+
+.dismissBtn {
+  color: rgba(196, 168, 130, 0.55);
+  border-color: rgba(196, 168, 130, 0.14);
+}
+
+.dismissBtn:hover {
+  background: rgba(196, 168, 130, 0.06);
+  border-color: rgba(196, 168, 130, 0.28);
+  color: rgba(212, 192, 162, 0.85);
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 60px 20px;
+}
+
+.emptyState p {
+  font-family: "Libre Baskerville", serif;
+  font-size: 15px;
+  font-style: italic;
+  color: rgba(196, 168, 130, 0.3);
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* Scrollbar */
+.messagesArea::-webkit-scrollbar {
+  width: 3px;
+}
+
+.messagesArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesArea::-webkit-scrollbar-thumb {
+  background: rgba(196, 168, 130, 0.1);
+  border-radius: 3px;
+}
+
+.messagesArea::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 168, 130, 0.22);
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────── */
+
 @media (max-width: 1200px) {
   .messagesArea {
-    padding: 24px 96px 160px 96px;
+    padding: 28px 40px 160px 40px;
   }
 }
 
 @media (max-width: 1024px) {
   .insightsPanel {
-    width: 280px;
-    min-width: 280px;
-    padding: 16px 14px;
+    width: 268px;
+    min-width: 268px;
   }
 
   .insightsEdgeTab.insightsTabOpen {
-    right: 280px;
+    right: 268px;
   }
 
   .messagesArea {
-    padding: 24px 72px 160px 72px;
+    padding: 24px 32px 160px 32px;
   }
 }
 
 @media (max-width: 768px) {
-  .welcomeHeading {
-    font-size: 48px;
-  }
-
-  .subtitle {
-    font-size: 20px;
-    margin-bottom: 32px;
-  }
-
-  .inputContainer {
-    max-width: 90%;
-  }
-
-  .actionButtons {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .actionBtn {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .footer {
-    padding: 20px 24px;
-  }
-
-  .disclaimer {
-    font-size: 12px;
+  :root {
+    --orb-size: min(88vw, 88vh);
   }
 
   .chatContentWrapper {
     flex-direction: column;
-    gap: 0;
   }
 
   .insightsPanel {
     width: 100%;
     min-width: unset;
+    height: auto;
+    max-height: 35vh;
     border-left: none;
     border-top: 1px solid rgba(196, 168, 130, 0.06);
-    padding: 14px 16px;
-    max-height: 35vh;
+    padding: 14px 16px 20px;
   }
 
   .insightsEdgeTab.insightsTabOpen {
@@ -896,18 +1000,38 @@
   }
 
   .messagesArea {
-    padding: 20px 16px 160px;
+    padding: 18px 18px 160px 18px;
+  }
+
+  .chatInputArea {
+    padding: 12px 12px 18px;
   }
 
   .chatInputContainer {
     max-width: 100%;
   }
 
-  .chatInputArea {
-    padding: 12px 14px 18px;
+  .messageBubble {
+    max-width: 82%;
   }
 
-  .messageBubble {
-    max-width: 85%;
+  .messageContent {
+    font-size: 14px;
+  }
+
+  .footer {
+    padding: 18px 24px;
+  }
+
+  .welcomeHeading {
+    font-size: 2.4rem;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .actionButtons {
+    gap: 36px;
   }
 }

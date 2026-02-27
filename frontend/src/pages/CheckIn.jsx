@@ -11,7 +11,7 @@ import { fetchEmotionInsights } from "../services/emotionService";
 import { useEdgeSwipe } from "../hooks/useEdgeSwipe";
 import styles from "./CheckIn.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export function CheckIn() {
   const navigate = useNavigate();

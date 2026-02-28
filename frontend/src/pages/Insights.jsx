@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Insights.module.css";
 import { getEmotionColor, EMOTION_COLORS } from "../services/emotionService";
+import { ScrollMist } from "../components/ScrollMist";
 
 export function Insights() {
   const navigate = useNavigate();
@@ -113,6 +114,23 @@ export function Insights() {
 
     return () => clearInterval(interval);
   }, [syncCount]);
+
+  // Auto-scroll to centre card on mobile
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const grid = document.querySelector(`.${styles.insightsGrid}`);
+      if (grid) {
+        // Scroll to second card (centre card = weekly patterns)
+        setTimeout(() => {
+          const cards = grid.children;
+          if (cards[1]) {
+            cards[1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        }, 300);
+      }
+    }
+  }, []);
 
   const transformInsightsData = (apiResponse) => {
     if (!apiResponse || apiResponse.total_logs === 0) return null;
@@ -323,6 +341,7 @@ export function Insights() {
 
   return (
     <div className={styles.container}>
+      <ScrollMist />
       <div className={styles.backgroundImage} />
       <div className={styles.contentWrapper}>
         {/* Sync Indicator */}
@@ -430,17 +449,23 @@ export function Insights() {
             padding: "0 2rem 2rem",
           }}
         >
-          {/* Top Grid */}
-          <div
-            className={styles.insightsGrid}
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "minmax(280px, 1fr) minmax(600px, 2fr) minmax(250px, 1fr)",
-              gap: "1.25rem",
-              marginBottom: "2rem",
-            }}
-          >
+          {/* Mobile: carousel. Desktop: grid */}
+          <div className={styles.insightsCarouselWrapper}>
+            {/* Swipe hint — only shows on mobile first load */}
+            <div className={styles.swipeHint}>
+              <span>←</span> swipe to explore <span>→</span>
+            </div>
+            
+            <div
+              className={styles.insightsGrid}
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "minmax(280px, 1fr) minmax(600px, 2fr) minmax(250px, 1fr)",
+                gap: "1.25rem",
+                marginBottom: "2rem",
+              }}
+            >
             {/* Radar - Emotion Balance */}
             <div
               className={styles.glassCard}
@@ -721,6 +746,7 @@ export function Insights() {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           </div>
 

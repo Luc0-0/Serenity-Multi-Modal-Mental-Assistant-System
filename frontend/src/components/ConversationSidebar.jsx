@@ -125,22 +125,17 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Edge-tab arrow toggle */}
+      {/* Ancient Scroll Toggle — Desktop only */}
       <button
-        className={`sidebarEdgeTab ${isOpen ? "open" : ""}`}
+        className={`sidebarScrollTrigger ${isOpen ? "open" : ""}`}
         onClick={() => onToggle?.(!isOpen)}
-        title={isOpen ? "Close History" : "Chat History"}
+        title={isOpen ? "Close History" : "Unfurl History"}
         aria-label={isOpen ? "Close chat history" : "Open chat history"}
       >
-        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-          <path
-            d={isOpen ? "M7 2L2 8L7 14" : "M3 2L8 8L3 14"}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <span className="scrollTriggerIcon">
+          {isOpen ? "⊗" : "📜"}
+        </span>
+        {!isOpen && <span className="scrollTriggerLabel">History</span>}
       </button>
 
       <div className={`conversationSidebar ${isOpen ? "open" : "collapsed"}`}>

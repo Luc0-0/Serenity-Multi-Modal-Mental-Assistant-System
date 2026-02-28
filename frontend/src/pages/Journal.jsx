@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { journalService } from "../services/journalService";
 import { Button } from "../components/Button";
 import EntryDetailModal from "../components/EntryDetailModal";
+import { ScrollMist } from "../components/ScrollMist";
 import styles from "./Journal.module.css";
 
 // ── Emotion palette ──────────────────────────────────────────────────────────
@@ -520,6 +521,7 @@ export function Journal() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className={styles.container}>
+      <ScrollMist />
       <div className={styles.backgroundImage} />
 
       <header className={styles.header}>

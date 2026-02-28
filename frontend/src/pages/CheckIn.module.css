@@ -984,19 +984,44 @@
   }
 
   .insightsPanel {
-    width: 100%;
-    min-width: unset;
-    height: auto;
-    max-height: 35vh;
+    position: fixed !important;
+    bottom: 70px;
+    right: 0;
+    left: 0;
+    width: 100% !important;
+    max-height: 45vh;
+    overflow-y: auto;
+    z-index: 200;
+    border-radius: 20px 20px 0 0;
+    background: rgba(8, 8, 12, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
     border-left: none;
-    border-top: 1px solid rgba(196, 168, 130, 0.06);
-    padding: 14px 16px 20px;
+    padding: 1rem;
+    transform: translateY(0);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .insightsEdgeTab {
+    position: fixed !important;
+    bottom: 80px;
+    right: 1rem;
+    top: auto !important;
+    z-index: 201;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .insightsEdgeTab.insightsTabOpen {
-    right: 0;
-    top: auto;
-    bottom: 60%;
+    right: 1rem;
+    bottom: 80px;
   }
 
   .messagesArea {

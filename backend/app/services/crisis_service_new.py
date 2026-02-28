@@ -2,16 +2,31 @@ import logging
 from typing import Optional, List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.crisis_event import CrisisEvent
-from app.services.engines.factory import get_crisis_engine
 
 logger = logging.getLogger(__name__)
 
 
 class CrisisService:
-    """Crisis detection and response via pluggable engine."""
+    """Crisis detection and response via explicit self-harm keywords only."""
+    
+    # Strict self-harm keywords - must match emotion_service.detect_crisis_signals()
+    CRISIS_KEYWORDS = [
+        "hurt myself",
+        "cut myself",
+        "kill myself",
+        "suicide",
+        "suicidal",
+        "end it all",
+        "overdose",
+        "not worth living",
+        "better off dead",
+        "want to die",
+        "don't want to live",
+        "harm myself"
+    ]
     
     def __init__(self):
-        self.engine = get_crisis_engine()
+        pass
     
     async def assess_threat(
         self,
@@ -20,22 +35,54 @@ class CrisisService:
         conversation_history: Optional[List[str]] = None,
         user_id: Optional[int] = None
     ) -> Dict:
-        """Assess crisis threat level."""
-        try:
-            return await self.engine.assess(
-                message=message,
-                emotion_label=emotion_label,
-                history=conversation_history
-            )
-        except Exception as e:
-            logger.error(f"Crisis assessment failed: {e}")
+        """Assess crisis threat level using strict self-harm keywords only.
+        
+        Only triggers crisis mode for explicit self-harm/suicide keywords.
+        Words like "anxious", "sad", "struggling" will NOT trigger crisis mode.
+        """
+        message_lower = message.lower()
+        
+        # Check for explicit self-harm keywords
+        found_keywords = [kw for kw in self.CRISIS_KEYWORDS if kw in message_lower]
+        
+        if found_keywords:
+            logger.warning(f"Crisis keywords detected: {found_keywords}")
             return {
-                'requires_escalation': False,
-                'severity': None,
-                'confidence': 0.0,
-                'response': None,
-                'resources': []
+                'requires_escalation': True,
+                'severity': 'crisis',
+                'confidence': 0.95,
+                'response': (
+                    "🆘 I'm really concerned about your safety right now. "
+                    "Please reach out to a professional immediately:\n\n"
+                    "📞 Call 988 (Suicide Prevention Lifeline)\n"
+                    "💬 Text 'HELLO' to 741741 (Crisis Text Line)\n"
+                    "🚨 Call 911 if you're in immediate danger\n\n"
+                    "You matter. Help is available 24/7."
+                ),
+                'resources': [
+                    {
+                        'name': 'National Suicide Prevention Lifeline',
+                        'phone': '988',
+                        'type': 'crisis',
+                        'available': '24/7'
+                    },
+                    {
+                        'name': 'Crisis Text Line',
+                        'text': "Text 'HELLO' to 741741",
+                        'type': 'crisis',
+                        'available': '24/7'
+                    }
+                ]
             }
+        
+        # No crisis detected
+        return {
+            'requires_escalation': False,
+            'severity': None,
+            'confidence': 0.0,
+            'response': None,
+            'resources': []
+        }
     
     async def log_crisis_event(
         self,

@@ -13,3 +13,9 @@
 .app select {
   cursor: none !important;
 }
+
+@media (max-width: 768px) {
+  .app {
+    padding-bottom: 70px;
+  }
+}

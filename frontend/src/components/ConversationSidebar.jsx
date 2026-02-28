@@ -3,7 +3,7 @@ import "./ConversationSidebar.css";
 import { TrashIcon } from "./Icons";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 export function ConversationSidebar({
   currentConversationId,
@@ -26,13 +26,18 @@ export function ConversationSidebar({
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(`${API_BASE_URL}/api/conversations/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/api/conversations/`, {
+        headers,
+      });
       if (response.ok) {
         const data = await response.json();
-        console.log("[Sidebar] Fetched conversations:", data.map(c => ({ id: c.id, title: c.title })));
+        console.log(
+          "[Sidebar] Fetched conversations:",
+          data.map((c) => ({ id: c.id, title: c.title })),
+        );
         const sorted = (Array.isArray(data) ? data : []).sort(
           (a, b) =>
             new Date(b.updated_at || b.created_at) -
@@ -106,16 +111,13 @@ export function ConversationSidebar({
   const handleDeleteConversation = async (id, e) => {
     e.stopPropagation();
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(
-        `${API_BASE_URL}/api/conversations/${id}`,
-        {
-          method: "DELETE",
-          headers,
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/api/conversations/${id}`, {
+        method: "DELETE",
+        headers,
+      });
       if (response.ok) {
         setConversations((prev) => prev.filter((c) => c.id !== id));
       }
@@ -126,31 +128,26 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Desktop Conversation History Bar — sticky below navbar */}
-      <div className={`desktopConversationBar ${isDesktopExpanded ? "expanded" : "collapsed"}`}>
-        <div className="desktopBarContent">
-          <div className="desktopBarTrigger">
-            <button
-              className={`triggerPill ${isDesktopExpanded ? "open" : "closed"}`}
-              onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
-              aria-label={isDesktopExpanded ? "Collapse conversation history" : "Expand conversation history"}
-            >
-              Conversations {isDesktopExpanded ? "▴" : "▾"}
-            </button>
-          </div>
-          <button
-            className="newConvBtnDesktop"
-            onClick={() => {
-              onNewConversation();
-              setIsDesktopExpanded(false);
-            }}
-          >
-            + New
-          </button>
-        </div>
+      {/* Desktop Conversation History Bar — left-aligned dropdown */}
+      <div
+        className={`desktopConversationBar ${isDesktopExpanded ? "expanded" : "collapsed"}`}
+      >
+        <button
+          className={`triggerPill ${isDesktopExpanded ? "open" : "closed"}`}
+          onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
+          aria-label={
+            isDesktopExpanded
+              ? "Collapse conversation history"
+              : "Expand conversation history"
+          }
+        >
+          Conversations {isDesktopExpanded ? "▴" : "▾"}
+        </button>
 
-        {/* Expanded conversation list */}
-        <div className={`desktopBarExpanded ${isDesktopExpanded ? "visible" : "hidden"}`}>
+        {/* Expanded conversation list dropdown */}
+        <div
+          className={`desktopBarExpanded ${isDesktopExpanded ? "visible" : "hidden"}`}
+        >
           <div className="desktopConvList">
             {loading ? (
               <p className="loadingText">Loading...</p>
@@ -168,7 +165,11 @@ export function ConversationSidebar({
                 >
                   <div className="convContent">
                     <p className="convTitle">{getConversationTitle(conv)}</p>
-                    <p className="convDate">{formatConversationDate(conv.updated_at || conv.created_at)}</p>
+                    <p className="convDate">
+                      {formatConversationDate(
+                        conv.updated_at || conv.created_at,
+                      )}
+                    </p>
                   </div>
                   <button
                     className="deleteBtn"
@@ -183,6 +184,15 @@ export function ConversationSidebar({
               ))
             )}
           </div>
+          <button
+            className="newConvBtnDesktop"
+            onClick={() => {
+              onNewConversation();
+              setIsDesktopExpanded(false);
+            }}
+          >
+            + New
+          </button>
         </div>
       </div>
 
@@ -194,9 +204,7 @@ export function ConversationSidebar({
         title={isOpen ? "Close History" : "Unfurl History"}
         aria-label={isOpen ? "Close chat history" : "Open chat history"}
       >
-        <span className="scrollTriggerIcon">
-          {isOpen ? "⊗" : "📜"}
-        </span>
+        <span className="scrollTriggerIcon">{isOpen ? "⊗" : "📜"}</span>
         {!isOpen && <span className="scrollTriggerLabel">History</span>}
       </button>
 

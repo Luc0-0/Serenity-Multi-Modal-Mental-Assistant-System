@@ -1,17 +1,5 @@
 .mistTop {
-  position: fixed;
-  top: 52px;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: linear-gradient(
-    to bottom,
-    rgba(240, 235, 225, 0.18) 0%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 50;
-  animation: mistFadeIn 0.5s ease;
+  display: none;
 }
 
 .mistBottom {
@@ -19,12 +7,12 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 140px;
+  height: 70px;
   background: linear-gradient(
     to top,
     rgba(240, 235, 225, 0.22) 0%,
-    rgba(240, 235, 225, 0.12) 70%,
-    rgba(240, 235, 225, 0.0) 100%
+    rgba(240, 235, 225, 0.08) 60%,
+    rgba(240, 235, 225, 0) 100%
   );
   pointer-events: none;
   z-index: 50;
@@ -32,13 +20,17 @@
 }
 
 @keyframes mistFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
   .mistBottom {
     bottom: 70px;
-    height: 120px;
+    height: 70px;
   }
 }

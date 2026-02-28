@@ -181,27 +181,50 @@
     padding: 0 1rem;
   }
 
-  /* Hamburger Menu Button */
+  /* Hamburger Menu Button — Neumorphism style */
   .hamburgerMenu {
-    background: none;
-    border: none;
-    color: rgba(197, 168, 124, 0.7);
+    background: linear-gradient(
+      135deg,
+      rgba(30, 26, 20, 0.9) 0%,
+      rgba(20, 18, 15, 0.95) 100%
+    );
+    border: 1px solid rgba(197, 168, 124, 0.1);
+    color: rgba(197, 168, 124, 0.65);
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow:
+      inset 1px 1px 3px rgba(255, 255, 255, 0.08),
+      inset -1px -1px 3px rgba(0, 0, 0, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   .hamburgerMenu:hover {
     color: rgba(197, 168, 124, 0.95);
-    background: rgba(197, 168, 124, 0.08);
+    background: linear-gradient(
+      135deg,
+      rgba(40, 36, 30, 0.95) 0%,
+      rgba(30, 26, 20, 1) 100%
+    );
+    box-shadow:
+      inset 1px 1px 3px rgba(255, 255, 255, 0.12),
+      inset -1px -1px 3px rgba(0, 0, 0, 0.5),
+      0 6px 16px rgba(197, 168, 124, 0.1);
+  }
+
+  .hamburgerMenu:active {
+    box-shadow:
+      inset 2px 2px 4px rgba(0, 0, 0, 0.5),
+      inset -2px -2px 4px rgba(255, 255, 255, 0.05);
   }
 
   .hamburgerMenu svg {
     display: block;
+    stroke-width: 2;
   }
 
   /* Show mobile bottom tab bar */
@@ -219,9 +242,10 @@
     padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
     justify-content: space-around;
     align-items: center;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.04),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    box-shadow:
+      0 -4px 20px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
 
   .mobileTab {
@@ -241,8 +265,9 @@
 
   .mobileActive {
     background: rgba(0, 0, 0, 0.3);
-    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.5),
-                inset -1px -1px 4px rgba(255, 255, 255, 0.03);
+    box-shadow:
+      inset 2px 2px 6px rgba(0, 0, 0, 0.5),
+      inset -1px -1px 4px rgba(255, 255, 255, 0.03);
     color: rgba(197, 168, 124, 0.95);
   }
 

@@ -60,7 +60,7 @@ async def startup_event():
     logger.info(f"✓ LLM service created (using {llm_service.engine.provider_name})")
     
     crisis_service = CrisisService()
-    logger.info(f"✓ Crisis service created (using {crisis_service.engine.provider_name})")
+    logger.info(f"✓ Crisis service created (using keyword-based detection)")
     
     logger.info("✓ All services initialized successfully")
 

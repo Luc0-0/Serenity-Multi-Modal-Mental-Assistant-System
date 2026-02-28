@@ -38,7 +38,7 @@ export const fetchEmotionInsights = async (userId, days = 7) => {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/emotions/insights/?days=${days}`,
+      `${API_BASE_URL}/api/emotions/insights/?days=${days}`,
       { headers }
     );
 
@@ -71,7 +71,7 @@ export const fetchMiniEmotionSnapshot = async (userId) => {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/emotions/mini/?user_id=${userId}`);
+    const response = await fetch(`${API_BASE_URL}/api/emotions/mini/?user_id=${userId}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -105,7 +105,7 @@ export const fetchEmotionHistory = async (userId, timeRange = '7d') => {
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/emotions/history/?user_id=${userId}&range=${timeRange}`
+      `${API_BASE_URL}/api/emotions/history/?user_id=${userId}&range=${timeRange}`
     );
 
     if (!response.ok) {

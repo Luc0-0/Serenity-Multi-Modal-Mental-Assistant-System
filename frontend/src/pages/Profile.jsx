@@ -37,7 +37,7 @@ export function Profile() {
   const fetchProfileData = async () => {
     try {
       setIsLoading(true);
-      const profileRes = await apiClient.get("/auth/profile/");
+      const profileRes = await apiClient.get("/api/auth/profile/");
       const profileUser = profileRes.user || profileRes;
 
       setProfile(profileUser);
@@ -62,7 +62,7 @@ export function Profile() {
       }));
 
       try {
-        const insightRes = await apiClient.get("/emotions/insights/?days=7");
+        const insightRes = await apiClient.get("/api/emotions/insights/?days=7");
         const dominantEmotion = insightRes.dominant_emotion || "neutral";
         const dominancePct =
           insightRes.total_logs > 0
@@ -82,7 +82,7 @@ export function Profile() {
       }
 
       try {
-        const journalRes = await apiClient.get("/journal/entries/?limit=100");
+        const journalRes = await apiClient.get("/api/journal/entries/?limit=100");
         let totalWords = 0;
         if (journalRes.entries && Array.isArray(journalRes.entries)) {
           journalRes.entries.forEach((entry) => {
@@ -105,7 +105,7 @@ export function Profile() {
 
   const handleSaveProfile = async () => {
     try {
-      const updated = await apiClient.put("/auth/profile/", editData);
+      const updated = await apiClient.put("/api/auth/profile/", editData);
       setProfile(updated.user || updated);
       setIsEditing(false);
       success("Profile updated successfully");
@@ -123,7 +123,7 @@ export function Profile() {
   const handleDeleteAccount = async () => {
     if (!window.confirm("Are you sure? This action cannot be undone.")) return;
     try {
-      await apiClient.delete("/auth/profile/");
+      await apiClient.delete("/api/auth/profile/");
       logout();
       navigate("/");
       success("Account deleted");

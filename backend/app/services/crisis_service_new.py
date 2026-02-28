@@ -53,9 +53,9 @@ class CrisisService:
                 message_id=message_id,
                 severity=assessment.get('severity'),
                 confidence=assessment.get('confidence', 0.0),
-                detected_keywords=None,
-                response_provided=assessment.get('response'),
-                resources_offered=len(assessment.get('resources', []))
+                keywords_detected=None,
+                response_sent=assessment.get('response'),
+                pattern_detected=None
             )
             
             db.add(crisis_event)

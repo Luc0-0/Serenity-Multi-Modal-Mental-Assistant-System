@@ -237,11 +237,13 @@ async def chat_endpoint(
         logger.warning(f"Analytics query failed: {str(e)}")
     
     # CRITICAL PATH: Generate LLM response
+    # Only trigger crisis mode for actual crisis keywords, not just negative emotions
+    actual_crisis = await main_app.emotion_service.detect_crisis_signals(request.message)
     reply = await main_app.llm_service.get_response(
         user_message=request.message,
         conversation_history=history,
         emotional_insight=insight,
-        crisis_detected=insight.high_risk if insight else False,
+        crisis_detected=actual_crisis,
         memory_bundle=memory_bundle,
     )
     
@@ -379,11 +381,13 @@ async def chat_stream_endpoint(
         user_message=request.message,
     )
     
+    # Only trigger crisis mode for actual crisis keywords, not just negative emotions
+    actual_crisis = await main_app.emotion_service.detect_crisis_signals(request.message)
     reply = await main_app.llm_service.get_response(
         user_message=request.message,
         conversation_history=history,
         emotional_insight=insight,
-        crisis_detected=insight.high_risk if insight else False,
+        crisis_detected=actual_crisis,
         memory_bundle=memory_bundle,
     )
     

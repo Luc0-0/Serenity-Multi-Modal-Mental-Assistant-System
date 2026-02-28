@@ -1,33 +1,49 @@
 import React, { useState, useEffect } from "react";
 import "./SerenityDeck.css";
 
-/* ─── ICONS ─── */
+/* ─── ICONS (Custom Luxury Set) ─── */
 const ChevronRight = () => (
   <svg
-    width="20"
-    height="20"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1"
+  >
+    <path d="M10 17l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+// The "Cartier" Pin: A slender needle with a pearl head
+const LuxuryPin = ({ filled }) => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.2"
+  >
+    {/* The Head */}
+    <circle cx="12" cy="5" r="3" fill={filled ? "currentColor" : "none"} />
+    {/* The Needle */}
+    <path d="M12 8v14" strokeLinecap="round" />
+    {/* The Shine (Detail) */}
+    <path d="M12 22l0 0" strokeLinecap="round" strokeWidth="2" opacity="0.5" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="1.5"
   >
-    <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const PinIcon = ({ filled }) => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill={filled ? "currentColor" : "none"}
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M12 2v10" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M12 22v-6" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="12" cy="12" r="3" />
+    <path d="M12 4v16M4 12h16" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -38,26 +54,13 @@ const TrashIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="1.5"
+    strokeWidth="1.2"
   >
     <path
       d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -69,19 +72,15 @@ export function SerenityDeck({
   onSelectConversation,
   onNewConversation,
   userId,
-  onPinChange, // Prop to tell parent to shift layout
+  onPinChange,
 }) {
   const [conversations, setConversations] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fetch Logic
   useEffect(() => {
-    // We only fetch if open/pinned to save resources, or on first mount if needed
-    if (isOpen || isPinned) {
-      fetchConversations();
-    }
+    if (isOpen || isPinned) fetchConversations();
   }, [isOpen, isPinned, userId]);
 
   const fetchConversations = async () => {
@@ -127,22 +126,19 @@ export function SerenityDeck({
   const togglePin = () => {
     const newState = !isPinned;
     setIsPinned(newState);
-    setIsOpen(newState); // Keep it open if pinning
+    setIsOpen(newState);
     if (onPinChange) onPinChange(newState);
   };
 
-  // Interaction Handlers
   const handleMouseEnter = () => {
     if (!isPinned) setIsOpen(true);
   };
-
   const handleMouseLeave = () => {
     if (!isPinned) setIsOpen(false);
   };
 
   const getTitle = (c) =>
     c.title || c.first_message?.substring(0, 30) || "Untitled Reflection";
-
   const getDate = (d) => {
     try {
       return new Date(d).toLocaleDateString("en-US", {
@@ -156,77 +152,73 @@ export function SerenityDeck({
 
   return (
     <>
-      {/* 1. THE GLASS WHISPER TAB 
-        - Permanently visible (unless pinned/open) 
-        - Subtle cue to interaction
-      */}
+      {/* 1. The Glass Handle (Trigger) */}
       <div
-        className={`deck-tab-trigger ${isOpen || isPinned ? "hidden" : ""}`}
+        className={`deck-trigger-zone ${isOpen || isPinned ? "hidden" : ""}`}
         onMouseEnter={handleMouseEnter}
-        aria-label="Open History"
       >
-        <div className="tab-glass">
+        <div className="trigger-pill">
           <ChevronRight />
         </div>
       </div>
 
-      {/* 2. THE SLIDING DECK DRAWER
-        - Slides out from left
-      */}
+      {/* 2. The Deck (Drawer) */}
       <div
         className={`deck-drawer ${isOpen || isPinned ? "open" : ""}`}
         onMouseLeave={handleMouseLeave}
       >
-        {/* Header: Title + Pin */}
-        <div className="deck-header">
-          <span className="deck-title">Archives</span>
-          <button
-            className={`pin-btn ${isPinned ? "active" : ""}`}
-            onClick={togglePin}
-            title={isPinned ? "Unpin (Float)" : "Pin (Dock)"}
-          >
-            <PinIcon filled={isPinned} />
-          </button>
-        </div>
+        {/* NOISE LAYER: This creates the "smoked" texture */}
+        <div className="deck-noise" />
 
-        {/* New Conversation Button */}
-        <button className="deck-new-btn" onClick={onNewConversation}>
-          <PlusIcon />
-          <span>Begin Anew</span>
-        </button>
-
-        {/* Conversation List */}
-        <div className="deck-list">
-          {loading && conversations.length === 0 && (
-            <div className="deck-status">Loading reflections...</div>
-          )}
-
-          {!loading && conversations.length === 0 && (
-            <div className="deck-status">Your journal is empty.</div>
-          )}
-
-          {conversations.map((c) => (
-            <div
-              key={c.id}
-              className={`deck-item ${currentConversationId === c.id ? "active" : ""}`}
-              onClick={() => onSelectConversation(c.id)}
+        <div className="deck-inner">
+          {/* Header */}
+          <div className="deck-header">
+            <span className="deck-logo">Archives</span>
+            <button
+              className={`deck-pin-btn ${isPinned ? "active" : ""}`}
+              onClick={togglePin}
+              title={isPinned ? "Unpin" : "Pin Sidebar"}
             >
-              <div className="item-content">
-                <span className="item-title">{getTitle(c)}</span>
-                <span className="item-date">
-                  {getDate(c.updated_at || c.created_at)}
-                </span>
-              </div>
+              <LuxuryPin filled={isPinned} />
+            </button>
+          </div>
 
-              <button
-                className="item-delete"
-                onClick={(e) => handleDelete(e, c.id)}
-                title="Delete"
+          {/* New Chat Button */}
+          <button className="deck-new-btn" onClick={onNewConversation}>
+            <PlusIcon />
+            <span>New Chat</span>
+          </button>
+
+          {/* List */}
+          <div className="deck-list">
+            {loading && conversations.length === 0 && (
+              <div className="deck-status">Loading reflections...</div>
+            )}
+            {!loading && conversations.length === 0 && (
+              <div className="deck-status">Your journal is empty.</div>
+            )}
+
+            {conversations.map((c) => (
+              <div
+                key={c.id}
+                className={`deck-item ${currentConversationId === c.id ? "active" : ""}`}
+                onClick={() => onSelectConversation(c.id)}
               >
-                <TrashIcon />
-              </button>
-            </div>
-          ))}
+                <div className="item-content">
+                  <span className="item-title">{getTitle(c)}</span>
+                  <span className="item-date">
+                    {getDate(c.updated_at || c.created_at)}
+                  </span>
+                </div>
+                <button
+                  className="item-delete"
+                  onClick={(e) => handleDelete(e, c.id)}
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </>

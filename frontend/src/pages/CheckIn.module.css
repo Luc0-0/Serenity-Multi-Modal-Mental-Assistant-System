@@ -533,8 +533,18 @@
 
 .messageContent {
   padding: 14px 20px;
-  line-height: 1.85;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
   word-wrap: break-word;
+}
+
+.messageContent p {
+  margin-bottom: 0.6rem;
+  line-height: 1.55;
+}
+
+.messageContent p:last-child {
+  margin-bottom: 0;
 }
 
 .message.user .messageContent {
@@ -548,7 +558,7 @@
   font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 400;
-  line-height: 1.75;
+  line-height: 1.55;
 }
 
 .message.assistant .messageContent {
@@ -563,7 +573,7 @@
   font-size: 1.25rem;
   font-weight: 400;
   font-style: italic;
-  line-height: 1.9;
+  line-height: 1.55;
 }
 
 .messageTime {
@@ -816,6 +826,10 @@
   color: rgba(196, 168, 130, 0.3);
   text-align: center;
   line-height: 1.7;
+}
+
+.messageBubble:hover [data-copy-wrapper] {
+  opacity: 1 !important;
 }
 
 /* Custom Scrollbar */

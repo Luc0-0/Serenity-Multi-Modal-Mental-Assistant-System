@@ -1,0 +1,292 @@
+/* ─── VARIABLES ─── */
+:root {
+  --deck-width: 280px;
+  --deck-bg: rgba(13, 10, 8, 0.92); /* Deep warm black */
+  --deck-border: rgba(196, 168, 130, 0.12); /* Muted gold */
+  --deck-gold: #d4a574;
+  --deck-text-main: #e8dece;
+  --deck-text-muted: rgba(232, 222, 206, 0.5);
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── 1. THE GLASS WHISPER TAB (Visual Cue) ─── */
+.deck-tab-trigger {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px; /* Hit area width */
+  height: 100vh;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align tab to left edge */
+  cursor: pointer;
+  transition: opacity 0.4s ease;
+}
+
+.deck-tab-trigger.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The visible "pill" inside the trigger area */
+.tab-glass {
+  width: 24px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(196, 168, 130, 0.15);
+  border-right: 1px solid rgba(196, 168, 130, 0.15);
+  border-bottom: 1px solid rgba(196, 168, 130, 0.15);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(196, 168, 130, 0.5);
+  transition: all 0.4s var(--ease-luxury);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+  /* Subtle breathing animation to invite click */
+  animation: tabBreathe 4s infinite ease-in-out;
+}
+
+@keyframes tabBreathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(2px);
+    box-shadow: 0 0 15px rgba(196, 168, 130, 0.15);
+  }
+}
+
+/* Hover effect for the Tab */
+.deck-tab-trigger:hover .tab-glass {
+  width: 32px;
+  background: rgba(196, 168, 130, 0.1);
+  color: var(--deck-gold);
+  border-color: rgba(196, 168, 130, 0.4);
+  animation: none; /* Stop breathing on hover */
+  opacity: 1;
+}
+
+/* ─── 2. THE DRAWER (Sidebar) ─── */
+.deck-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--deck-width);
+  height: 100vh;
+  background: var(--deck-bg);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border-right: 1px solid var(--deck-border);
+  z-index: 2001;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+
+  /* Smooth Slide Logic */
+  transform: translateX(-105%); /* Hidden */
+  transition: transform 0.6s var(--ease-luxury);
+  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.4);
+}
+
+.deck-drawer.open {
+  transform: translateX(0);
+}
+
+/* ─── HEADER ─── */
+.deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.08);
+}
+
+.deck-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.25rem;
+  color: var(--deck-gold);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-shadow: 0 0 20px rgba(212, 165, 116, 0.2);
+}
+
+/* Pin Button */
+.pin-btn {
+  background: transparent;
+  border: none;
+  color: rgba(196, 168, 130, 0.3);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.pin-btn:hover {
+  color: var(--deck-gold);
+  background: rgba(196, 168, 130, 0.08);
+  transform: scale(1.05);
+}
+
+.pin-btn.active {
+  color: var(--deck-gold);
+  background: rgba(196, 168, 130, 0.15);
+  box-shadow: inset 0 0 10px rgba(196, 168, 130, 0.05);
+}
+
+/* ─── NEW BUTTON ─── */
+.deck-new-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 28px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0)
+  );
+  border: 1px solid rgba(196, 168, 130, 0.15);
+  border-radius: 8px;
+  color: var(--deck-text-main);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deck-new-btn:hover {
+  background: rgba(196, 168, 130, 0.08);
+  border-color: rgba(196, 168, 130, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.deck-new-btn:active {
+  transform: scale(0.98);
+}
+
+/* ─── LIST AREA ─── */
+.deck-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px; /* Space for scrollbar */
+}
+
+/* Custom Scrollbar */
+.deck-list::-webkit-scrollbar {
+  width: 3px;
+}
+.deck-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.deck-list::-webkit-scrollbar-thumb {
+  background: rgba(196, 168, 130, 0.1);
+  border-radius: 4px;
+}
+.deck-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 168, 130, 0.25);
+}
+
+/* Status Text (Empty/Loading) */
+.deck-status {
+  text-align: center;
+  padding: 40px 10px;
+  color: var(--deck-text-muted);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* ─── LIST ITEMS ─── */
+.deck-item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.deck-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.deck-item.active {
+  background: rgba(196, 168, 130, 0.08);
+  border-color: rgba(196, 168, 130, 0.18);
+}
+
+/* Text Content */
+.item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.item-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.1rem;
+  color: var(--deck-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.item-date {
+  font-family: "Inter", sans-serif; /* Clean sans-serif for tiny dates */
+  font-size: 0.65rem;
+  color: var(--deck-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Delete Button */
+.item-delete {
+  background: transparent;
+  border: none;
+  color: rgba(200, 100, 100, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+}
+
+.deck-item:hover .item-delete {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.item-delete:hover {
+  background: rgba(200, 100, 100, 0.1);
+  color: #ff8888;
+}

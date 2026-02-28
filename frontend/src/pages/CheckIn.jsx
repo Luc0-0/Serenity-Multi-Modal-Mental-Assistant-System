@@ -4,11 +4,10 @@ import ReactMarkdown from "react-markdown";
 import { useAuth } from "../context/AuthContext";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 import { CrisisAlert } from "../components/CrisisAlert";
-import { ConversationSidebar } from "../components/ConversationSidebar";
+import { SerenityDeck } from "../components/SerenityDeck"; // Changed import
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { sendChatMessage, getErrorDisplay } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
-import { useEdgeSwipe } from "../hooks/useEdgeSwipe";
 import styles from "./CheckIn.module.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -31,27 +30,12 @@ export function CheckIn() {
   const [lastFailedMessage, setLastFailedMessage] = useState(null);
 
   const [showInsights, setShowInsights] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // NEW: State for the pinned deck layout shift
+  const [isDeckPinned, setIsDeckPinned] = useState(false);
+
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
-
-  // Left edge swipe only — right swipe removed (caused flickering)
-  useEdgeSwipe({
-    edge: "left",
-    isOpen: sidebarOpen,
-    onOpen: () => setSidebarOpen(true),
-    onClose: () => setSidebarOpen(false),
-  });
-
-  // Listen for hamburger menu toggle from Navbar
-  useEffect(() => {
-    const handleToggleSidebar = () => {
-      setSidebarOpen((prev) => !prev);
-    };
-    window.addEventListener("toggleSidebar", handleToggleSidebar);
-    return () =>
-      window.removeEventListener("toggleSidebar", handleToggleSidebar);
-  }, []);
 
   const inputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -325,16 +309,24 @@ export function CheckIn() {
 
   return (
     <>
-      <ConversationSidebar
+      {/* ── New Serenity Deck Component ── */}
+      <SerenityDeck
         currentConversationId={conversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
         userId={userId}
-        isOpen={sidebarOpen}
-        onToggle={setSidebarOpen}
+        onPinChange={setIsDeckPinned}
       />
 
-      <div className={`${styles.container} ${isInChat ? styles.chatMode : ""}`}>
+      {/* ── Main Container with Dynamic Margin for Pinning ── */}
+      <div
+        className={`${styles.container} ${isInChat ? styles.chatMode : ""}`}
+        style={{
+          marginLeft: isDeckPinned ? "280px" : "0",
+          width: isDeckPinned ? "calc(100% - 280px)" : "100%",
+          transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
+      >
         {/* Background — no inline filter ever */}
         <div className={styles.backgroundImage} />
 

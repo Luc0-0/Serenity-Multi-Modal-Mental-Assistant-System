@@ -17,6 +17,15 @@ export function Navbar() {
 
   return (
     <>
+      {/* MOBILE top logo bar — only visible on mobile */}
+      <div className={styles.mobileTopBar}>
+        <img
+          src="/images/logonav1.png"
+          alt="Serenity"
+          style={{ height: "28px", width: "auto" }}
+        />
+      </div>
+
       {/* DESKTOP navbar — hide on mobile */}
       <nav className={styles.navbar}>
         <div className={styles.logo} onClick={() => navigate("/check-in")}>

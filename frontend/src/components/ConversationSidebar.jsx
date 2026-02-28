@@ -15,6 +15,7 @@ export function ConversationSidebar({
 }) {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const { refreshTrigger } = useConversationRefresh();
 
   useEffect(() => {
@@ -125,9 +126,85 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Ancient Scroll Toggle — Desktop only */}
+      {/* Desktop Conversation History Bar — sticky below navbar */}
+      <div className={`desktopConversationBar ${isDesktopExpanded ? "expanded" : "collapsed"}`}>
+        <div className="desktopBarContent">
+          <div className="conversationPills">
+            {conversations.slice(0, 3).map((conv) => (
+              <button
+                key={conv.id}
+                className={`conversationPill ${currentConversationId === conv.id ? "active" : ""}`}
+                onClick={() => {
+                  onSelectConversation(conv.id);
+                  setIsDesktopExpanded(false);
+                }}
+                title={getConversationTitle(conv)}
+              >
+                {getConversationTitle(conv).substring(0, 20)}
+              </button>
+            ))}
+          </div>
+          <div className="desktopBarActions">
+            <button
+              className="newConvBtnDesktop"
+              onClick={() => {
+                onNewConversation();
+                setIsDesktopExpanded(false);
+              }}
+            >
+              + New
+            </button>
+            <button
+              className={`expandChevron ${isDesktopExpanded ? "rotated" : ""}`}
+              onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
+              aria-label={isDesktopExpanded ? "Collapse conversation history" : "Expand conversation history"}
+            >
+              ⌄
+            </button>
+          </div>
+        </div>
+
+        {/* Expanded conversation list */}
+        <div className="desktopBarExpanded">
+          <div className="desktopConvList">
+            {loading ? (
+              <p className="loadingText">Loading...</p>
+            ) : conversations.length === 0 ? (
+              <p className="emptyText">No conversations yet</p>
+            ) : (
+              conversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  className={`desktopConvItem ${currentConversationId === conv.id ? "active" : ""}`}
+                  onClick={() => {
+                    onSelectConversation(conv.id);
+                    setIsDesktopExpanded(false);
+                  }}
+                >
+                  <div className="convContent">
+                    <p className="convTitle">{getConversationTitle(conv)}</p>
+                    <p className="convDate">{formatConversationDate(conv.updated_at || conv.created_at)}</p>
+                  </div>
+                  <button
+                    className="deleteBtn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteConversation(conv.id);
+                    }}
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Ancient Scroll Toggle — Desktop only (now hidden, kept for backward compat) */}
       <button
         className={`sidebarScrollTrigger ${isOpen ? "open" : ""}`}
+        style={{ display: "none" }}
         onClick={() => onToggle?.(!isOpen)}
         title={isOpen ? "Close History" : "Unfurl History"}
         aria-label={isOpen ? "Close chat history" : "Open chat history"}

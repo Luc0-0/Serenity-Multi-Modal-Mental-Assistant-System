@@ -1,25 +1,28 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './ScrollMist.module.css';
 
-export function ScrollMist({ containerRef }) {
-  const [showBottom, setShowBottom] = useState(true);
+export function ScrollMist() {
   const [showTop, setShowTop] = useState(false);
+  const [showBottom, setShowBottom] = useState(true);
 
   useEffect(() => {
-    const el = containerRef?.current || window;
-    const checkScroll = () => {
-      const scrollTop = el === window ? window.scrollY : el.scrollTop;
-      const scrollHeight = el === window ? document.body.scrollHeight : el.scrollHeight;
-      const clientHeight = el === window ? window.innerHeight : el.clientHeight;
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const scrollHeight = document.body.scrollHeight;
+      const clientHeight = window.innerHeight;
       
+      // Show top mist when scrolled more than 50px from top
       setShowTop(scrollTop > 50);
+      
+      // Show bottom mist when not at bottom (within 50px of end)
       setShowBottom(scrollTop + clientHeight < scrollHeight - 50);
     };
 
-    el.addEventListener('scroll', checkScroll);
-    checkScroll();
-    return () => el.removeEventListener('scroll', checkScroll);
-  }, [containerRef]);
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <>

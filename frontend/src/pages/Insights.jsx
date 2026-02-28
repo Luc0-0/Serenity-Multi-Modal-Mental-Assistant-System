@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Insights.module.css";
 import { getEmotionColor, EMOTION_COLORS } from "../services/emotionService";
@@ -6,6 +6,7 @@ import { ScrollMist } from "../components/ScrollMist";
 
 export function Insights() {
   const navigate = useNavigate();
+  const insightsGridRef = useRef(null);
   const [insightsData, setInsightsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -115,20 +116,17 @@ export function Insights() {
     return () => clearInterval(interval);
   }, [syncCount]);
 
-  // Auto-scroll to centre card on mobile
+  // Auto-scroll to centre card (Weekly Patterns) on mobile
   useEffect(() => {
     const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      const grid = document.querySelector(`.${styles.insightsGrid}`);
-      if (grid) {
-        // Scroll to second card (centre card = weekly patterns)
-        setTimeout(() => {
-          const cards = grid.children;
-          if (cards[1]) {
-            cards[1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-          }
-        }, 300);
-      }
+    if (isMobile && insightsGridRef.current) {
+      setTimeout(() => {
+        // Card width: 85vw, gap: 1rem (≈16px)
+        const cardWidth = window.innerWidth * 0.85;
+        const gap = 16;
+        const scrollPosition = cardWidth + gap;
+        insightsGridRef.current.scrollLeft = scrollPosition;
+      }, 600);
     }
   }, []);
 
@@ -341,7 +339,6 @@ export function Insights() {
 
   return (
     <div className={styles.container}>
-      <ScrollMist />
       <div className={styles.backgroundImage} />
       <div className={styles.contentWrapper}>
         {/* Sync Indicator */}
@@ -457,6 +454,7 @@ export function Insights() {
             </div>
             
             <div
+              ref={insightsGridRef}
               className={styles.insightsGrid}
               style={{
                 display: "grid",
@@ -1592,6 +1590,7 @@ function Legend({ data }) {
           </span>
         </div>
       ))}
+      <ScrollMist />
     </div>
   );
 }

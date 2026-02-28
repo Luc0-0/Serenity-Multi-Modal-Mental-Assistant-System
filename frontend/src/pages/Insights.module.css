@@ -1,198 +1,203 @@
 .container {
-    position: relative;
-    min-height: 100vh;
-    background-color: #0a0a0b;
-    color: #f5f5f5;
-    font-family: "Inter", -apple-system, sans-serif;
-    overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  background-color: #0a0a0b;
+  color: #f5f5f5;
+  font-family:
+    "Inter",
+    -apple-system,
+    sans-serif;
+  overflow-x: hidden;
 }
 
 .backgroundImage {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("/images/background3.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.4;
-    z-index: 0;
-    pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("/images/background3.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Overlay gradient for readability */
 .backgroundImage::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center, transparent 0%, #0a0a0b 90%);
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, #0a0a0b 90%);
 }
 
 .contentWrapper {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .glassCard {
-    position: relative;
-    /* Layered Backgrounds for "Shader" Effect */
-    background:
-        /* 1. The Light Source: Warm glow from top-center */
-        radial-gradient(80% 60% at 50% -10%,
-            rgba(212, 165, 116, 0.12) 0%,
-            transparent 100%),
-        /* 2. The Glass Body: Subtle vertical gradient */
-        linear-gradient(180deg,
-            rgba(255, 255, 255, 0.02) 0%,
-            rgba(0, 0, 0, 0.2) 100%);
+  position: relative;
+  /* Layered Backgrounds for "Shader" Effect */
+  background:
+        /* 1. The Light Source: Warm glow from top-center */ radial-gradient(
+    80% 60% at 50% -10%,
+    rgba(212, 165, 116, 0.12) 0%,
+    transparent 100%
+  );
 
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 
-    /* Rim Light Borders */
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    /* Faint overall border */
-    border-top: 1px solid rgba(212, 165, 116, 0.3);
-    /* Strong Top Specular Highlight */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-    /* Shadowy bottom edge */
+  /* Rim Light Borders */
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  /* Faint overall border */
+  border-top: 1px solid rgba(212, 165, 116, 0.3);
 
-    border-radius: 20px;
-    padding: 1.5rem;
+  border-radius: 20px;
+  padding: 1.5rem;
 
-    /* Deep Shadow + Internal Reflection */
-    box-shadow:
-        0 16px 40px -10px rgba(0, 0, 0, 0.5),
-        /* Drop shadow */
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    /* Top inner edge highlight */
+  /* Deep Shadow + Internal Reflection */
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.5),
+    /* Drop shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* Top inner edge highlight */
 
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-top-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-top-color 0.3s ease;
 }
 
 .glassNavbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 3rem;
 
-    /* Lighter version of the card effect for Nav */
-    background:
-        radial-gradient(60% 100% at 50% 0%,
-            rgba(212, 165, 116, 0.08) 0%,
-            transparent 100%),
-        rgba(10, 10, 11, 0.2);
+  /* Lighter version of the card effect for Nav */
+  background:
+    radial-gradient(
+      60% 100% at 50% 0%,
+      rgba(212, 165, 116, 0.08) 0%,
+      transparent 100%
+    ),
+    rgba(10, 10, 11, 0.2);
 
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .glassCard:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 20px 50px -10px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    border-top-color: rgba(212, 165, 116, 0.5);
-    /* Brighter highlight on hover */
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 50px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(212, 165, 116, 0.5);
+  /* Brighter highlight on hover */
 
-    /* Intensify the light source on hover */
-    background:
-        radial-gradient(80% 60% at 50% -10%,
-            rgba(212, 165, 116, 0.18) 0%,
-            transparent 100%),
-        linear-gradient(180deg,
-            rgba(255, 255, 255, 0.04) 0%,
-            rgba(0, 0, 0, 0.2) 100%);
+  /* Intensify the light source on hover */
+  background: radial-gradient(
+    80% 60% at 50% -10%,
+    rgba(212, 165, 116, 0.18) 0%,
+    transparent 100%
+  );
 }
 
 /* ── INSIGHTS CAROUSEL (MOBILE) ── */
 .insightsCarouselWrapper {
-    position: relative;
+  position: relative;
 }
 
 .swipeHint {
-    display: none;
+  display: none;
 }
 
 .insightsGrid {
-    width: 100%;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
-    .insightsCarouselWrapper {
-        overflow: hidden;
-        position: relative;
-    }
+  .insightsCarouselWrapper {
+    overflow: hidden;
+    position: relative;
+  }
 
-    .swipeHint {
-        display: block;
-        text-align: center;
-        font-size: 0.7rem;
-        letter-spacing: 0.15em;
-        color: rgba(212, 175, 55, 0.5);
-        padding: 0.5rem 0;
-        animation: swipeFade 3s ease forwards;
-    }
+  .swipeHint {
+    display: block;
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: rgba(212, 175, 55, 0.5);
+    padding: 0.5rem 0;
+    animation: swipeFade 3s ease forwards;
+  }
 
-    @keyframes swipeFade {
-        0% { opacity: 1; }
-        60% { opacity: 1; }
-        100% { opacity: 0; }
+  @keyframes swipeFade {
+    0% {
+      opacity: 1;
     }
+    60% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
 
-    /* Override inline grid for mobile carousel */
-    .insightsGrid {
-        display: flex !important;
-        flex-direction: row !important;
-        overflow-x: auto !important;
-        scroll-snap-type: x mandatory !important;
-        -webkit-overflow-scrolling: touch;
-        gap: 1rem !important;
-        padding: 0 1.5rem 1.5rem !important;
-        padding-left: 4vw !important;
-        scrollbar-width: none;
-        /* Start with the CENTRE card (index 1) visible */
-        scroll-padding-left: 1.5rem;
-    }
+  /* Override inline grid for mobile carousel */
+  .insightsGrid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 1rem !important;
+    padding: 0 1.5rem 1.5rem !important;
+    padding-left: 4vw !important;
+    scrollbar-width: none;
+    /* Start with the CENTRE card (index 1) visible */
+    scroll-padding-left: 1.5rem;
+  }
 
-    .insightsGrid::-webkit-scrollbar {
-        display: none;
-    }
+  .insightsGrid::-webkit-scrollbar {
+    display: none;
+  }
 
-    /* Each card becomes a carousel slide */
-    .insightsGrid > div,
-    .glassCard {
-        flex: 0 0 92vw !important;
-        min-width: 92vw !important;
-        max-width: 92vw !important;
-        scroll-snap-align: center !important;
-        width: 92vw !important;
-    }
+  /* Each card becomes a carousel slide */
+  .insightsGrid > div,
+  .glassCard {
+    flex: 0 0 92vw !important;
+    min-width: 92vw !important;
+    max-width: 92vw !important;
+    scroll-snap-align: center !important;
+    width: 92vw !important;
+  }
 
-    /* Carousel dot indicators */
-    .insightsCarouselWrapper::after {
-        content: '● ● ●';
-        display: block;
-        text-align: center;
-        font-size: 0.4rem;
-        letter-spacing: 0.5em;
-        color: rgba(212, 175, 55, 0.4);
-        padding: 0.5rem 0;
-    }
+  /* Carousel dot indicators */
+  .insightsCarouselWrapper::after {
+    content: "● ● ●";
+    display: block;
+    text-align: center;
+    font-size: 0.4rem;
+    letter-spacing: 0.5em;
+    color: rgba(212, 175, 55, 0.4);
+    padding: 0.5rem 0;
+  }
 
-    .container {
-        overflow-x: hidden;
-        padding: 1rem;
-    }
-    .contentWrapper {
-        padding: 0.5rem;
-    }
+  .container {
+    overflow-x: hidden;
+    padding: 1rem;
+  }
+  .contentWrapper {
+    padding: 0.5rem;
+  }
 }

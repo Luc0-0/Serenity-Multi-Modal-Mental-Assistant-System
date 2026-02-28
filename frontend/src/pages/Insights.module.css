@@ -157,7 +157,7 @@
         -webkit-overflow-scrolling: touch;
         gap: 1rem !important;
         padding: 0 1.5rem 1.5rem !important;
-        padding-left: 7.5vw !important;
+        padding-left: 4vw !important;
         scrollbar-width: none;
         /* Start with the CENTRE card (index 1) visible */
         scroll-padding-left: 1.5rem;
@@ -170,11 +170,11 @@
     /* Each card becomes a carousel slide */
     .insightsGrid > div,
     .glassCard {
-        flex: 0 0 85vw !important;
-        min-width: 85vw !important;
-        max-width: 85vw !important;
+        flex: 0 0 92vw !important;
+        min-width: 92vw !important;
+        max-width: 92vw !important;
         scroll-snap-align: center !important;
-        width: 85vw !important;
+        width: 92vw !important;
     }
 
     /* Carousel dot indicators */

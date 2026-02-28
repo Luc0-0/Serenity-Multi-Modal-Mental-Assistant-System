@@ -14,8 +14,8 @@ export function ScrollMist() {
       // Show top mist when scrolled more than 50px from top
       setShowTop(scrollTop > 50);
       
-      // Show bottom mist when not at bottom (within 50px of end)
-      setShowBottom(scrollTop + clientHeight < scrollHeight - 50);
+      // Show bottom mist when not at bottom (within 10px of end)
+      setShowBottom(scrollTop + clientHeight < scrollHeight - 10);
     };
 
     window.addEventListener('scroll', handleScroll);

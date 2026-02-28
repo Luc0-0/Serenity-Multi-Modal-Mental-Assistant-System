@@ -243,11 +243,21 @@
 /* Responsive */
 @media (max-width: 768px) {
   .conversationSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 85vw;
     max-width: 320px;
+    height: 100vh;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
   }
-
-  .sidebarEdgeTab.open {
-    left: min(85vw, 320px);
+  .conversationSidebar.open {
+    transform: translateX(0);
+  }
+  .sidebarEdgeTab {
+    display: flex;
+    z-index: 301;
   }
 }

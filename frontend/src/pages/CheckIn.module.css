@@ -223,13 +223,11 @@
   font-family: "Playfair Display", serif;
   font-size: clamp(2.6rem, 5vw, 4.2rem);
   font-weight: 400;
-  color: rgba(35, 28, 22, 0.88);
+  color: rgba(35, 28, 22, 0.72);
   margin: 0 0 16px 0;
   line-height: 1.08;
   letter-spacing: 0.02em;
-  text-shadow:
-    0 1px 8px rgba(255, 255, 255, 0.3),
-    0 0 30px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
   opacity: 0;
 }

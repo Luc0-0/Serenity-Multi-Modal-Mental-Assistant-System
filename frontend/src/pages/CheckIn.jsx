@@ -344,7 +344,7 @@ export function CheckIn() {
               {/* Glass interior */}
               <div className={styles.orb}>
                 <div className={styles.orbContent}>
-                   <h1 className={styles.welcomeHeading}>Welcome.</h1>
+                  <h1 className={styles.welcomeHeading}>Welcome.</h1>
 
                   <p className={styles.subtitle}>
                     You can talk, write, or just sit here.
@@ -448,27 +448,37 @@ export function CheckIn() {
                       </div>
 
                       {!msg.isTyping && (
-                         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginTop: "0.3rem" }}>
-                           <div className={styles.messageTime}>
-                             {msg.timestamp?.toLocaleTimeString([], {
-                               hour: "2-digit",
-                               minute: "2-digit",
-                             })}
-                           </div>
-                           {msg.sender === "assistant" && (
-                             <div
-                               style={{
-                                 opacity: 0,
-                                 transition: "opacity 0.2s ease",
-                               }}
-                               data-copy-wrapper
-                             >
-                               <CopyButton text={msg.content || msg.text || ""} />
-                             </div>
-                           )}
-                         </div>
-                       )}
-                      </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "0.6rem",
+                            marginTop: "0.3rem",
+                          }}
+                        >
+                          <div className={styles.messageTime}>
+                            {msg.timestamp?.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          {msg.sender === "assistant" && (
+                            <div
+                              style={{
+                                opacity: 0,
+                                transition: "opacity 0.2s ease",
+                              }}
+                              data-copy-wrapper
+                            >
+                              <CopyButton
+                                text={msg.content || msg.text || ""}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
                     {msg.crisis?.detected && (
                       <CrisisAlert

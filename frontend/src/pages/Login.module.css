@@ -32,6 +32,90 @@
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   margin: 2rem;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.3) 0%,
+    rgba(240, 235, 225, 0.15) 25%,
+    rgba(212, 175, 55, 0.3) 50%,
+    rgba(240, 235, 225, 0.15) 75%,
+    rgba(212, 175, 55, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  animation: borderGlow 6s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    background-position: 0% center;
+    opacity: 0.5;
+  }
+  50% {
+    background-position: 100% center;
+    opacity: 0.9;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes cardTilt {
+  0% { transform: perspective(1200px) rotateX(0) rotateY(0); }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes checkmark {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .title {
@@ -64,6 +148,39 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  position: relative;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: rgba(212, 175, 55, 0.5);
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.8), rgba(240, 235, 225, 0.6));
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 1px;
+}
+
+.inputWrapper.focused .underline {
+  width: 100%;
 }
 
 .label {
@@ -92,9 +209,20 @@
 
 .input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(212, 175, 55, 0.4);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.12), inset 0 1px 4px rgba(212, 175, 55, 0.06);
+  transform: translateY(-2px);
+}
+
+.inputError {
+  animation: shake 0.3s ease;
+}
+
+.inputError {
+  border-color: rgba(220, 100, 100, 0.6) !important;
+  background: rgba(220, 100, 100, 0.04) !important;
+  box-shadow: 0 0 20px rgba(220, 100, 100, 0.15) !important;
 }
 
 .input:disabled {
@@ -199,4 +327,20 @@
 .linkBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.strengthMeter {
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.strengthBar {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }

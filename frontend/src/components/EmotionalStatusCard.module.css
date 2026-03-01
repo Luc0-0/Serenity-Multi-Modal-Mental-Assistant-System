@@ -1,61 +1,53 @@
 .card {
-  background: rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(8, 6, 12, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 0;
   width: 100%;
   max-width: 340px;
   color: rgba(255, 245, 230, 0.85);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
   height: fit-content;
-  backdrop-filter: blur(16px) saturate(1.1);
-  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
 }
 
-/* Header Section with "Landscape" */
 .headerImage {
-  height: 140px;
+  height: 160px;
   width: 100%;
-  background: linear-gradient(180deg, rgba(40, 35, 30, 0.5) 0%, rgba(0, 0, 0, 0.2) 100%);
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* CSS Art for Sun/Landscape */
-.sun {
-  width: 50px;
-  height: 50px;
-  background: radial-gradient(circle, #fff5e6 0%, #ffcc80 40%, rgba(212, 165, 116, 0) 70%);
-  border-radius: 50%;
-  position: absolute;
-  top: 30%;
-  box-shadow: 0 0 40px 10px rgba(255, 204, 128, 0.2);
-}
-
-.mountain {
-  position: absolute;
-  bottom: 0;
+.headerImg {
   width: 100%;
-  height: 60px;
-  background: linear-gradient(0deg, #121214 0%, rgba(30, 30, 35, 0.8) 100%);
-  clip-path: polygon(0% 100%, 20% 40%, 40% 90%, 60% 30%, 80% 80%, 100% 50%, 100% 100%);
-  opacity: 0.7;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  transition: transform 0.6s ease;
 }
 
-.reflection {
+.headerImage:hover .headerImg {
+  transform: scale(1.04);
+}
+
+.headerOverlay {
   position: absolute;
-  bottom: 10px;
-  width: 100%;
-  height: 2px;
-  background: rgba(255, 204, 128, 0.3);
-  filter: blur(2px);
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(8, 8, 16, 0.7) 100%
+  );
+  pointer-events: none;
 }
 
 .closeBtn {
@@ -90,7 +82,7 @@
 }
 
 .title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: "Cormorant Garamond", serif;
   font-size: 1.4rem;
   color: #e5e5e5;
   margin: 0;
@@ -105,7 +97,6 @@
   font-weight: 400;
 }
 
-/* Stats List */
 .statsList {
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -125,6 +116,7 @@
   height: 8px;
   border-radius: 50%;
   background: #444;
+  flex-shrink: 0;
 }
 
 .statDot.gold {
@@ -146,18 +138,17 @@
   font-weight: 500;
 }
 
-/* Pie Chart Section */
 .chartContainer {
   position: relative;
   width: 160px;
   height: 160px;
-  margin: 1.5rem auto 1.5rem;
+  margin: 1.5rem auto;
 }
 
 .chartContainer svg {
-  filter: drop-shadow(0 0 8px rgba(212, 165, 116, 0.15));
+  filter: drop-shadow(0 0 8px rgba(212, 165, 116, 0.15))
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
-
 
 .chartLabel {
   position: absolute;
@@ -181,7 +172,6 @@
   letter-spacing: 0.05em;
 }
 
-/* Trend Section */
 .trendSection {
   padding: 0 1.5rem 1.25rem;
   display: flex;
@@ -192,11 +182,6 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.trendIcon {
-  font-size: 1rem;
-}
-
-/* Footer Action */
 .footer {
   padding: 1rem;
   text-align: center;
@@ -216,7 +201,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .viewBtn:hover {
@@ -234,7 +219,6 @@
   transform: rotate(90deg);
 }
 
-/* Loading State */
 .loading {
   padding: 2rem;
   text-align: center;
@@ -264,13 +248,11 @@
   border-radius: 50%;
 }
 
-/* Donut Chart Animations */
 @keyframes emotionEnter {
   from {
     stroke-dashoffset: 75.4;
     opacity: 0;
   }
-
   to {
     stroke-dashoffset: var(--dash-offset, 0);
     opacity: 0.9;
@@ -281,11 +263,9 @@
   0% {
     filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
   }
-
   50% {
     filter: url(#softGlow) drop-shadow(0 0 6px rgba(212, 165, 116, 0.25));
   }
-
   100% {
     filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
   }
@@ -296,12 +276,10 @@
     opacity: 0.3;
     filter: blur(0.5px);
   }
-
   50% {
     opacity: 0.5;
     filter: blur(1px);
   }
-
   100% {
     opacity: 0.3;
     filter: blur(0.5px);
@@ -313,26 +291,21 @@
 }
 
 .emotionSegment[data-index="0"] {
-  animation: emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+  animation:
+    emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
     dominantGlow 3s ease-in-out 0.8s infinite;
 }
 
 .emotionSegment[data-index="1"] {
   animation-delay: 0.1s;
 }
-
 .emotionSegment[data-index="2"] {
   animation-delay: 0.15s;
 }
-
 .emotionSegment[data-index="3"] {
   animation-delay: 0.2s;
 }
 
 .innerCore {
   animation: innerCoreGlow 4s ease-in-out 1.2s infinite;
-}
-
-.chartContainer svg {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }

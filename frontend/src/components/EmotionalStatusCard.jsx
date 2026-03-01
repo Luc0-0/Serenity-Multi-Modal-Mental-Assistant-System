@@ -3,14 +3,9 @@ import { useNavigate } from "react-router-dom";
 import styles from "./EmotionalStatusCard.module.css";
 import { EMOTION_COLORS } from "../services/emotionService";
 
-/**
- * Emotional Status Card.
- * Redesigned to match "Serenity" dark/gold aesthetic.
- */
 export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
   const navigate = useNavigate();
 
-  // Emotion color palette with gradient pairs (base → lighter)
   const emotionColors = {
     joy: { base: EMOTION_COLORS.joy, light: "#d4b89a" },
     sadness: { base: EMOTION_COLORS.sadness, light: "#8b9fae" },
@@ -33,7 +28,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     day: "numeric",
   });
 
-  // Calculate donut chart segments (stroke-based)
   const donutSegments = useMemo(() => {
     if (!emotionData?.emotion_frequency) {
       return [
@@ -42,7 +36,7 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
           percentage: 100,
           color: "#2a2a2a",
           circumference: 100,
-          rotationOffset: 0, // Prevent NaN in strokeDashoffset
+          rotationOffset: 0,
         },
       ];
     }
@@ -50,12 +44,11 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     const total = emotionData.total_logs || 1;
     const entries = Object.entries(emotionData.emotion_frequency).sort(
       (a, b) => b[1] - a[1],
-    ); // Sort by frequency
+    );
 
-    const radius = 12; // Inner edge of donut ring
+    const radius = 12;
     const circumference = 2 * Math.PI * radius;
-
-    let rotationOffset = 0; // Track rotation offset for each segment
+    let rotationOffset = 0;
 
     return entries.map(([emotion, count]) => {
       const percentage = (count / total) * 100;
@@ -95,7 +88,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     );
   }
 
-  // Fallback if no data
   const hasData = emotionData && emotionData.total_logs > 0;
   const dominantEmotion = hasData ? emotionData.dominant_emotion : "Neutral";
   const dominantPct = hasData ? Math.round(emotionData.dominance_pct * 100) : 0;
@@ -103,20 +95,21 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
 
   return (
     <div className={styles.card}>
-      {/* 1. Header Image Area */}
       <div className={styles.headerImage}>
-        <div className={styles.sun}></div>
-        <div className={styles.mountain}></div>
-        <div className={styles.reflection}></div>
+        <img
+          src="/images/nightsakura.png"
+          alt=""
+          className={styles.headerImg}
+          draggable={false}
+        />
+        <div className={styles.headerOverlay} />
       </div>
 
-      {/* 2. Title & Date */}
       <div className={styles.titleSection}>
         <h3 className={styles.title}>Emotional Insights</h3>
         <p className={styles.date}>{currentDate}</p>
       </div>
 
-      {/* 3. Stats List */}
       <div className={styles.statsList}>
         <div className={styles.statItem}>
           <span className={`${styles.statDot} ${styles.dim}`}></span>
@@ -142,7 +135,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
         </div>
       </div>
 
-      {/* 4. Donut Chart (Emotion Ring) */}
       <div className={styles.chartContainer}>
         <svg viewBox="0 0 40 40" style={{ width: "100%", height: "100%" }}>
           <defs>
@@ -153,8 +145,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-
-            {/* Emotion gradients */}
             {donutSegments.map((seg, i) => (
               <linearGradient
                 key={`grad-${i}`}
@@ -174,7 +164,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
             ))}
           </defs>
 
-          {/* Background track circle (muted) */}
           <circle
             cx="20"
             cy="20"
@@ -185,9 +174,7 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
             opacity="0.4"
           />
 
-          {/* Emotion segments */}
           {donutSegments.map((seg, i) => {
-            const isFirst = i === 0;
             const dashOffset = seg.rotationOffset || 0;
             return (
               <circle
@@ -212,7 +199,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
             );
           })}
 
-          {/* Inner glass core circle (subtle) */}
           <circle
             className={styles.innerCore}
             cx="20"
@@ -233,12 +219,10 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
         </div>
       </div>
 
-      {/* 5. Trend */}
       <div className={styles.trendSection}>
         <span>Trend: {trend}</span>
       </div>
 
-      {/* 6. Footer Button */}
       <div className={styles.footer}>
         <button className={styles.viewBtn} onClick={() => navigate("/journal")}>
           View Journal <span className={styles.arrow}>▼</span>

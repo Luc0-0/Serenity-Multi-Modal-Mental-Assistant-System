@@ -1,23 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useNotification } from "../context/NotificationContext";
-import { validateLogin } from "../utils/validation";
-import { Button } from "../components/Button";
-import styles from "./Login.module.css";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
+import { validateLogin } from '../utils/validation';
+import { Button } from '../components/Button';
+import { BorderBeam } from '../components/BorderBeam';
+import styles from './Login.module.css';
 
 export function Login() {
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
   const { error: showError } = useNotification();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -32,15 +33,16 @@ export function Login() {
 
     try {
       await login(formData.email, formData.password);
-      navigate("/check-in");
+      navigate('/check-in');
     } catch (err) {
-      showError("Login failed. Please check your credentials.");
+      showError('Login failed. Please check your credentials.');
     }
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
+      <div className={styles.card} style={{ position: 'relative', overflow: 'hidden' }}>
+        <BorderBeam />
         <h1 className={styles.title}>Welcome Back</h1>
         <p className={styles.subtitle}>Sign in to your Serenity account</p>
 
@@ -55,14 +57,12 @@ export function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
+              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
               placeholder="you@example.com"
               disabled={isLoading}
               autoComplete="email"
             />
-            {errors.email && (
-              <span className={styles.error}>{errors.email}</span>
-            )}
+            {errors.email && <span className={styles.error}>{errors.email}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -75,7 +75,7 @@ export function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
+              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
               placeholder="••••••••"
               disabled={isLoading}
               autoComplete="current-password"
@@ -85,20 +85,24 @@ export function Login() {
             )}
           </div>
 
-          <Button type="submit" fullWidth disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign In"}
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
         <div className={styles.footer}>
           <p>
-            Don't have an account?{" "}
+            Don't have an account?{' '}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate('/signup')}
               disabled={isLoading}
-              style={{ padding: "0 4px", display: "inline" }}
+              style={{ padding: '0 4px', display: 'inline' }}
             >
               Sign up
             </Button>

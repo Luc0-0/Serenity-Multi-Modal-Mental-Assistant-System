@@ -16,6 +16,7 @@
 
 @media (max-width: 768px) {
   .app {
+    padding-top: 52px;
     padding-bottom: 70px;
   }
 }

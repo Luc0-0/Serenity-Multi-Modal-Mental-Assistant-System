@@ -14,6 +14,43 @@ import styles from "./CheckIn.module.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
+/* ── Firefly particle layer (warm gold, CSS-only drift) ── */
+function Fireflies({ count = 12, visible = true }) {
+  const particles = useRef(
+    Array.from({ length: count }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 8,
+      duration: 14 + Math.random() * 12,
+      size: 1.5 + Math.random() * 2,
+      opacity: 0.15 + Math.random() * 0.25,
+    })),
+  ).current;
+
+  return (
+    <div
+      className={styles.firefliesLayer}
+      style={{ opacity: visible ? 1 : 0, transition: "opacity 1.2s ease" }}
+    >
+      {particles.map((p) => (
+        <span
+          key={p.id}
+          className={styles.firefly}
+          style={{
+            left: `${p.left}%`,
+            bottom: `${Math.random() * 40 + 10}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            "--ff-opacity": p.opacity,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function CheckIn() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -32,18 +69,52 @@ export function CheckIn() {
   const [lastFailedMessage, setLastFailedMessage] = useState(null);
 
   const [showInsights, setShowInsights] = useState(true);
-
-  // NEW: State for the pinned deck layout shift
   const [isDeckPinned, setIsDeckPinned] = useState(false);
 
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
+
+  /* Transition state: orb shrinks before chat appears */
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const inputRef = useRef(null);
   const chatInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const messagesAreaRef = useRef(null);
   const streamingRef = useRef(null);
+
+  /* Ambient cursor glow */
+  const glowRef = useRef(null);
+  const mousePos = useRef({ x: 0.5, y: 0.5 });
+  const currentPos = useRef({ x: 0.5, y: 0.5 });
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      mousePos.current = {
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      };
+    };
+    window.addEventListener("mousemove", handleMove);
+
+    let raf;
+    const lerp = () => {
+      currentPos.current.x +=
+        (mousePos.current.x - currentPos.current.x) * 0.04;
+      currentPos.current.y +=
+        (mousePos.current.y - currentPos.current.y) * 0.04;
+      if (glowRef.current) {
+        glowRef.current.style.background = `radial-gradient(600px circle at ${currentPos.current.x * 100}% ${currentPos.current.y * 100}%, rgba(220, 180, 100, 0.045), transparent 70%)`;
+      }
+      raf = requestAnimationFrame(lerp);
+    };
+    raf = requestAnimationFrame(lerp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -120,6 +191,15 @@ export function CheckIn() {
     displayNextChunk();
   }, []);
 
+  /* ── Transition: orb shrinks, then chat appears ── */
+  const enterChat = useCallback(() => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsInChat(true);
+      setIsTransitioning(false);
+    }, 600);
+  }, []);
+
   const handleSendMessage = async () => {
     if (!userId) {
       setError("You must be logged in to send messages.");
@@ -148,7 +228,7 @@ export function CheckIn() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
-    if (!isInChat) setIsInChat(true);
+    if (!isInChat) enterChat();
 
     const assistantMessageIndex = messages.length + 1;
     const assistantMessage = {
@@ -311,7 +391,6 @@ export function CheckIn() {
 
   return (
     <>
-      {/* ── New Serenity Deck Component ── */}
       <SerenityDeck
         currentConversationId={conversationId}
         onSelectConversation={handleSelectConversation}
@@ -320,7 +399,6 @@ export function CheckIn() {
         onPinChange={setIsDeckPinned}
       />
 
-      {/* ── Main Container with Dynamic Margin for Pinning ── */}
       <div
         className={`${styles.container} ${isInChat ? styles.chatMode : ""}`}
         style={{
@@ -329,19 +407,25 @@ export function CheckIn() {
           transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
-        {/* Background — no inline filter ever */}
-        <div className={styles.backgroundImage} />
+        {/* Background with Ken Burns */}
+        <div
+          className={`${styles.backgroundImage} ${isInChat ? styles.bgDimmed : ""}`}
+        />
 
-        {/* ── Welcome screen with glowing orb ── */}
+        {/* Ambient cursor glow */}
+        <div ref={glowRef} className={styles.ambientGlow} />
+
+        {/* Fireflies — visible only in welcome, fade out in chat */}
+        <Fireflies count={12} visible={!isInChat} />
+
+        {/* ── Welcome screen ── */}
         {!isInChat && (
-          <main className={styles.content}>
-            {/* The orb container holds the spinning ring + glass interior */}
+          <main
+            className={`${styles.content} ${isTransitioning ? styles.orbExiting : ""}`}
+          >
             <div className={styles.orbContainer}>
-              {/* Base dim ring */}
               <div className={styles.orbRingBase} />
-              {/* Spinning conic bright arc */}
               <div className={styles.orbRing} />
-              {/* Glass interior */}
               <div className={styles.orb}>
                 <div className={styles.orbContent}>
                   <h1 className={styles.welcomeHeading}>Welcome.</h1>
@@ -350,7 +434,6 @@ export function CheckIn() {
                     You can talk, write, or just sit here.
                   </p>
 
-                  {/* Ornamental divider line */}
                   <div className={styles.orbDivider} />
 
                   <div className={styles.inputWrapper}>
@@ -373,7 +456,20 @@ export function CheckIn() {
                         aria-label="Send"
                         disabled={isLoading || !inputValue.trim()}
                       >
-                        →
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path
+                            d="M3 8H13M13 8L9 4M13 8L9 12"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                       </button>
                     </div>
                   </div>
@@ -383,18 +479,25 @@ export function CheckIn() {
                       className={styles.actionBtn}
                       onClick={() => navigate("/journal")}
                     >
+                      <span className={styles.actionBtnBar} />
                       Journal
                     </button>
                     <button
                       className={styles.actionBtn}
                       onClick={() => navigate("/meditate")}
                     >
+                      <span className={styles.actionBtnBar} />
                       Meditate
                     </button>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Ambient quote */}
+            <p className={styles.ambientQuote}>
+              A quieter place for your mind.
+            </p>
           </main>
         )}
 
@@ -527,7 +630,7 @@ export function CheckIn() {
               )}
             </div>
 
-            {/* Insights toggle — SVG chevron */}
+            {/* Insights toggle */}
             <button
               className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ""}`}
               onClick={() => setShowInsights(!showInsights)}

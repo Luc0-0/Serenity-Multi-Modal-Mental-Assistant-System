@@ -11,7 +11,7 @@ import { fetchEmotionInsights } from "../services/emotionService";
 import { useEdgeSwipe } from "../hooks/useEdgeSwipe";
 import styles from "./CheckIn.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 export function CheckIn() {
   const navigate = useNavigate();
@@ -42,6 +42,16 @@ export function CheckIn() {
     onOpen: () => setSidebarOpen(true),
     onClose: () => setSidebarOpen(false),
   });
+
+  // Listen for hamburger menu toggle from Navbar
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setSidebarOpen((prev) => !prev);
+    };
+    window.addEventListener("toggleSidebar", handleToggleSidebar);
+    return () =>
+      window.removeEventListener("toggleSidebar", handleToggleSidebar);
+  }, []);
 
   const inputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -108,7 +118,11 @@ export function CheckIn() {
         setMessages((prev) => {
           if (!prev[messageIndex]) return prev;
           const updated = [...prev];
-          updated[messageIndex] = { ...updated[messageIndex], text: currentText, isTyping: false };
+          updated[messageIndex] = {
+            ...updated[messageIndex],
+            text: currentText,
+            isTyping: false,
+          };
           return updated;
         });
         streamingRef.current = setTimeout(displayNextChunk, delay);
@@ -128,30 +142,57 @@ export function CheckIn() {
     }
 
     const trimmedMessage = inputValue.trim();
-    if (!trimmedMessage) { setError("Please write something before sending."); return; }
-    if (trimmedMessage.length > 2000) { setError("Message is too long. Please keep it under 2000 characters."); return; }
+    if (!trimmedMessage) {
+      setError("Please write something before sending.");
+      return;
+    }
+    if (trimmedMessage.length > 2000) {
+      setError("Message is too long. Please keep it under 2000 characters.");
+      return;
+    }
 
     setError(null);
 
-    const userMessage = { id: Date.now(), sender: "user", text: trimmedMessage, timestamp: new Date() };
+    const userMessage = {
+      id: Date.now(),
+      sender: "user",
+      text: trimmedMessage,
+      timestamp: new Date(),
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
     if (!isInChat) setIsInChat(true);
 
     const assistantMessageIndex = messages.length + 1;
-    const assistantMessage = { id: Date.now() + 1, sender: "assistant", text: "", timestamp: new Date(), crisis: null, isTyping: true };
+    const assistantMessage = {
+      id: Date.now() + 1,
+      sender: "assistant",
+      text: "",
+      timestamp: new Date(),
+      crisis: null,
+      isTyping: true,
+    };
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      const response = await sendChatMessage({ user_id: userId, message: trimmedMessage, conversation_id: conversationId });
+      const response = await sendChatMessage({
+        user_id: userId,
+        message: trimmedMessage,
+        conversation_id: conversationId,
+      });
 
       if (conversationId === null && response.conversation_id) {
         setConversationId(response.conversation_id);
         try {
-          localStorage.setItem("serenity_conversation_id", response.conversation_id.toString());
+          localStorage.setItem(
+            "serenity_conversation_id",
+            response.conversation_id.toString(),
+          );
           localStorage.setItem("serenity_user_id", userId.toString());
-        } catch (e) { console.warn("Failed to save to localStorage:", e.message); }
+        } catch (e) {
+          console.warn("Failed to save to localStorage:", e.message);
+        }
         triggerRefresh();
       }
 
@@ -165,7 +206,11 @@ export function CheckIn() {
             if (updated[assistantMessageIndex]) {
               updated[assistantMessageIndex] = {
                 ...updated[assistantMessageIndex],
-                crisis: { detected: true, severity: response.crisis_severity, resources: response.resources },
+                crisis: {
+                  detected: true,
+                  severity: response.crisis_severity,
+                  resources: response.resources,
+                },
               };
             }
             return updated;
@@ -180,7 +225,11 @@ export function CheckIn() {
       setError(errorDisplay.message);
       setIsRetryable(errorDisplay.isRetryable);
       setMessages((prev) => prev.filter((_, i) => i !== assistantMessageIndex));
-      console.error("Chat error:", { code: err.code, message: err.message, retryable: err.retryable });
+      console.error("Chat error:", {
+        code: err.code,
+        message: err.message,
+        retryable: err.retryable,
+      });
     }
   };
 
@@ -191,29 +240,38 @@ export function CheckIn() {
     setInputValue(lastFailedMessage);
   };
 
-  const finalizeAndReset = useCallback((convId, msgCount) => {
-    if (streamingRef.current) clearTimeout(streamingRef.current);
-    setConversationId(null);
-    setMessages([]);
-    setInputValue("");
-    setIsInChat(false);
-    setIsLoading(false);
-    setIsStreaming(false);
-    setError(null);
-    setIsRetryable(false);
-    localStorage.removeItem("serenity_conversation_id");
+  const finalizeAndReset = useCallback(
+    (convId, msgCount) => {
+      if (streamingRef.current) clearTimeout(streamingRef.current);
+      setConversationId(null);
+      setMessages([]);
+      setInputValue("");
+      setIsInChat(false);
+      setIsLoading(false);
+      setIsStreaming(false);
+      setError(null);
+      setIsRetryable(false);
+      localStorage.removeItem("serenity_conversation_id");
 
-    if (convId && msgCount > 1) {
-      const token = localStorage.getItem("auth_token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      fetch(`${API_BASE_URL}/api/conversations/${convId}/finalize-title`, { method: "POST", headers })
-        .then(() => triggerRefresh())
-        .catch((err) => { console.warn("Failed to finalize title:", err); triggerRefresh(); });
-    } else {
-      triggerRefresh();
-    }
-  }, [triggerRefresh]);
+      if (convId && msgCount > 1) {
+        const token = localStorage.getItem("auth_token");
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        fetch(`${API_BASE_URL}/api/conversations/${convId}/finalize-title`, {
+          method: "POST",
+          headers,
+        })
+          .then(() => triggerRefresh())
+          .catch((err) => {
+            console.warn("Failed to finalize title:", err);
+            triggerRefresh();
+          });
+      } else {
+        triggerRefresh();
+      }
+    },
+    [triggerRefresh],
+  );
 
   const handleNewConversation = useCallback(() => {
     finalizeAndReset(conversationId, messages.length);
@@ -229,28 +287,40 @@ export function CheckIn() {
       const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(`${API_BASE_URL}/api/conversations/${convId}/messages`, { headers });
+      const response = await fetch(
+        `${API_BASE_URL}/api/conversations/${convId}/messages`,
+        { headers },
+      );
       if (response.ok) {
         const data = await response.json();
         setConversationId(convId);
-        setMessages(data.messages.map((msg) => ({
-          id: msg.id,
-          sender: msg.role === "assistant" ? "assistant" : "user",
-          text: msg.content,
-          timestamp: new Date(msg.created_at),
-        })));
+        setMessages(
+          data.messages.map((msg) => ({
+            id: msg.id,
+            sender: msg.role === "assistant" ? "assistant" : "user",
+            text: msg.content,
+            timestamp: new Date(msg.created_at),
+          })),
+        );
         setIsInChat(true);
         setIsLoading(false);
         setIsStreaming(false);
         localStorage.setItem("serenity_conversation_id", convId.toString());
       }
-    } catch (err) { console.error("Failed to load conversation:", err); }
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    }
   };
 
-  const handleClearError = () => { setError(null); setIsRetryable(false); };
+  const handleClearError = () => {
+    setError(null);
+    setIsRetryable(false);
+  };
 
   useEffect(() => {
-    return () => { if (streamingRef.current) clearTimeout(streamingRef.current); };
+    return () => {
+      if (streamingRef.current) clearTimeout(streamingRef.current);
+    };
   }, []);
 
   return (
@@ -315,10 +385,16 @@ export function CheckIn() {
                   </div>
 
                   <div className={styles.actionButtons}>
-                    <button className={styles.actionBtn} onClick={() => navigate("/journal")}>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={() => navigate("/journal")}
+                    >
                       Journal
                     </button>
-                    <button className={styles.actionBtn} onClick={() => navigate("/meditate")}>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={() => navigate("/meditate")}
+                    >
                       Meditate
                     </button>
                   </div>
@@ -340,21 +416,32 @@ export function CheckIn() {
                 )}
 
                 {messages.map((msg) => (
-                  <div key={msg.id} className={`${styles.message} ${styles[msg.sender]}`}>
+                  <div
+                    key={msg.id}
+                    className={`${styles.message} ${styles[msg.sender]}`}
+                  >
                     <div className={styles.messageBubble}>
                       <div className={styles.messageContent}>
                         {msg.isTyping ? (
                           <div className={styles.typingIndicator}>
-                            <span /><span /><span />
+                            <span />
+                            <span />
+                            <span />
                           </div>
                         ) : msg.sender === "assistant" ? (
                           <ReactMarkdown
                             components={{
                               strong: ({ node, ...props }) => (
-                                <strong style={{ fontWeight: 600, color: "#d4a574" }} {...props} />
+                                <strong
+                                  style={{ fontWeight: 600, color: "#d4a574" }}
+                                  {...props}
+                                />
                               ),
                               em: ({ node, ...props }) => (
-                                <em style={{ fontStyle: "italic", opacity: 0.9 }} {...props} />
+                                <em
+                                  style={{ fontStyle: "italic", opacity: 0.9 }}
+                                  {...props}
+                                />
                               ),
                               p: ({ node, ...props }) => <span {...props} />,
                             }}
@@ -368,13 +455,19 @@ export function CheckIn() {
 
                       {!msg.isTyping && (
                         <div className={styles.messageTime}>
-                          {msg.timestamp?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {msg.timestamp?.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       )}
                     </div>
 
                     {msg.crisis?.detected && (
-                      <CrisisAlert severity={msg.crisis.severity} resources={msg.crisis.resources} />
+                      <CrisisAlert
+                        severity={msg.crisis.severity}
+                        resources={msg.crisis.resources}
+                      />
                     )}
                   </div>
                 ))}
@@ -385,9 +478,19 @@ export function CheckIn() {
                       <p className={styles.errorText}>{error}</p>
                       <div className={styles.errorActions}>
                         {isRetryable && (
-                          <button className={styles.retryBtn} onClick={handleRetry}>Retry</button>
+                          <button
+                            className={styles.retryBtn}
+                            onClick={handleRetry}
+                          >
+                            Retry
+                          </button>
                         )}
-                        <button className={styles.dismissBtn} onClick={handleClearError}>Dismiss</button>
+                        <button
+                          className={styles.dismissBtn}
+                          onClick={handleClearError}
+                        >
+                          Dismiss
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -447,9 +550,18 @@ export function CheckIn() {
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path
                       d="M1.5 7.5L7.5 1.5L13.5 7.5V12.5C13.5 12.9142 13.3314 13.2893 13.0607 13.5607C12.7893 13.8314 12.4142 14 12 14H3C2.58579 14 2.21071 13.8314 1.93934 13.5607C1.66797 13.2893 1.5 12.9142 1.5 12.5V7.5Z"
-                      stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
-                    <path d="M5.5 14V8.5H9.5V14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M5.5 14V8.5H9.5V14"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
                 <button
@@ -459,7 +571,13 @@ export function CheckIn() {
                   disabled={(isLoading && !isStreaming) || !inputValue.trim()}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M9 14V4M9 4L5 8M9 4L13 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M9 14V4M9 4L5 8M9 4L13 8"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </div>

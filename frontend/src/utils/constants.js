@@ -15,15 +15,17 @@ export const EMOTIONS = {
   neutral: { icon: '😐', color: '#A9A9A9' },
 };
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export const API_ENDPOINTS = {
-  CHAT: '/api/chat/',
-  CHAT_STREAM: '/api/chat/stream/',
-  LOGIN: '/api/auth/login/',
-  SIGNUP: '/api/auth/signup/',
-  PROFILE: '/api/auth/profile/',
-  JOURNAL: '/api/journal/',
-  EMOTIONS: '/api/emotions/',
-  HEALTH: '/api/health/',
+  CHAT: `${API_BASE}/api/chat/`,
+  CHAT_STREAM: `${API_BASE}/api/chat/stream/`,
+  LOGIN: `${API_BASE}/api/auth/login/`,
+  SIGNUP: `${API_BASE}/api/auth/signup/`,
+  PROFILE: `${API_BASE}/api/auth/profile/`,
+  JOURNAL: `${API_BASE}/api/journal/`,
+  EMOTIONS: `${API_BASE}/api/emotions/`,
+  HEALTH: `${API_BASE}/api/health/`,
 };
 
 export const ERROR_MESSAGES = {

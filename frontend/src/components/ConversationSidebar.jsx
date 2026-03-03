@@ -109,7 +109,7 @@ export function ConversationSidebar({
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
       const response = await fetch(
-        `/api/conversations/${id}`,
+        `${API_BASE_URL}/api/conversations/${id}`,
         {
           method: "DELETE",
           headers,

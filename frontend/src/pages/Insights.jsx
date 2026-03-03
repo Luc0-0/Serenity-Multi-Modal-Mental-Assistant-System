@@ -20,8 +20,10 @@ export function Insights() {
     text: "",
   });
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+  
   const CONFIG = {
-    apiEndpoint: "/api/emotions/insights/?days=7",
+    apiEndpoint: `${API_BASE_URL}/api/emotions/insights/?days=7`,
     colors: {
       joy: EMOTION_COLORS.joy,
       sadness: EMOTION_COLORS.sadness,

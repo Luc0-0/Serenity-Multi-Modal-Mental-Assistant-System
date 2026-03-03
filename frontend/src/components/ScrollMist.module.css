@@ -1,0 +1,43 @@
+.mistTop {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 8, 12, 0.7) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+  animation: mistFadeIn 0.5s ease;
+}
+
+.mistBottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 12, 0.8) 0%,
+    rgba(8, 8, 12, 0.4) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+  animation: mistFadeIn 0.3s ease;
+}
+
+@keyframes mistFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .mistBottom {
+    bottom: 70px;
+  }
+}

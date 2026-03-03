@@ -309,3 +309,21 @@
     transform: scale(1);
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    overflow-x: hidden;
+    width: 100vw;
+  }
+  .content {
+    padding: 0 1rem;
+    text-align: center;
+  }
+  .enterBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .enterText {
+    font-size: 0.9rem;
+  }
+}

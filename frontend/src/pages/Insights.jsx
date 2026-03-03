@@ -432,6 +432,7 @@ export function Insights() {
         >
           {/* Top Grid */}
           <div
+            className={styles.insightsGrid}
             style={{
               display: "grid",
               gridTemplateColumns:

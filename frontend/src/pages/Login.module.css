@@ -530,6 +530,124 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 768px) {
+  .container {
+    align-items: flex-start;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .card {
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+    width: 100%;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .form {
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .formGroup {
+    gap: 0.4rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+  }
+
+  .inputWrapper {
+    padding: 0 0.75rem;
+  }
+
+  .input {
+    padding: 0.75rem 0;
+    font-size: 16px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  .inputIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .error {
+    font-size: 0.75rem;
+    padding-left: 1px;
+  }
+
+  .submitArea {
+    margin-top: 0.25rem;
+  }
+
+  .submitBtn {
+    height: 48px;
+    font-size: 1rem;
+  }
+
+  .loadingState {
+    gap: 0.4rem;
+  }
+
+  .footer {
+    padding-top: 1.25rem;
+  }
+
+  .footer p {
+    font-size: 0.85rem;
+  }
+
+  .linkBtn {
+    font-size: 0.9rem;
+  }
+
+  .ambientQuote {
+    font-size: 0.8rem;
+    bottom: 3vh;
+  }
+
+  /* Disable 3D tilt on touch devices via JavaScript, but provide fallback */
+  .card {
+    transform-style: flat;
+  }
+
+  /* Touch feedback for buttons */
+  .submitBtn:active {
+    transform: scale(0.98);
+    opacity: 0.95;
+  }
+
+  .linkBtn:active {
+    opacity: 0.7;
+  }
+
+  /* Remove hover-only states for mobile, use :active instead */
+  .submitBtn:hover::after {
+    display: none;
+  }
+
+  .linkBtn:hover::after {
+    display: none;
+  }
+
+  .linkBtn:active::after {
+    width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 2rem 1.5rem;

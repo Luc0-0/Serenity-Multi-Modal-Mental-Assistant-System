@@ -200,10 +200,15 @@ export function Signup() {
     return () => clearTimeout(t);
   }, []);
 
-  // 3D tilt effect
+  // 3D tilt effect (disabled on touch devices)
   useEffect(() => {
     const card = cardRef.current;
     if (!card) return;
+
+    // Skip tilt effect on touch devices
+    const isTouchDevice = 'ontouchstart' in window;
+    if (isTouchDevice) return;
+
     let cx = 0,
       cy = 0,
       tx = 0,

@@ -1050,78 +1050,275 @@
 
 @media (max-width: 768px) {
   :root {
-    --orb-size: min(88vw, 88vh);
+    --orb-size: min(70vw, 70vh);
   }
+
+  .container {
+    height: calc(100vh - 60px);
+  }
+
+  /* Welcome screen adjustments */
+  .content {
+    padding: 16px;
+    justify-content: center;
+  }
+
+  .orbContainer {
+    animation: fadeInScale 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .welcomeHeading {
+    font-size: clamp(1.8rem, 5vw, 2.4rem);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: clamp(13px, 3vw, 15px);
+    margin-bottom: 20px;
+  }
+
+  .orbDivider {
+    height: 24px;
+    margin: 0 auto 20px;
+  }
+
+  .inputWrapper {
+    max-width: 90%;
+    margin: 0 auto 20px;
+  }
+
+  .minimalInput {
+    padding: 12px 24px 12px 0;
+    font-size: 1rem;
+  }
+
+  .actionButtons {
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .actionBtn {
+    font-size: 12px;
+  }
+
+  .ambientQuote {
+    font-size: 11px;
+    bottom: 50px;
+  }
+
+  /* Chat mode adjustments */
   .chatContentWrapper {
     flex-direction: column;
+    overflow: hidden;
   }
+
+  .messagesArea {
+    padding: 16px 14px 140px 14px;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .message {
+    width: 100%;
+  }
+
+  .messageBubble {
+    max-width: 85%;
+  }
+
+  .messageContent {
+    padding: 12px 16px;
+    font-size: 14px;
+    border-radius: 14px;
+    line-height: 1.5;
+  }
+
+  .message.user .messageContent {
+    font-size: 14px;
+  }
+
+  .message.assistant .messageContent {
+    font-size: 14px;
+  }
+
+  .messageTime {
+    font-size: 10px;
+  }
+
+  .emptyState {
+    padding: 40px 20px;
+  }
+
+  .emptyState p {
+    font-size: 14px;
+  }
+
+  /* Error handling */
+  .errorMessage {
+    padding: 10px 14px;
+    margin: 4px 0;
+  }
+
+  .errorText {
+    font-size: 13px;
+  }
+
+  .retryBtn,
+  .dismissBtn {
+    padding: 5px 12px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  /* Chat input adjustments */
+  .chatInputArea {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 12px 14px 12px;
+    background: linear-gradient(
+      to top,
+      rgba(3, 2, 1, 0.98) 0%,
+      rgba(3, 2, 1, 0.9) 50%,
+      rgba(3, 2, 1, 0) 100%
+    );
+    z-index: 22;
+    touch-action: manipulation;
+  }
+
+  .chatInputContainer {
+    max-width: 100%;
+    padding: 6px 6px 6px 16px;
+    border-radius: 12px;
+    gap: 6px;
+  }
+
+  .chatInput {
+    padding: 10px 0;
+    font-size: 16px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .chatSubmitBtn,
+  .homeBtn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    touch-action: manipulation;
+  }
+
+  .chatSubmitBtn:active:not(:disabled),
+  .homeBtn:active {
+    transform: scale(0.95);
+  }
+
+  /* Insights sidebar — becomes overlay on mobile */
   .insightsPanel {
-    position: fixed !important;
+    position: fixed;
     bottom: 70px;
     right: 0;
     left: 0;
-    width: 100% !important;
-    max-height: 45vh;
+    width: 100%;
+    max-width: 100%;
+    max-height: 40vh;
+    min-width: unset;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     z-index: 200;
-    border-radius: 20px 20px 0 0;
-    background: rgba(8, 8, 12, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px 16px 0 0;
+    background: rgba(8, 8, 12, 0.96);
+    backdrop-filter: blur(24px) saturate(1.15);
+    -webkit-backdrop-filter: blur(24px) saturate(1.15);
     border-top: 1px solid rgba(212, 175, 55, 0.2);
     border-left: none;
-    padding: 1rem;
-    transform: translateY(0);
+    padding: 14px 14px 60px 14px;
+    transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  .insightsPanel.insightsPanelOpen {
+    transform: translateY(0);
+  }
+
   .insightsEdgeTab {
-    position: fixed !important;
-    bottom: 80px;
-    right: 1rem;
-    top: auto !important;
+    position: fixed;
+    bottom: 72px;
+    right: 14px;
+    left: auto;
+    top: auto;
     z-index: 201;
-    background: rgba(212, 175, 55, 0.15);
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
   }
+
+  .insightsEdgeTab:active {
+    background: rgba(212, 175, 55, 0.2);
+    transform: scale(0.95);
+  }
+
+  .insightsEdgeTab:hover {
+    padding: 10px;
+  }
+
   .insightsEdgeTab.insightsTabOpen {
-    right: 1rem;
-    bottom: 80px;
+    right: 14px;
+    bottom: 72px;
   }
-  .messagesArea {
-    padding: 18px 18px 160px 18px;
-  }
-  .chatInputArea {
-    padding: 12px 12px 18px;
-  }
-  .chatInputContainer {
-    max-width: 100%;
-  }
-  .messageBubble {
-    max-width: 82%;
-  }
-  .messageContent {
-    font-size: 14px;
-  }
-  .footer {
-    padding: 18px 24px;
-  }
-  .welcomeHeading {
-    font-size: 2.4rem;
-  }
-  .subtitle {
-    font-size: 15px;
-  }
-  .actionButtons {
-    gap: 36px;
-  }
-  .ambientQuote {
-    font-size: 11px;
-    bottom: 60px;
-  }
+
+  /* Hide fireflies on mobile for performance */
   .firefliesLayer {
     display: none;
+  }
+
+  /* Footer on welcome screen */
+  .footer {
+    padding: 14px 18px;
+  }
+
+  .disclaimer {
+    font-size: 9px;
+  }
+
+  /* Touch-friendly interactive states */
+  .submitArrow:active:not(:disabled) {
+    transform: translateX(2px) scale(0.95);
+    color: rgba(220, 180, 120, 0.7);
+  }
+
+  .actionBtn:active {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+
+  .actionBtn:active .actionBtnBar {
+    width: 2px;
+  }
+
+  /* Remove hover-only states on touch devices */
+  .actionBtn:hover .actionBtnBar {
+    width: 0;
+  }
+
+  .actionBtn:hover::after {
+    width: 0;
+  }
+
+  .messageBubble:hover [data-copy-wrapper] {
+    opacity: 0;
   }
 }

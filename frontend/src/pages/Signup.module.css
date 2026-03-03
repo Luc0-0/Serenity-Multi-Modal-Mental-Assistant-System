@@ -495,6 +495,133 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 768px) {
+  .container {
+    align-items: flex-start;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .card {
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+    width: 100%;
+  }
+
+  .stepIndicator {
+    margin-bottom: 1.5rem;
+  }
+
+  .stepDot {
+    width: 24px;
+    height: 2px;
+  }
+
+  .title {
+    font-size: 1.7rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form {
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .formGroup {
+    gap: 0.35rem;
+  }
+
+  .label {
+    font-size: 0.8rem;
+  }
+
+  .inputWrapper {
+    padding: 0;
+  }
+
+  .inputIcon {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .input {
+    padding: 12px 12px 12px 40px;
+    font-size: 16px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+  }
+
+  .error {
+    font-size: 0.7rem;
+    padding-left: 1px;
+  }
+
+  .submitBtn {
+    height: 48px;
+    font-size: 1rem;
+    margin-top: 0.15rem;
+  }
+
+  .loadingState {
+    gap: 0.4rem;
+  }
+
+  .footer {
+    padding-top: 1rem;
+  }
+
+  .footer p {
+    font-size: 0.85rem;
+  }
+
+  .linkBtn {
+    font-size: 0.9rem;
+  }
+
+  .ambientQuote {
+    font-size: 0.75rem;
+    bottom: 2vh;
+  }
+
+  /* Disable 3D tilt on touch devices */
+  .card {
+    transform-style: flat;
+  }
+
+  /* Touch feedback for buttons */
+  .submitBtn:active {
+    transform: scale(0.98);
+    opacity: 0.95;
+  }
+
+  .linkBtn:active {
+    opacity: 0.7;
+  }
+
+  /* Remove hover-only states for mobile */
+  .submitBtn:hover::after {
+    display: none;
+  }
+
+  .linkBtn:hover::after {
+    display: none;
+  }
+
+  .linkBtn:active::after {
+    width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 2rem 1.5rem;

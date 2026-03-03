@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styles from "./Meditate.module.css";
 
-// Meditation page with animated flow visualization
 export function Meditate() {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -17,8 +16,11 @@ export function Meditate() {
       <div
         className={styles.flowContainer}
         onClick={togglePlay}
+        onTouchStart={() => {}}
         aria-label={isPlaying ? "Pause meditation" : "Start meditation"}
         role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === "Enter" && togglePlay()}
       >
         <div className={styles.flowRing} />
         <div className={styles.auroraRing} />
@@ -38,17 +40,17 @@ export function Meditate() {
       </div>
 
       <nav className={styles.bottomNav}>
-        <button className={styles.navBtn}>
+        <button className={styles.navBtn} onTouchStart={() => {}}>
           <span className={styles.navIcon}>🌿</span>
           Guided Relaxation
         </button>
 
-        <button className={styles.navBtn}>
+        <button className={styles.navBtn} onTouchStart={() => {}}>
           <span className={styles.navIcon}>≋</span>
           Breathing Exercise
         </button>
 
-        <button className={styles.navBtn}>
+        <button className={styles.navBtn} onTouchStart={() => {}}>
           <span className={styles.navIcon}>✨</span>
           Visuals
         </button>

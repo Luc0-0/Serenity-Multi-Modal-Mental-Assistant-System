@@ -2,10 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Insights.module.css";
 
-/**
- * Insights Dashboard.
- * Real-time analytics and charts.
- */
 export function Insights() {
   const navigate = useNavigate();
   const [insightsData, setInsightsData] = useState(null);
@@ -356,7 +352,6 @@ export function Insights() {
           </div>
         )}
 
-
         {/* Header */}
         <header
           style={{
@@ -380,8 +375,8 @@ export function Insights() {
             Insights Dashboard
           </h1>
           <p style={{ color: "#a0a0a0", fontWeight: 300 }}>
-            A reflection of your emotional landscape from {insightsData.dateRange}
-            .
+            A reflection of your emotional landscape from{" "}
+            {insightsData.dateRange}.
             {lastSync && (
               <span
                 style={{
@@ -440,7 +435,14 @@ export function Insights() {
             }}
           >
             {/* Radar - Emotion Balance */}
-            <div className={styles.glassCard} style={{ minHeight: "420px", display: "flex", flexDirection: "column" }}>
+            <div
+              className={styles.glassCard}
+              style={{
+                minHeight: "420px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -488,7 +490,14 @@ export function Insights() {
             </div>
 
             {/* Bar Chart - Weekly Patterns */}
-            <div className={styles.glassCard} style={{ minHeight: "420px", display: "flex", flexDirection: "column" }}>
+            <div
+              className={styles.glassCard}
+              style={{
+                minHeight: "420px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -594,7 +603,15 @@ export function Insights() {
             </div>
 
             {/* AI Insights */}
-            <div className={styles.glassCard} style={{ minHeight: "420px", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+            <div
+              className={styles.glassCard}
+              style={{
+                minHeight: "420px",
+                display: "flex",
+                flexDirection: "column",
+                overflowY: "auto",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -701,7 +718,10 @@ export function Insights() {
           </div>
 
           {/* Reflections */}
-          <div className={styles.glassCard} style={{ marginTop: "2rem", marginBottom: "3rem", padding: "2rem" }}>
+          <div
+            className={styles.glassCard}
+            style={{ marginTop: "2rem", marginBottom: "3rem", padding: "2rem" }}
+          >
             <h3
               style={{
                 fontFamily: '"Cormorant Garamond", serif',
@@ -1341,7 +1361,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
 
           return (
             <g key={emo} transform={`translate(${x}, ${y})`}>
-              {/* Card background with shadow */}
               <rect
                 x={-chartPadding}
                 y="0"
@@ -1354,7 +1373,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                 filter="url(#cardShadow)"
               />
 
-              {/* Accent border on left */}
               <rect
                 x={-chartPadding}
                 y="0"
@@ -1366,7 +1384,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                 style={{ clipPath: "inset(0 0 0 0 round 12px)" }}
               />
 
-              {/* Header */}
               <text
                 x="8"
                 y="28"
@@ -1385,7 +1402,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                 opacity="0.9"
               />
 
-              {/* Total count with trend indicator */}
               <text
                 x={cellWidth - chartPadding * 2 - 20}
                 y="28"
@@ -1412,14 +1428,11 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                 {trend === "up" ? "↗" : trend === "down" ? "↘" : "→"}
               </text>
 
-              {/* Average label */}
               <text x="8" y="48" fill="#6b6b6b" fontSize="11" fontWeight="500">
                 AVG: {avgCount.toFixed(1)}
               </text>
 
-              {/* Sparkline chart */}
               <g transform="translate(0, 60)">
-                {/* Baseline */}
                 <line
                   x1="0"
                   y1={cellHeight - 90}
@@ -1429,10 +1442,8 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                   strokeWidth="1"
                 />
 
-                {/* Area fill */}
                 <path d={areaPath} fill={`url(#spark-gradient-${emo})`} />
 
-                {/* Line with glow */}
                 <path
                   d={path}
                   fill="none"
@@ -1453,7 +1464,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                   opacity="0.95"
                 />
 
-                {/* Data points */}
                 {points.map(
                   (p, i) =>
                     p.count > 0 && (
@@ -1477,7 +1487,6 @@ function BarChart({ data, config, chartStyle = "sparklines" }) {
                     ),
                 )}
 
-                {/* Day labels */}
                 <g transform={`translate(0, ${cellHeight - 70})`}>
                   {data.moodTrends.map((day, i) => {
                     const x =

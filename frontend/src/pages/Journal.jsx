@@ -4,10 +4,6 @@ import { journalService } from "../services/journalService";
 import { Button } from "../components/Button";
 import styles from "./Journal.module.css";
 
-/**
- * Journal Page.
- * Private reflection space.
- */
 export function Journal() {
   const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
@@ -49,7 +45,8 @@ export function Journal() {
 
     setIsSaving(true);
     try {
-      const title = todayContent.split("\n")[0].substring(0, 50) || "Today's Entry";
+      const title =
+        todayContent.split("\n")[0].substring(0, 50) || "Today's Entry";
       const newEntry = await journalService.createEntry({
         title,
         content: todayContent,
@@ -85,22 +82,30 @@ export function Journal() {
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear()
     ) {
-      return "Today, " + date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return (
+        "Today, " +
+        date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      );
     }
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const formatTime = (dateValue) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
     <div className={styles.container}>
-      {/* Background */}
       <div className={styles.backgroundImage} />
 
-      {/* Navigation Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div>
@@ -110,7 +115,6 @@ export function Journal() {
         </div>
       </header>
 
-      {/* Error Toast */}
       {error && (
         <div
           style={{
@@ -145,9 +149,7 @@ export function Journal() {
         </div>
       )}
 
-      {/* Main Content */}
       <main className={styles.content}>
-        {/* Today's Date Display */}
         <div className={styles.dateDisplay}>
           <h2 className={styles.dateText}>
             {new Date().toLocaleDateString("en-US", {
@@ -157,10 +159,8 @@ export function Journal() {
           </h2>
         </div>
 
-        {/* Today's Entry Section */}
         <section className={styles.todaySection}>
           <div className={styles.entryCard}>
-            {/* Rate Your Day */}
             <div className={styles.rateYourDay}>
               <label className={styles.rateLabel}>Rate Your Day</label>
               <div className={styles.moodSelector}>
@@ -189,7 +189,6 @@ export function Journal() {
                 onBlur={() => setIsTextAreaFocused(false)}
               />
 
-              {/* Add Entry Button */}
               <Button
                 onClick={handleAddEntry}
                 disabled={!todayContent.trim() || isSaving}
@@ -200,21 +199,22 @@ export function Journal() {
           </div>
         </section>
 
-        {/* Loading State */}
         {isLoading && (
-          <div style={{ textAlign: "center", padding: "2rem", color: "#bda17b" }}>
+          <div
+            style={{ textAlign: "center", padding: "2rem", color: "#bda17b" }}
+          >
             Loading entries...
           </div>
         )}
 
-        {/* Empty State */}
         {!isLoading && entries.length === 0 && (
-          <div style={{ textAlign: "center", padding: "2rem", color: "#7a7a7a" }}>
+          <div
+            style={{ textAlign: "center", padding: "2rem", color: "#7a7a7a" }}
+          >
             <p>No journal entries yet. Write your first entry above.</p>
           </div>
         )}
 
-        {/* Recent Entries Section */}
         {!isLoading && entries.length > 0 && (
           <section className={styles.recentSection}>
             <h2 className={styles.sectionTitle}>Recent Entries</h2>
@@ -248,9 +248,17 @@ export function Journal() {
                       </span>
                       <span className={styles.mood}>
                         <span className={styles.moodIcon}>
-                          {moodOptions.find((m) => m.value === (entry.emotion || entry.mood))?.emoji}
+                          {
+                            moodOptions.find(
+                              (m) => m.value === (entry.emotion || entry.mood),
+                            )?.emoji
+                          }
                         </span>
-                        {moodOptions.find((m) => m.value === (entry.emotion || entry.mood))?.label}
+                        {
+                          moodOptions.find(
+                            (m) => m.value === (entry.emotion || entry.mood),
+                          )?.label
+                        }
                       </span>
                     </div>
                   </div>

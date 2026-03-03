@@ -17,18 +17,18 @@
   text-transform: uppercase;
 }
 
-/* Primary Variant (Solid Gold - High Visibility) */
+/* Primary Variant (Warm Gradient - High Visibility) */
 .primary {
-  background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
-  color: #0e0e11;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-  border: 1px solid rgba(212, 175, 55, 0.5);
+  background: linear-gradient(135deg, #c5955c 0%, #a87d4a 100%);
+  color: #f5ede3;
+  box-shadow: 0 4px 12px rgba(197, 149, 92, 0.3);
+  border: 1px solid rgba(197, 149, 92, 0.5);
 }
 
 .primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
-  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(197, 149, 92, 0.4);
+  filter: brightness(1.08);
 }
 
 .primary:active {

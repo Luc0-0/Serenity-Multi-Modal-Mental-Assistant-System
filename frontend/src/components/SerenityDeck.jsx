@@ -227,7 +227,10 @@ export function SerenityDeck({
           </div>
 
           {/* New Chat Button */}
-          <button className="deck-new-btn" onClick={onNewConversation}>
+          <button className="deck-new-btn" onClick={() => {
+            onNewConversation();
+            if (!isPinned) setIsOpen(false);
+          }}>
             <PlusIcon />
             <span>New Chat</span>
           </button>

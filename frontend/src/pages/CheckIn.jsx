@@ -356,8 +356,17 @@ export function CheckIn() {
   );
 
   const handleNewConversation = useCallback(() => {
+    if (!isInChat) {
+      // Already on welcome screen — pulse the input to signal "you're here"
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.classList.add(styles.inputPulse);
+        setTimeout(() => inputRef.current?.classList.remove(styles.inputPulse), 800);
+      }
+      return;
+    }
     finalizeAndReset(conversationId, messages.length);
-  }, [finalizeAndReset, conversationId, messages.length]);
+  }, [isInChat, finalizeAndReset, conversationId, messages.length]);
 
   const handleGoHome = useCallback(() => {
     finalizeAndReset(conversationId, messages.length);

@@ -301,24 +301,27 @@ Show you've been paying attention."""
         else:
             return "I'm listening. Tell me more about that."
     
-    async def generate_journal_title(self, conversation_history: List[Dict]) -> str:
+    async def generate_journal_title(self, conversation_history: List[Dict], conversation_date: str = None) -> str:
         """Generate one-sentence journal title from conversation."""
         # Build conversation summary for context
         messages = [msg.get("content", "") for msg in conversation_history if msg.get("role") == "user"]
         conversation_text = " ".join(messages[:3])  # First 3 user messages for context
         
+        date_context = f"This conversation happened on {conversation_date}. " if conversation_date else ""
+        
         prompt = f"""Based on this conversation, generate a concise, meaningful journal entry title.
 
-Conversation:
-{conversation_text[:500]}
-
-Requirements:
-- One sentence only (max 10 words)
-- Captures the emotional or thematic essence
-- Professional yet personal
-- Present tense or gerund form (e.g., "Navigating Difficult Conversations", "Finding Peace in Uncertainty")
-
-Respond with ONLY the title, nothing else."""
+    {date_context}
+    Conversation:
+    {conversation_text[:500]}
+    
+    Requirements:
+    - One sentence only (max 10 words)
+    - Captures the emotional or thematic essence
+    - Professional yet personal
+    - Present tense or gerund form (e.g., "Navigating Difficult Conversations", "Finding Peace in Uncertainty")
+    
+    Respond with ONLY the title, nothing else."""
         
         try:
             response = await self.engine.generate(prompt, [])
@@ -331,7 +334,7 @@ Respond with ONLY the title, nothing else."""
             logger.warning(f"Title generation failed: {e}")
             return "Conversation Reflection"
     
-    async def generate_journal_summary(self, conversation_history: List[Dict]) -> str:
+    async def generate_journal_summary(self, conversation_history: List[Dict], conversation_date: str = None) -> str:
         """Generate full conversation summary for journal content."""
         # Build full conversation
         conversation_text = ""
@@ -340,20 +343,23 @@ Respond with ONLY the title, nothing else."""
             content = msg.get("content", "")
             conversation_text += f"{role}: {content}\n"
         
+        date_context = f"This conversation happened on {conversation_date}. " if conversation_date else ""
+        
         prompt = f"""Summarize this conversation as a journal entry. 
-
-Conversation:
-{conversation_text[:2000]}
-
-Requirements:
-- Capture key themes, realizations, and emotional journey
-- 200-400 words
-- First person perspective (from user's viewpoint)
-- Professional yet warm tone
-- Include any breakthrough moments or insights
-- Organize into clear paragraphs
-
-Write the journal entry summary directly."""
+    
+    {date_context}
+    Conversation:
+    {conversation_text[:2000]}
+    
+    Requirements:
+    - Capture key themes, realizations, and emotional journey
+    - 200-400 words
+    - First person perspective (from user's viewpoint)
+    - Professional yet warm tone
+    - Include any breakthrough moments or insights
+    - Organize into clear paragraphs
+    
+    Write the journal entry summary directly."""
         
         try:
             response = await self.engine.generate(prompt, [])

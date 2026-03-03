@@ -14,6 +14,10 @@ from app.routers.conversations import router as conversations_router
 from app.routers.auth import router as auth_router
 from app.routers.emotions import router as emotions_router
 from app.routers.journal import router as journal_router
+from app.services.engines.factory import init_engines
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Serenity Backend",
@@ -30,6 +34,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global service instances
+emotion_service = None
+llm_service = None
+crisis_service = None
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize engines and services at startup."""
+    global emotion_service, llm_service, crisis_service
+    
+    logger.info("Starting engine initialization...")
+    await init_engines()
+    logger.info("Engines initialized. Creating services...")
+    
+    from app.services.emotion_service import EmotionService
+    from app.services.llm_service import LLMService
+    from app.services.crisis_service_new import CrisisService
+    
+    emotion_service = EmotionService()
+    logger.info(f"✓ Emotion service created (using {emotion_service.engine.provider_name})")
+    
+    llm_service = LLMService()
+    logger.info(f"✓ LLM service created (using {llm_service.engine.provider_name})")
+    
+    crisis_service = CrisisService()
+    logger.info(f"✓ Crisis service created (using {crisis_service.engine.provider_name})")
+    
+    logger.info("✓ All services initialized successfully")
 
 app.include_router(health_router)
 app.include_router(auth_router)

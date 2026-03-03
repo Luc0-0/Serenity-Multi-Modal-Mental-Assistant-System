@@ -2,4 +2,14 @@
   width: 100%;
   min-height: 100vh;
   background-color: var(--color-bg-base);
+  cursor: none;
+}
+
+.app *,
+.app a,
+.app button,
+.app input,
+.app textarea,
+.app select {
+  cursor: none !important;
 }

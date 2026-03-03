@@ -67,10 +67,13 @@ Consider these criteria:
     
     async def generate_title(self, text: str) -> str:
         """Generate conversation title."""
+        logger.info(f"[LLM] generate_title called with {len(text)} chars")
         try:
-            return await self.engine.generate_title(text)
+            title = await self.engine.generate_title(text)
+            logger.info(f"[LLM] generate_title succeeded: '{title}'")
+            return title
         except Exception as e:
-            logger.warning(f"Title generation failed: {e}")
+            logger.error(f"[LLM] generate_title FAILED: {str(e)}", exc_info=True)
             return "New Conversation"
     
     def _build_system_prompt(
@@ -303,9 +306,8 @@ Show you've been paying attention."""
     
     async def generate_journal_title(self, conversation_history: List[Dict], conversation_date: str = None) -> str:
         """Generate one-sentence journal title from conversation."""
-        # Build conversation summary for context
         messages = [msg.get("content", "") for msg in conversation_history if msg.get("role") == "user"]
-        conversation_text = " ".join(messages[:3])  # First 3 user messages for context
+        conversation_text = " ".join(messages[:3])
         
         date_context = f"This conversation happened on {conversation_date}. " if conversation_date else ""
         
@@ -326,7 +328,6 @@ Show you've been paying attention."""
         try:
             response = await self.engine.generate(prompt, [])
             title = response.strip()
-            # Ensure it's concise
             if len(title) > 100:
                 title = title[:100]
             return title if title else "Conversation Reflection"
@@ -336,7 +337,6 @@ Show you've been paying attention."""
     
     async def generate_journal_summary(self, conversation_history: List[Dict], conversation_date: str = None) -> str:
         """Generate full conversation summary for journal content."""
-        # Build full conversation
         conversation_text = ""
         for msg in conversation_history:
             role = msg.get("role", "user").upper()
@@ -395,4 +395,3 @@ Write only the insight paragraph."""
         except Exception as e:
             logger.warning(f"Serenity Thought generation failed: {e}")
             return ""
-

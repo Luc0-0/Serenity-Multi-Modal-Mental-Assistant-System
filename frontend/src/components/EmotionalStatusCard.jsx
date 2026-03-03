@@ -42,6 +42,7 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
           percentage: 100,
           color: "#2a2a2a",
           circumference: 100,
+          rotationOffset: 0, // Prevent NaN in strokeDashoffset
         },
       ];
     }
@@ -187,6 +188,7 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
           {/* Emotion segments */}
           {donutSegments.map((seg, i) => {
             const isFirst = i === 0;
+            const dashOffset = seg.rotationOffset || 0;
             return (
               <circle
                 key={i}
@@ -199,12 +201,12 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
                 stroke={`url(#emotionGradient-${i})`}
                 strokeWidth="2.5"
                 strokeDasharray={`${seg.dashLength} ${seg.circumference}`}
-                strokeDashoffset={-seg.rotationOffset}
+                strokeDashoffset={-dashOffset}
                 strokeLinecap="round"
                 style={{
                   transform: "rotate(-90deg)",
                   transformOrigin: "20px 20px",
-                  "--dash-offset": -seg.rotationOffset,
+                  "--dash-offset": -dashOffset,
                 }}
               />
             );

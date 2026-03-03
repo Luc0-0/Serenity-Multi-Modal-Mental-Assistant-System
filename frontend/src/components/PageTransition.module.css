@@ -1,0 +1,48 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    will-change: clip-path, opacity;
+
+    background: radial-gradient(circle at 50% 50%,
+            rgba(214, 181, 110, 0.05) 0%,
+            var(--color-bg-base, #0b0c0f) 55%);
+}
+
+/* Phase 1: circle gently blooms outward from center */
+.expand {
+    animation: circleExpand 900ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* Phase 2: overlay dissolves to reveal the new page */
+.fade {
+    clip-path: circle(150% at 50% 50%);
+    animation: overlayFade 700ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes circleExpand {
+    0% {
+        clip-path: circle(0% at 50% 50%);
+        opacity: 0.6;
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    100% {
+        clip-path: circle(150% at 50% 50%);
+        opacity: 1;
+    }
+}
+
+@keyframes overlayFade {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}

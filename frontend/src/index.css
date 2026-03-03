@@ -1,11 +1,9 @@
-/* Import Premium Effects */
+/* Effects */
 @import './styles/effects.css';
 
-/* Global CSS Variables from Design Tokens - Obsidian Luxe Theme */
+/* Global CSS Variables */
 :root {
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     COLORS - SERENITY PALETTE
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* Colors */
 
   /* Base Backgrounds */
   --color-bg-base: #0b0c0f;
@@ -43,9 +41,7 @@
   --spacing-md: 32px;
   --spacing-lg: 40px;
 
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     DESIGN TOKENS - STANDARDIZED
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* Design Tokens */
 
   /* Border Radius */
   --radius-sm: 8px;
@@ -99,7 +95,7 @@ body {
   flex-direction: column;
 }
 
-/* Typography - Premium Stack */
+/* Typography */
 h1 {
   font-family: var(--font-display);
   font-size: var(--font-size-display-xl);

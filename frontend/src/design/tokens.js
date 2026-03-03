@@ -1,11 +1,10 @@
 /**
- * Design System Tokens
+ * Design Tokens
  * Serenity - Mental Health Companion
- * Based on "Obsidian Luxe" premium dark theme
  */
 
 export const colors = {
-  // Dark Mode (Primary) - Ultra-premium obsidian
+  // Dark mode (primary)
   background: {
     primary: '#0a0a0b',     // Ultra-deep obsidian black
     secondary: '#121214',   // Slightly lighter dark
@@ -31,11 +30,11 @@ export const colors = {
   success: '#A8D5BA',       // Soft sage/teal
   calm: '#8BBFB3',          // Calm teal
   warning: '#D4A574',       // Warm brown
-  
+
   // Borders & dividers
   border: '#2d2d32',
   divider: '#1a1a1d',
-  
+
   // Light Mode (Alternative)
   light: {
     background: {
@@ -57,9 +56,9 @@ export const colors = {
 };
 
 export const typography = {
-  // Font families - Premium stack
+  // Font families
   fontFamily: {
-    display: "'Playfair Display', 'Georgia', serif", // Elegant display headings
+    display: "'Playfair Display', 'Georgia', serif",
     sans: "'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif", // Clean body
     mono: "'JetBrains Mono', 'Courier New', monospace", // Code/technical
   },
@@ -142,10 +141,10 @@ export const transitions = {
   fast: '150ms ease-in-out',
   base: '250ms ease-in-out',
   slow: '350ms ease-in-out',
-  
-  // Premium custom easing (cubic-bezier(0.22, 1, 0.36, 1))
+
+  // Custom easing
   premium: '400ms cubic-bezier(0.22, 1, 0.36, 1)',
-  
+
   // Animation timings
   fadeIn: '0.8s ease-out',
   slideUp: '0.6s cubic-bezier(0.22, 1, 0.36, 1)',

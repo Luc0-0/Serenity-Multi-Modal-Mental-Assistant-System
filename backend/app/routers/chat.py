@@ -10,6 +10,7 @@ from app.services.emotion_service import EmotionService
 from app.services.journal_service import JournalService
 from app.services.crisis_service import CrisisService
 from app.services.emotion_analytics_service import EmotionAnalyticsService
+from app.services.context_manager import ContextManager
 from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ emotion_service = EmotionService()
 journal_service = JournalService()
 crisis_service = CrisisService()
 emotion_analytics_service = EmotionAnalyticsService()
+context_manager = ContextManager()
 
 
 @router.post("/", response_model=ChatResponse)
@@ -41,8 +43,6 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
-    # Crisis assessment
     crisis_assessment = await crisis_service.assess_threat(
         message=request.message,
         emotion_label=None,  # Detection pending
@@ -79,17 +79,13 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
             crisis_severity=crisis_assessment["severity"],
             resources=crisis_assessment["resources"]
         )
-    
-    # Retrieve conversation history BEFORE saving user message
-    history = await conversation_service.get_conversation_history(
-        db, conversation_id, limit=30
+    history = await context_manager.get_optimized_history(
+        db, conversation_id
     )
-    
-    # Store user message
     user_message_id = await conversation_service.save_message(
         db, conversation_id, "user", request.message
     )
-    await db.commit()  # Commit immediately so user message is saved even if generation fails/aborts
+    await db.commit()
     
     if request.conversation_id is None:
         try:
@@ -98,7 +94,6 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         except Exception as e:
             logger.warning(f"Failed to generate title: {str(e)}")
     
-    # Emotion detection
     emotion = {"label": "neutral", "confidence": 0.5}
     try:
         emotion = await emotion_service.detect_emotion(request.message)
@@ -110,7 +105,6 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     except Exception as e:
         print(f"✗ Failed to log emotion: {str(e)}")
     
-    # Check for potential journal entry
     try:
         if journal_service.should_create_entry(request.message, emotion["label"]):
             await journal_service.create_entry(
@@ -121,7 +115,6 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     except Exception as e:
         print(f"✗ Failed to create journal entry: {str(e)}")
     
-    # Generate emotional insights
     try:
         insight = await emotion_analytics_service.generate_user_insights(
             db=db, user_id=request.user_id, days=7
@@ -227,11 +220,11 @@ async def chat_stream_endpoint(request: ChatRequest, db: AsyncSession = Depends(
             yield f"data: __CRISIS__{crisis_assessment['severity']}__{len(crisis_assessment.get('resources', []))}\n\n"
         
         return StreamingResponse(crisis_generator(), media_type="text/event-stream")
-    
-    # Retrieve conversation history BEFORE saving user message
-    history = await conversation_service.get_conversation_history(
-        db, conversation_id, limit=30
-    )
+        
+        # Retrieve optimized conversation history (hierarchical context management)
+        history = await context_manager.get_optimized_history(
+        db, conversation_id
+        )
     
     user_message_id = await conversation_service.save_message(
         db, conversation_id, "user", request.message

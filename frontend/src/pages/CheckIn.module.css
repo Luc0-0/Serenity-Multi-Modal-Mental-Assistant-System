@@ -350,11 +350,11 @@
 }
 
 .subtitle {
-  font-family: "Libre Baskerville", serif;
-  font-size: clamp(15px, 1.7vw, 17px);
-  font-style: italic;
-  font-weight: 400;
-  color: rgba(255, 248, 240, 0.72);
+   font-family: "Libre Baskerville", serif;
+   font-size: clamp(15px, 1.7vw, 17px);
+   font-style: italic;
+   font-weight: 400;
+   color: rgba(35, 28, 22, 0.78);
   margin: 0 0 28px 0;
   letter-spacing: 0.08em;
   max-width: 100%;
@@ -421,15 +421,15 @@
 }
 
 .minimalInput {
-  width: 100%;
-  background: transparent;
-  border: none;
-  padding: 14px 28px 14px 0;
-  font-family: "Libre Baskerville", serif;
-  font-size: 1.15rem;
-  font-style: italic;
-  font-weight: 400;
-  color: rgba(255, 248, 240, 0.82);
+   width: 100%;
+   background: transparent;
+   border: none;
+   padding: 14px 28px 14px 0;
+   font-family: "Libre Baskerville", serif;
+   font-size: 1.15rem;
+   font-style: italic;
+   font-weight: 400;
+   color: rgba(35, 28, 22, 0.88);
   text-align: center;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
   outline: none;
@@ -438,7 +438,7 @@
 }
 
 .minimalInput::placeholder {
-  color: rgba(255, 248, 240, 0.35);
+   color: rgba(35, 28, 22, 0.45);
   font-weight: 400;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
@@ -483,11 +483,11 @@
 }
 
 .actionBtn {
-  position: relative;
-  padding: 0 0 0 0;
-  background: none;
-  border: none;
-  color: rgba(255, 248, 240, 0.6);
+   position: relative;
+   padding: 0 0 0 0;
+   background: none;
+   border: none;
+   color: rgba(35, 28, 22, 0.68);
   font-family: "Libre Baskerville", serif;
   font-size: 13px;
   font-weight: 400;
@@ -511,7 +511,7 @@
 }
 
 .actionBtn:hover {
-  color: rgba(255, 248, 240, 0.9);
+   color: rgba(35, 28, 22, 0.95);
 }
 
 .actionBtn:hover .actionBtnBar {

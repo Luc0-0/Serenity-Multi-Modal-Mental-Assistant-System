@@ -448,28 +448,26 @@ export function CheckIn() {
                       </div>
 
                       {!msg.isTyping && (
-                         <div className={styles.messageTime}>
-                           {msg.timestamp?.toLocaleTimeString([], {
-                             hour: "2-digit",
-                             minute: "2-digit",
-                           })}
+                         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginTop: "0.3rem" }}>
+                           <div className={styles.messageTime}>
+                             {msg.timestamp?.toLocaleTimeString([], {
+                               hour: "2-digit",
+                               minute: "2-digit",
+                             })}
+                           </div>
+                           {msg.sender === "assistant" && (
+                             <div
+                               style={{
+                                 opacity: 0,
+                                 transition: "opacity 0.2s ease",
+                               }}
+                               data-copy-wrapper
+                             >
+                               <CopyButton text={msg.content || msg.text || ""} />
+                             </div>
+                           )}
                          </div>
                        )}
-
-                      {msg.sender === "assistant" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            marginTop: "0.2rem",
-                            opacity: 0,
-                            transition: "opacity 0.2s ease",
-                          }}
-                          data-copy-wrapper
-                        >
-                          <CopyButton text={msg.content || msg.text || ""} />
-                        </div>
-                      )}
                       </div>
 
                     {msg.crisis?.detected && (

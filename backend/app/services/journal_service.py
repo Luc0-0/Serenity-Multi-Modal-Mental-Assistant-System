@@ -2,13 +2,17 @@
 Journal extraction and management service.
 
 Automatically extracts meaningful journal entries from user messages.
-Uses rule-based qualification, deterministic summarization, and tagging.
+Uses AI-based decision making with fallback rules.
 Non-blocking: journal failures never affect chat flow.
 """
 
-from typing import Optional, List
+import json
+import logging
+from typing import Optional, List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.journal_entry import JournalEntry
+
+logger = logging.getLogger(__name__)
 
 
 class JournalService:
@@ -188,6 +192,42 @@ class JournalService:
         }
         return mood_map.get(emotion_label, "neutral")
     
+    async def should_create_entry_ai(
+        self,
+        ollama_service,
+        conversation_history: List[Dict],
+        user_message: str,
+        emotion_label: str = None
+    ) -> tuple:
+        """
+        Proxy to OllamaService AI decision for journal extraction.
+        
+        Args:
+            ollama_service: OllamaService instance
+            conversation_history: List of message dicts from ConversationService
+            user_message: Current user message
+            emotion_label: Detected emotion label
+        
+        Returns:
+            (should_extract: bool, summary: str, confidence: float)
+        """
+        try:
+            ai_decision = await ollama_service.should_create_journal_entry_ai(
+                conversation_history=conversation_history,
+                user_message=user_message,
+                emotion_label=emotion_label
+            )
+            
+            return (
+                ai_decision["should_extract"],
+                ai_decision["summary"],
+                ai_decision["confidence"]
+            )
+        except Exception as e:
+            logger.error(f"AI extraction decision failed: {str(e)}")
+            # Fallback: don't extract on error
+            return (False, "", 0.0)
+    
     async def create_entry(
         self,
         db: AsyncSession,
@@ -195,16 +235,20 @@ class JournalService:
         conversation_id: int,
         message_id: int,
         message_text: str,
-        emotion_label: str = "neutral"
+        emotion_label: str = "neutral",
+        ai_summary: str = None,
+        ai_confidence: float = None,
+        extraction_method: str = "ai"
     ) -> Optional[int]:
         """
         Create journal entry from message.
         
         Creates JournalEntry with:
         - message_id: Source message ID
-        - summary: First 1-2 sentences
+        - summary: First 1-2 sentences (fallback if no AI summary)
         - mood: Mapped emotion label
         - tags: Extracted categories (JSON)
+        - AI metadata: ai_summary, ai_confidence, extraction_method
         - created_at: Server timestamp
         
         Non-blocking: catches exceptions and returns None.
@@ -216,13 +260,16 @@ class JournalService:
             message_id: Source message ID
             message_text: Full message content
             emotion_label: From emotion service
+            ai_summary: AI-generated summary (optional)
+            ai_confidence: AI confidence score 0.0-1.0 (optional)
+            extraction_method: "ai" or "manual" (default "ai")
         
         Returns:
             journal_entry.id if successful, None if failed
         """
         try:
             # Extract components
-            summary = self.extract_summary(message_text)
+            extracted_summary = ai_summary if ai_summary else self.extract_summary(message_text)
             tags = self.extract_tags(message_text)
             mood = self.extract_mood(emotion_label)
             
@@ -231,11 +278,16 @@ class JournalService:
                 user_id=user_id,
                 conversation_id=conversation_id,
                 message_id=message_id,
-                title=summary[:100],  # First 100 chars as title
+                title=extracted_summary[:100],  # First 100 chars as title
                 content=message_text,
+                emotion=emotion_label,
                 mood=mood,
                 tags=",".join(tags) if tags else None,
-                extracted_insights=summary
+                extracted_insights=extracted_summary,
+                ai_extracted=True,
+                ai_summary=ai_summary,
+                ai_confidence=ai_confidence,
+                extraction_method=extraction_method
             )
             
             # Add and flush
@@ -243,7 +295,10 @@ class JournalService:
             await db.flush()
             entry_id = entry.id
             
-            print(f"✓ Journal entry created: ID={entry_id}, mood={mood}, tags={tags}")
+            logger.info(
+                f"✓ Journal entry created: ID={entry_id}, mood={mood}, tags={tags}, "
+                f"method={extraction_method}, confidence={ai_confidence}"
+            )
             return entry_id
             
         except Exception as e:

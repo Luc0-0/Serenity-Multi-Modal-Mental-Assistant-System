@@ -1,8 +1,3 @@
-/* 
-  SERENITY - LANDING PAGE STYLES 
-  Visual Refinement: "Dark Water/Horizon" Aesthetic
-*/
-
 .container {
   position: relative;
   width: 100%;
@@ -12,136 +7,195 @@
   justify-content: center;
   align-items: center;
   background-color: #050505;
-  /* Deepest black */
-
-  /* Static Image Background */
-  background-image: url("/images/serenity-background.png");
+  background-image: url("/images/landingpage.png");
   background-size: cover;
-  background-position: center;
+  background-position: center 35%;
   background-repeat: no-repeat;
-
-  /* Enable smooth cursor glow following */
-  --x: 50%;
-  --y: 50%;
+  cursor: none;
+  --x: -200px;
+  --y: -200px;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   CURSOR-FOLLOWING GLOW
-   ━━━━━━━━━━━━━━━━━━ */
-
-.cursorGlow {
+.particleCanvas {
   position: absolute;
-  top: var(--y);
-  left: var(--x);
-  transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle,
-      rgba(212, 180, 131, 0.35) 0%,
-      rgba(212, 180, 131, 0.22) 35%,
-      rgba(212, 180, 131, 0.08) 65%,
-      transparent 90%);
-  filter: blur(60px);
+  inset: 0;
+  z-index: 3;
   pointer-events: none;
-  z-index: 5;
-  transition: top 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    left 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: top, left;
-  mix-blend-mode: screen;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   BACKGROUND STACK
-   ━━━━━━━━━━━━━━━━━━ */
+.breatheGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+      rgba(196, 168, 130, 0.12) 0%,
+      rgba(196, 168, 130, 0.06) 40%,
+      transparent 70%);
+  animation: breatheGlow 6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
 
-.backgroundContainer {
+@keyframes breatheGlow {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0.9;
+  }
+}
+
+.cursorSpotlight {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  background:
+    radial-gradient(circle 10px at var(--x) var(--y),
+      rgba(212, 180, 131, 0.6) 0%,
+      rgba(212, 180, 131, 0.2) 50%,
+      transparent 100%),
+    radial-gradient(circle 60px at var(--x) var(--y),
+      rgba(212, 180, 131, 0.2) 0%,
+      rgba(212, 180, 131, 0.06) 50%,
+      transparent 100%);
   pointer-events: none;
+  z-index: 12;
+  mix-blend-mode: screen;
 }
 
-/* 
-  Layer 1: The "Spotlight" - Top Center Warmth 
-  Simulates the light source above the title - Brighter & Warmer
-*/
-.bgLayerGradient {
+.hiddenTextLayer {
   position: absolute;
-  top: -25%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140vh;
-  height: 120vh;
-  background: radial-gradient(ellipse at 50% 0%,
-      rgba(196, 155, 107, 0.25) 0%,
-      /* Brighter Gold */
-      rgba(148, 110, 70, 0.15) 30%,
-      rgba(21, 16, 12, 0.6) 60%,
-      transparent 80%);
-  filter: blur(80px);
-  /* Softer blur */
-  z-index: 1;
+  inset: 0;
+  z-index: 5;
   pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle 70px at var(--x) var(--y),
+      white 0%,
+      rgba(255, 255, 255, 0.7) 40%,
+      rgba(255, 255, 255, 0.15) 70%,
+      transparent 100%);
+  mask-image: radial-gradient(circle 70px at var(--x) var(--y),
+      white 0%,
+      rgba(255, 255, 255, 0.7) 40%,
+      rgba(255, 255, 255, 0.15) 70%,
+      transparent 100%);
 }
 
-/* 
-  Layer 2: The "Horizon" / Water Reflection
-  Bottom glow that looks like light hitting water - Much Stronger
-*/
-.bgLayerGlowDepth {
+.hiddenWord {
   position: absolute;
-  bottom: -10%;
-  left: 0;
-  width: 100%;
-  height: 55%;
-  background: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(196, 155, 107, 0.05) 15%,
-      rgba(196, 155, 107, 0.15) 40%,
-      rgba(196, 155, 107, 0.25) 70%,
-      rgba(10, 10, 10, 0.95) 100%);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  white-space: nowrap;
+  user-select: none;
+  color: transparent;
+  background: linear-gradient(90deg,
+      rgba(180, 165, 140, 0.5) 0%,
+      rgba(235, 220, 190, 0.9) 15%,
+      rgba(180, 165, 140, 0.5) 30%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.spotlightCone {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 22% 70% at 50% 0%,
+      rgba(212, 180, 131, 0.14) 0%,
+      rgba(212, 180, 131, 0.08) 30%,
+      rgba(212, 180, 131, 0.03) 55%,
+      transparent 100%);
+  pointer-events: none;
   z-index: 2;
-  pointer-events: none;
 }
 
-/* 
-  Layer 3: Ripples / Surface Reflection
-  The light band on the water
-*/
-.bgLayerGlowAmbient {
-  position: absolute;
-  bottom: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  /* Wider to cover edges */
-  height: 20%;
-  /* Taller spread */
-  background: radial-gradient(ellipse at 50% 100%,
-      rgba(196, 155, 107, 0.15) 0%,
-      transparent 70%);
-  filter: blur(40px);
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Layer 4: Grain / Noise */
-.bgLayerNoise {
+.spotlightTextLayer {
   position: absolute;
   inset: 0;
   z-index: 4;
-  opacity: 0.07;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  filter: contrast(120%) brightness(100%);
-  mix-blend-mode: overlay;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 22% 70% at 50% 0%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.4) 25%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.02) 70%,
+      transparent 100%);
+  mask-image: radial-gradient(ellipse 22% 70% at 50% 0%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.4) 25%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.02) 70%,
+      transparent 100%);
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   CONTENT LAYOUT
-   ━━━━━━━━━━━━━━━━━━ */
+.spotlightWord {
+  position: absolute;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  white-space: nowrap;
+  user-select: none;
+  color: rgba(212, 200, 180, 0.35);
+}
+
+.embossedTextLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle 130px at var(--x) var(--y),
+      white 0%,
+      rgba(255, 255, 255, 0.5) 35%,
+      rgba(255, 255, 255, 0.08) 65%,
+      transparent 100%);
+  mask-image: radial-gradient(circle 130px at var(--x) var(--y),
+      white 0%,
+      rgba(255, 255, 255, 0.5) 35%,
+      rgba(255, 255, 255, 0.08) 65%,
+      transparent 100%);
+}
+
+.embossedWord {
+  position: absolute;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: lowercase;
+  white-space: nowrap;
+  user-select: none;
+  color: rgba(212, 195, 165, 0.7);
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.08),
+    0 -1px 2px rgba(0, 0, 0, 0.8),
+    0 0 25px rgba(196, 168, 130, 0.25);
+}
 
 .content {
   position: relative;
@@ -149,198 +203,109 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   text-align: center;
-  padding: 0 20px;
-  transform: translateY(-20px);
-  /* Visual balancing */
+  padding: 0 20px 12vh;
+  width: 100%;
+  height: 100%;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   TYPOGRAPHY
-   ━━━━━━━━━━━━━━━━━━ */
-
-.title {
-  font-family: "Playfair Display", serif;
-  font-weight: 400;
-  /* Lighter weight for elegance */
-  color: #d9ceb0;
-  margin: 0;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
-
-  /* 3D effect with darker shadow and subtle glow */
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.8),
-    0 2px 0 rgba(0, 0, 0, 0.7),
-    0 3px 0 rgba(0, 0, 0, 0.6),
-    0 4px 0 rgba(0, 0, 0, 0.5),
-    0 5px 10px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(212, 180, 131, 0.3),
-    0 0 40px rgba(212, 180, 131, 0.15);
-
-  font-size: 56px;
-  transition: text-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  cursor: default;
-}
-
-.title:hover {
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.9),
-    0 2px 0 rgba(0, 0, 0, 0.8),
-    0 3px 0 rgba(0, 0, 0, 0.7),
-    0 4px 0 rgba(0, 0, 0, 0.6),
-    0 5px 15px rgba(0, 0, 0, 1),
-    0 0 30px rgba(212, 180, 131, 0.5),
-    0 0 60px rgba(212, 180, 131, 0.3);
-}
-
-@media (min-width: 768px) {
-  .title {
-    font-size: 82px;
-    /* Much larger as per image reference */
-  }
-}
-
-.subtitle {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 30px;
-  line-height: 1.6;
-  color: #bda17b;
-  /* More muted, earthy grey-gold */
-  margin: 0;
-  margin-top: 32px;
-  padding-bottom: 8px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+.enterBtn {
   position: relative;
-
-  /* 3D effect with darker shadow and subtle glow */
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.7),
-    0 2px 0 rgba(0, 0, 0, 0.6),
-    0 3px 5px rgba(0, 0, 0, 0.8),
-    0 0 15px rgba(196, 168, 130, 0.25),
-    0 0 30px rgba(196, 168, 130, 0.1);
-
-  /* Reflective shadow below */
-  filter: drop-shadow(0 8px 12px rgba(196, 168, 130, 0.15));
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  opacity: 0;
+  animation: fadeIn 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
 }
 
-.subtitle::after {
-  content: '';
+.ringOuter {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(196, 168, 130, 0.4) 50%, transparent);
-  box-shadow: 0 0 8px rgba(196, 168, 130, 0.3);
-}
-
-/* ━━━━━━━━━━━━━━━━━━
-   CTA BUTTON WRAPPER & OVERRIDES
-   ━━━━━━━━━━━━━━━━━━ */
-
-.buttonWrapper {
-  margin-top: 48px;
-  /* Ensure animation visibility */
-  opacity: 0;
-  animation: fadeInUpButton 1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
-  will-change: transform;
-}
-
-/* Custom styling for the Landing page button to match the specific "Begin" aesthetic */
-.landingBtn {
-  height: 52px;
-  padding: 0 36px;
-  font-size: 1.1rem !important;
-  letter-spacing: 0.1em !important;
-  background: rgba(26, 22, 18, 0.4) !important;
-  border: 1px solid rgba(150, 120, 78, 0.5) !important;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(196, 168, 130, 0.55);
+  animation: breathe 4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   box-shadow:
-    inset 0 0 20px rgba(168, 116, 68, 0.05),
-    0 0 40px rgba(0, 0, 0, 0.4),
-    0 0 80px rgba(0, 0, 0, 0.2) !important;
-  backdrop-filter: blur(4px);
-  color: #bd9e7a !important;
+    0 0 40px rgba(196, 168, 130, 0.15),
+    inset 0 0 30px rgba(196, 168, 130, 0.06);
 }
 
-.landingBtn:hover {
-  background: rgba(40, 32, 24, 0.6) !important;
-  border-color: rgba(168, 116, 68, 0.8) !important;
-  box-shadow: 0 0 30px rgba(168, 116, 68, 0.15) !important;
-  transform: translateY(-2px);
-  color: #e6dcc3 !important;
+.ringInner {
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(196, 168, 130, 0.4);
+  animation: breathe 4s cubic-bezier(0.37, 0, 0.63, 1) 0.5s infinite;
+  background: radial-gradient(circle,
+      rgba(196, 168, 130, 0.08) 0%,
+      transparent 70%);
 }
 
-.arrow {
-  display: inline-block;
-  opacity: 0.8;
-  font-size: 1.1em;
-  transition: transform 0.3s ease;
-  font-family: var(--font-family-sans);
-  margin-left: 8px;
+.enterText {
+  position: relative;
+  z-index: 1;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: rgba(11, 18, 21, 0.85);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.landingBtn:hover .arrow {
-  transform: translateX(4px);
+.enterBtn:hover .ringOuter {
+  border-color: rgba(15, 12, 8, 0.7);
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.3),
+    inset 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   ENTRANCE ANIMATIONS
-   ━━━━━━━━━━━━━━━━━━ */
+.enterBtn:hover .ringInner {
+  border-color: rgba(15, 12, 8, 0.5);
+  background: radial-gradient(circle,
+      rgba(0, 0, 0, 0.1) 0%,
+      transparent 70%);
+}
 
-@keyframes fadeInUp {
+.enterBtn:hover .enterText {
+  color: rgba(212, 180, 131, 0.9);
+  text-shadow: 0 0 15px rgba(196, 168, 130, 0.4);
+  letter-spacing: 0.2em;
+}
+
+.enterBtn:active {
+  transform: scale(0.96);
+}
+
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: scale(0.9);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
-}
-
-@keyframes fadeInUpSubtle {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes fadeInUpButton {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Title enters first - elegant and prominent */
-.title.animateIn {
-  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* Subtitle follows with slight delay via CSS */
-.subtitle.animateIn {
-  animation: fadeInUpSubtle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
-  opacity: 0;
-}
-
-/* Smooth transition for parallax */
-.subtitle {
-  transition: transform 0.08s ease-out;
-  will-change: transform;
 }

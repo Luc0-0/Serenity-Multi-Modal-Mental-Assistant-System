@@ -18,6 +18,7 @@ from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.emotion_log import EmotionLog
 from app.models.journal_entry import JournalEntry
+from app.models.crisis_event import CrisisEvent
 from app.models.memory import (
     SemanticMemory,
     EmotionalProfile,
@@ -92,34 +93,40 @@ async def cleanup_user(email: str):
         )
         print(f"  5️⃣ journal_entries: {count.rowcount} rows")
         
-        # 2.6: conversation_context_cache (conversation_id FK)
+        # 2.6: crisis_events (user_id FK, conversation_id FK, message_id FK)
+        count = await session.execute(
+            delete(CrisisEvent).where(CrisisEvent.user_id == user_id)
+        )
+        print(f"  6️⃣ crisis_events: {count.rowcount} rows")
+        
+        # 2.7: conversation_context_cache (conversation_id FK)
         if conversation_ids:
             count = await session.execute(
                 delete(ConversationContextCache).where(
                     ConversationContextCache.conversation_id.in_(conversation_ids)
                 )
             )
-            print(f"  6️⃣ conversation_context_cache: {count.rowcount} rows")
+            print(f"  7️⃣ conversation_context_cache: {count.rowcount} rows")
         
-        # 2.7: messages (conversation_id FK)
+        # 2.8: messages (conversation_id FK)
         count = await session.execute(
             delete(Message).where(
                 Message.conversation_id.in_(conversation_ids) if conversation_ids else False
             )
         )
-        print(f"  7️⃣ messages: {count.rowcount} rows")
+        print(f"  8️⃣ messages: {count.rowcount} rows")
         
-        # 2.8: conversations (user_id FK)
+        # 2.9: conversations (user_id FK)
         count = await session.execute(
             delete(Conversation).where(Conversation.user_id == user_id)
         )
-        print(f"  8️⃣ conversations: {count.rowcount} rows")
+        print(f"  9️⃣ conversations: {count.rowcount} rows")
         
-        # 2.9: users (id PK)
+        # 2.10: users (id PK)
         count = await session.execute(
             delete(User).where(User.id == user_id)
         )
-        print(f"  9️⃣ users: {count.rowcount} rows")
+        print(f"  🔟 users: {count.rowcount} rows")
         
         await session.commit()
         print(f"\n✅ User and all related data deleted successfully!")
@@ -128,4 +135,8 @@ async def cleanup_user(email: str):
 
 
 if __name__ == "__main__":
-    asyncio.run(cleanup_user("aditya.sharma@techmail.com"))
+     if len(sys.argv) > 1:
+         email = sys.argv[1]
+     else:
+         email = "aditya.sharma@techmail.com"  # Default test user
+     asyncio.run(cleanup_user(email))

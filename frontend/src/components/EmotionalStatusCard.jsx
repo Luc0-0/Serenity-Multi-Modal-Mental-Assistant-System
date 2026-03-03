@@ -94,11 +94,6 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
         <div className={styles.sun}></div>
         <div className={styles.mountain}></div>
         <div className={styles.reflection}></div>
-        {onClose && (
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close insights">
-            ×
-          </button>
-        )}
       </div>
 
       {/* 2. Title & Date */}

@@ -1,11 +1,11 @@
-/* Minimal Loading Spinner */
+/* Minimal Loading Spinner - Serenity Gold */
 
 .loadingSpinner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 0;
+  gap: 5px;
+  padding: 4px 0;
 }
 
 .spinnerDot {
@@ -13,7 +13,7 @@
   height: 6px;
   border-radius: 50%;
   background-color: #d4a574;
-  animation: pulse 1.4s ease-in-out infinite;
+  animation: spinnerPulse 1.4s ease-in-out infinite;
 }
 
 .spinnerDot:nth-child(1) {
@@ -28,12 +28,17 @@
   animation-delay: 0s;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.4;
+@keyframes spinnerPulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
   }
+
   50% {
     opacity: 1;
+    transform: scale(1.1);
   }
 }
 

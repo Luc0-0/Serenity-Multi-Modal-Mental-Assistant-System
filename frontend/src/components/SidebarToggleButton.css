@@ -1,44 +1,49 @@
 /* 
   SIDEBAR TOGGLE BUTTON - THIN ARROW
   Always visible at top-left, fixed position
-  Luxury minimal design, no emojis
+  Must be above Navbar (z-index: 100)
 */
 
 .sidebarArrowButton {
   position: fixed;
-  left: 20px;
-  top: 20px;
-  width: 32px;
-  height: 32px;
-  background: rgba(26, 22, 18, 0.6);
-  border: 1px solid rgba(196, 168, 130, 0.3);
-  border-radius: 6px;
+  left: 18px;
+  top: 18px;
+  width: 36px;
+  height: 36px;
+  background: rgba(14, 12, 10, 0.7);
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 10px;
   color: #d4cfc0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 170;
+  z-index: 2100;
+  /* Above everything including Navbar */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .sidebarArrowButton:hover {
-  border-color: rgba(196, 168, 130, 0.6);
-  background: rgba(26, 22, 18, 0.8);
+  border-color: rgba(196, 168, 130, 0.5);
+  background: rgba(14, 12, 10, 0.9);
   color: #f0ede3;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
 }
 
 .sidebarArrowButton:active {
-  background: rgba(26, 22, 18, 0.95);
   transform: scale(0.95);
 }
 
 .sidebarArrowButton.open svg {
-  transform: rotate(0deg);
+  transform: rotate(180deg);
 }
 
 .sidebarArrowButton.closed svg {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 
 .sidebarArrowButton svg {

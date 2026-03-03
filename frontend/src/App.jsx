@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Nipun Sujesh. All rights reserved.
+ * Licensed under the AGPLv3. See LICENSE file in the project root for details.
+ *
+ * This software is the confidential and proprietary information of Nipun Sujesh.
+ */
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Landing, CheckIn, Journal, Login, Signup, Profile, Insights, Meditate } from "./pages";
 import ErrorBoundary from "./components/ErrorBoundary";

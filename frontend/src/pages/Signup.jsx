@@ -187,6 +187,7 @@ export function Signup() {
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef(null);
   const cardRef = useRef(null);
+  const firstInputRef = useRef(null);
 
   const filledCount = [
     formData.name,
@@ -197,7 +198,11 @@ export function Signup() {
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
+    const focusTimer = setTimeout(() => firstInputRef.current?.focus(), 600);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(focusTimer);
+    };
   }, []);
 
   // 3D tilt effect (disabled on touch devices)
@@ -348,6 +353,7 @@ export function Signup() {
               >
                 <span className={styles.inputIcon}>{field.icon}</span>
                 <input
+                  ref={idx === 0 ? firstInputRef : undefined}
                   id={field.id}
                   type={field.type}
                   name={field.id}

@@ -156,11 +156,16 @@ export function Login() {
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef(null);
   const cardRef = useRef(null);
+  const emailInputRef = useRef(null);
 
-  // Entrance animation
+  // Entrance animation + auto-focus email
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
+    const focusTimer = setTimeout(() => emailInputRef.current?.focus(), 600);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(focusTimer);
+    };
   }, []);
 
   // 3D tilt effect (disabled on touch devices)
@@ -274,6 +279,7 @@ export function Login() {
                 <MailIcon />
               </span>
               <input
+                ref={emailInputRef}
                 id="email"
                 type="email"
                 name="email"

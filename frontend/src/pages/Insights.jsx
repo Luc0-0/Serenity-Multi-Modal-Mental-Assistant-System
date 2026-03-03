@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Insights.module.css";
-import { getEmotionColor } from "../services/emotionService";
+import { getEmotionColor, EMOTION_COLORS } from "../services/emotionService";
 
 export function Insights() {
   const navigate = useNavigate();
@@ -23,16 +23,16 @@ export function Insights() {
   const CONFIG = {
     apiEndpoint: "/api/emotions/insights/?days=7",
     colors: {
-      joy: '#c4a882',
-      sadness: '#6b7f8e',
-      anger: '#9e6b6b',
-      fear: '#8b7ba8',
-      surprise: '#7a9e8b',
-      disgust: '#8b9570',
-      neutral: '#6a6a5e',
-      anxiety: '#b8956a',
-      trust: '#a8b89a',
-      anticipation: '#7a9eb5',
+      joy: EMOTION_COLORS.joy,
+      sadness: EMOTION_COLORS.sadness,
+      anger: EMOTION_COLORS.anger,
+      fear: EMOTION_COLORS.fear,
+      surprise: EMOTION_COLORS.surprise,
+      disgust: EMOTION_COLORS.disgust,
+      neutral: EMOTION_COLORS.neutral,
+      anxiety: EMOTION_COLORS.anxiety,
+      trust: EMOTION_COLORS.trust,
+      anticipation: EMOTION_COLORS.anticipation,
     },
     labels: {
       fear: "Fear",

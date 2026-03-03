@@ -6,7 +6,6 @@ import { useNotification } from '../context/NotificationContext';
 import { validateLogin } from '../utils/validation';
 import { Button } from '../components/Button';
 import { BorderBeam } from '../components/BorderBeam';
-import { PasswordStrengthMeter } from '../components/PasswordStrengthMeter';
 import styles from './Login.module.css';
 
 export function Login() {
@@ -87,7 +86,7 @@ export function Login() {
               Email
             </label>
             <div className={`${styles.inputWrapper} ${focusedField === 'email' ? styles.focused : ''}`}>
-              <Mail size={16} className={styles.inputIcon} style={{ opacity: focusedField === 'email' ? 0.8 : 0.4 }} />
+              <Mail size={16} className={styles.inputIcon} style={{ color: focusedField === 'email' ? 'rgba(196, 155, 107, 0.7)' : 'rgba(140, 110, 70, 0.5)', transition: 'color 0.3s ease' }} />
               <input
                 id="email"
                 type="email"
@@ -112,7 +111,7 @@ export function Login() {
               Password
             </label>
             <div className={`${styles.inputWrapper} ${focusedField === 'password' ? styles.focused : ''}`}>
-              <Lock size={16} className={styles.inputIcon} style={{ opacity: focusedField === 'password' ? 0.8 : 0.4 }} />
+              <Lock size={16} className={styles.inputIcon} style={{ color: focusedField === 'password' ? 'rgba(196, 155, 107, 0.7)' : 'rgba(140, 110, 70, 0.5)', transition: 'color 0.3s ease' }} />
               <input
                 id="password"
                 type="password"
@@ -129,7 +128,6 @@ export function Login() {
               />
               <div className={styles.underline} />
             </div>
-            <PasswordStrengthMeter password={formData.password} />
             {errors.password && (
               <span className={styles.error}>{errors.password}</span>
             )}

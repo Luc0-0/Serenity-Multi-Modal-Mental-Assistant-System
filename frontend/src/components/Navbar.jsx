@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { AnimatedTooltip } from "./AnimatedTooltip";
 import styles from "./Navbar.module.css";
 
 export function Navbar({ onToggleSidebar }) {
@@ -88,14 +89,18 @@ export function Navbar({ onToggleSidebar }) {
         </div>
 
         <div className={styles.rightGroup}>
-          <button className={styles.resourcesDropdown}>Resources ▾</button>
-          <button
-            className={styles.settingsButton}
-            aria-label="Settings"
-            onClick={() => navigate("/profile")}
-          >
-            ⚙
-          </button>
+          <AnimatedTooltip content="Resources & Help" placement="bottom">
+            <button className={styles.resourcesDropdown}>Resources ▾</button>
+          </AnimatedTooltip>
+          <AnimatedTooltip content="Settings" placement="bottom">
+            <button
+              className={styles.settingsButton}
+              aria-label="Settings"
+              onClick={() => navigate("/profile")}
+            >
+              ⚙
+            </button>
+          </AnimatedTooltip>
         </div>
       </nav>
 

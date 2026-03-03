@@ -6,6 +6,9 @@ import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 import { CrisisAlert } from "../components/CrisisAlert";
 import { SerenityDeck } from "../components/SerenityDeck"; // Changed import
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
+import { CopyButton } from "../components/CopyButton";
+import { AnimatedTooltip } from "../components/AnimatedTooltip";
+import { ShinyText } from "../components/ShinyText";
 import { sendChatMessage, getErrorDisplay } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
 import styles from "./CheckIn.module.css";
@@ -342,7 +345,7 @@ export function CheckIn() {
               {/* Glass interior */}
               <div className={styles.orb}>
                 <div className={styles.orbContent}>
-                  <h1 className={styles.welcomeHeading}>Welcome.</h1>
+                   <h1 className={styles.welcomeHeading}><ShinyText>Welcome.</ShinyText></h1>
 
                   <p className={styles.subtitle}>
                     You can talk, write, or just sit here.
@@ -446,14 +449,29 @@ export function CheckIn() {
                       </div>
 
                       {!msg.isTyping && (
-                        <div className={styles.messageTime}>
-                          {msg.timestamp?.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                         <div className={styles.messageTime}>
+                           {msg.timestamp?.toLocaleTimeString([], {
+                             hour: "2-digit",
+                             minute: "2-digit",
+                           })}
+                         </div>
+                       )}
+
+                      {msg.sender === "assistant" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            marginTop: "0.4rem",
+                            opacity: 0,
+                            transition: "opacity 0.2s ease",
+                          }}
+                          data-copy-wrapper
+                        >
+                          <CopyButton text={msg.content || msg.text || ""} />
                         </div>
                       )}
-                    </div>
+                      </div>
 
                     {msg.crisis?.detected && (
                       <CrisisAlert
@@ -533,45 +551,49 @@ export function CheckIn() {
                   aria-label="Send message"
                   disabled={isLoading && !isStreaming}
                 />
-                <button
-                  className={styles.homeBtn}
-                  onClick={handleGoHome}
-                  title="Return home"
-                  aria-label="Return to welcome screen"
-                >
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <path
-                      d="M1.5 7.5L7.5 1.5L13.5 7.5V12.5C13.5 12.9142 13.3314 13.2893 13.0607 13.5607C12.7893 13.8314 12.4142 14 12 14H3C2.58579 14 2.21071 13.8314 1.93934 13.5607C1.66797 13.2893 1.5 12.9142 1.5 12.5V7.5Z"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M5.5 14V8.5H9.5V14"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className={styles.chatSubmitBtn}
-                  onClick={handleSendMessage}
-                  aria-label="Send message"
-                  disabled={(isLoading && !isStreaming) || !inputValue.trim()}
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M9 14V4M9 4L5 8M9 4L13 8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                <AnimatedTooltip content="Back to home" placement="top">
+                  <button
+                    className={styles.homeBtn}
+                    onClick={handleGoHome}
+                    title="Return home"
+                    aria-label="Return to welcome screen"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <path
+                        d="M1.5 7.5L7.5 1.5L13.5 7.5V12.5C13.5 12.9142 13.3314 13.2893 13.0607 13.5607C12.7893 13.8314 12.4142 14 12 14H3C2.58579 14 2.21071 13.8314 1.93934 13.5607C1.66797 13.2893 1.5 12.9142 1.5 12.5V7.5Z"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M5.5 14V8.5H9.5V14"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </AnimatedTooltip>
+                <AnimatedTooltip content="Send message" placement="top">
+                  <button
+                    className={styles.chatSubmitBtn}
+                    onClick={handleSendMessage}
+                    aria-label="Send message"
+                    disabled={(isLoading && !isStreaming) || !inputValue.trim()}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M9 14V4M9 4L5 8M9 4L13 8"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </AnimatedTooltip>
               </div>
             </div>
           </>

@@ -5,6 +5,7 @@
  * This software is the confidential and proprietary information of Nipun Sujesh.
  */
 
+import { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -28,6 +29,7 @@ import { ConversationRefreshProvider } from "./contexts/ConversationRefreshConte
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ToastContainer } from "./components/Toast";
+import { SerenityLoader } from "./components/SerenityLoader";
 import "./App.css";
 
 import { Navbar } from "./components/Navbar";
@@ -117,6 +119,13 @@ function AppRoutes() {
 }
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <ErrorBoundary>
       <Router>
@@ -125,6 +134,7 @@ function App() {
             <ConversationRefreshProvider>
               <ChatProvider>
                 <div className="app">
+                  <SerenityLoader visible={loading} />
                   <CustomCursor />
                   <AppRoutes />
                   <ToastContainer />

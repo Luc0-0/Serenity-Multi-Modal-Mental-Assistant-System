@@ -16,6 +16,7 @@ import { ToastContainer } from "./components/Toast";
 import "./App.css";
 
 import { Navbar } from "./components/Navbar";
+import { CustomCursor } from "./components/CustomCursor";
 
 // Auth wrapper
 function ProtectedRoute({ children }) {
@@ -108,6 +109,7 @@ function App() {
             <ConversationRefreshProvider>
               <ChatProvider>
                 <div className="app">
+                  <CustomCursor />
                   <AppRoutes />
                   <ToastContainer />
                 </div>

@@ -43,9 +43,14 @@ function ProtectedRoute({ children }) {
 
   const isAuthed = isAuthenticated || !!token;
 
+  const handleToggleSidebar = () => {
+    // Dispatch custom event that CheckIn/page components can listen to
+    window.dispatchEvent(new CustomEvent("toggleSidebar"));
+  };
+
   return isAuthed ? (
     <>
-      <Navbar />
+      <Navbar onToggleSidebar={handleToggleSidebar} />
       {children}
     </>
   ) : (

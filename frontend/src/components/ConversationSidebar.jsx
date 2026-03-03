@@ -129,43 +129,28 @@ export function ConversationSidebar({
       {/* Desktop Conversation History Bar — sticky below navbar */}
       <div className={`desktopConversationBar ${isDesktopExpanded ? "expanded" : "collapsed"}`}>
         <div className="desktopBarContent">
-          <div className="conversationPills">
-            {conversations.slice(0, 3).map((conv) => (
-              <button
-                key={conv.id}
-                className={`conversationPill ${currentConversationId === conv.id ? "active" : ""}`}
-                onClick={() => {
-                  onSelectConversation(conv.id);
-                  setIsDesktopExpanded(false);
-                }}
-                title={getConversationTitle(conv)}
-              >
-                {getConversationTitle(conv).substring(0, 20)}
-              </button>
-            ))}
-          </div>
-          <div className="desktopBarActions">
+          <div className="desktopBarTrigger">
             <button
-              className="newConvBtnDesktop"
-              onClick={() => {
-                onNewConversation();
-                setIsDesktopExpanded(false);
-              }}
-            >
-              + New
-            </button>
-            <button
-              className={`expandChevron ${isDesktopExpanded ? "rotated" : ""}`}
+              className={`triggerPill ${isDesktopExpanded ? "open" : "closed"}`}
               onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
               aria-label={isDesktopExpanded ? "Collapse conversation history" : "Expand conversation history"}
             >
-              ⌄
+              Conversations {isDesktopExpanded ? "▴" : "▾"}
             </button>
           </div>
+          <button
+            className="newConvBtnDesktop"
+            onClick={() => {
+              onNewConversation();
+              setIsDesktopExpanded(false);
+            }}
+          >
+            + New
+          </button>
         </div>
 
         {/* Expanded conversation list */}
-        <div className="desktopBarExpanded">
+        <div className={`desktopBarExpanded ${isDesktopExpanded ? "visible" : "hidden"}`}>
           <div className="desktopConvList">
             {loading ? (
               <p className="loadingText">Loading...</p>

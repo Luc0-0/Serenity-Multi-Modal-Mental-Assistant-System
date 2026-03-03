@@ -1,6 +1,6 @@
 import { apiClient } from './apiClient';
 
-const JOURNAL_BASE = '/journal';
+const JOURNAL_BASE = '/api/journal';
 
 export const journalService = {
   /**
@@ -65,7 +65,7 @@ export const insightsService = {
    */
   async getInsights(days = 7) {
     const params = new URLSearchParams({ days });
-    return apiClient.get(`/emotions/insights/?${params.toString()}`);
+    return apiClient.get(`/api/emotions/insights/?${params.toString()}`);
   },
 
   /**
@@ -74,7 +74,7 @@ export const insightsService = {
    */
   async getHistory(limit = 50) {
     const params = new URLSearchParams({ limit });
-    return apiClient.get(`/emotions/history/?${params.toString()}`);
+    return apiClient.get(`/api/emotions/history/?${params.toString()}`);
   },
 
   /**
@@ -84,6 +84,6 @@ export const insightsService = {
   async getDailySummary(date = null) {
     const params = new URLSearchParams();
     if (date) params.append('date', date);
-    return apiClient.get(`/emotions/daily-summary/?${params.toString()}`);
+    return apiClient.get(`/api/emotions/daily-summary/?${params.toString()}`);
   },
 };

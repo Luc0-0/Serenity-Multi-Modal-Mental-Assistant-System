@@ -1,4 +1,23 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Build API base URL - prioritize environment variable
+const API_BASE_URL = (() => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+  
+  // Production: construct backend URL from frontend domain
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (!isDev) {
+    // On Railway with separate backend/frontend services
+    // Try to detect backend from environment or construct from hostname
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 
+      `${window.location.protocol}//${window.location.hostname.replace('frontend', 'backend')}`;
+    return backendUrl;
+  }
+  
+  // Development default (no /api - let services handle it)
+  return 'http://localhost:8000';
+})();
+
+console.debug('[API Client] Configured with base URL:', API_BASE_URL);
 const TIMEOUT_MS = 10000;
 
 class APIClient {

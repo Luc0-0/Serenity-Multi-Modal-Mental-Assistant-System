@@ -4,7 +4,7 @@
   border-radius: 20px;
   padding: 0;
   width: 100%;
-  max-width: 340px;
+  max-width: 300px;
   color: rgba(255, 245, 230, 0.85);
   font-family: "Inter", system-ui, sans-serif;
   overflow: hidden;
@@ -18,7 +18,7 @@
 }
 
 .headerImage {
-  height: 160px;
+  height: 120px;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -45,26 +45,26 @@
     to bottom,
     rgba(0, 0, 0, 0.1) 0%,
     rgba(0, 0, 0, 0) 40%,
-    rgba(8, 8, 16, 0.7) 100%
+    rgba(8, 8, 16, 0.75) 100%
   );
   pointer-events: none;
 }
 
 .closeBtn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
   transition: all 0.2s;
   z-index: 10;
@@ -78,12 +78,12 @@
 
 .titleSection {
   text-align: center;
-  padding: 1rem 0 0.5rem;
+  padding: 0.6rem 0 0.3rem;
 }
 
 .title {
   font-family: "Cormorant Garamond", serif;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   color: #e5e5e5;
   margin: 0;
   font-weight: 500;
@@ -91,29 +91,30 @@
 }
 
 .date {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: #888;
-  margin-top: 0.2rem;
+  margin-top: 0.1rem;
   font-weight: 400;
 }
 
 .statsList {
-  padding: 1.25rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .statItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.85rem;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .statDot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #444;
   flex-shrink: 0;
@@ -121,7 +122,7 @@
 
 .statDot.gold {
   background: #d4a574;
-  box-shadow: 0 0 8px rgba(212, 165, 116, 0.4);
+  box-shadow: 0 0 6px rgba(212, 165, 116, 0.4);
 }
 
 .statDot.dim {
@@ -130,6 +131,7 @@
 
 .statLabel {
   color: #888;
+  flex-shrink: 0;
 }
 
 .statValue {
@@ -140,14 +142,14 @@
 
 .chartContainer {
   position: relative;
-  width: 160px;
-  height: 160px;
-  margin: 1.5rem auto;
+  width: 120px;
+  height: 120px;
+  margin: 0.6rem auto;
 }
 
 .chartContainer svg {
-  filter: drop-shadow(0 0 8px rgba(212, 165, 116, 0.15))
-    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 0 6px rgba(212, 165, 116, 0.12));
+  overflow: visible;
 }
 
 .chartLabel {
@@ -156,34 +158,37 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  pointer-events: none;
 }
 
 .chartPercentage {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #e5e5e5;
   font-weight: 600;
   display: block;
+  line-height: 1.2;
 }
 
 .chartSubtext {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .trendSection {
-  padding: 0 1.5rem 1.25rem;
+  padding: 0.4rem 1.2rem 0.6rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   color: #d4a574;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .footer {
-  padding: 1rem;
+  padding: 0.6rem 1rem;
   text-align: center;
 }
 
@@ -191,9 +196,9 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #a0a0a0;
-  padding: 0.6rem 1rem;
+  padding: 0.45rem 1rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -211,7 +216,7 @@
 }
 
 .arrow {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   transition: transform 0.2s;
 }
 
@@ -220,10 +225,10 @@
 }
 
 .loading {
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .legend {

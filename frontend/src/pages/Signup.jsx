@@ -5,6 +5,7 @@ import { useNotification } from '../context/NotificationContext';
 import { validateSignup } from '../utils/validation';
 import { Button } from '../components/Button';
 import { BorderBeam } from '../components/BorderBeam';
+import { PasswordStrengthMeter } from '../components/PasswordStrengthMeter';
 import styles from './Signup.module.css';
 
 export function Signup() {
@@ -108,6 +109,7 @@ export function Signup() {
               disabled={isLoading}
               autoComplete="new-password"
             />
+            <PasswordStrengthMeter password={formData.password} />
             {errors.password && (
               <span className={styles.error}>{errors.password}</span>
             )}

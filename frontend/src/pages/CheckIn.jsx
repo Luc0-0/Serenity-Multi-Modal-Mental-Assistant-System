@@ -144,7 +144,11 @@ export function CheckIn() {
     if (isInChat && chatInputRef.current) {
       setTimeout(() => chatInputRef.current?.focus(), 300);
     }
-  }, [isInChat]);
+    // On mobile, close insights when entering chat
+    if (isInChat && isMobile) {
+      setShowInsights(false);
+    }
+  }, [isInChat, isMobile]);
 
   useEffect(() => {
     if (conversationId && isInChat && messages.length > 0) {

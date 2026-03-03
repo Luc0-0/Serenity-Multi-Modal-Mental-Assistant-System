@@ -5,6 +5,7 @@ import { useNotification } from "../context/NotificationContext";
 import { apiClient } from "../services/apiClient";
 import { EMOTION_COLORS } from "../services/emotionService";
 import { Button } from "../components/Button";
+import { ScrollIndicator } from "../components/ScrollIndicator";
 import styles from "./Profile.module.css";
 
 export function Profile() {
@@ -271,7 +272,8 @@ export function Profile() {
   const hasEmotionData = emotionData?.total_logs > 0;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id="profile-scroll-container">
+      <ScrollIndicator scrollContainerId="profile-scroll-container" />
       <div className={styles.backgroundImage} />
       <div className={styles.ambientGlow} aria-hidden="true" />
       <div className={styles.avatarRay} aria-hidden="true" />

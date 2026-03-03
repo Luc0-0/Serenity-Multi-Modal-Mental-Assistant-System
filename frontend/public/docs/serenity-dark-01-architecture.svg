@@ -1,0 +1,248 @@
+<svg viewBox="0 0 1400 920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" x="0" y="0" width="320" height="180" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)">
+      <text x="0" y="80" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+      <text x="80" y="170" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+    </pattern>
+    <style>.T{font-family:'Palatino Linotype',Palatino,'Book Antiqua',serif}.L{font-family:Georgia,'Times New Roman',serif}.M{font-family:'Courier New',Courier,monospace}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A1C20"/><stop offset="100%" stop-color="#141618"/></linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B5924A" stop-opacity="0"/><stop offset="20%" stop-color="#B5924A"/><stop offset="80%" stop-color="#B5924A"/><stop offset="100%" stop-color="#B5924A" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gF" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1E2420"/><stop offset="100%" stop-color="#181D19"/></linearGradient>
+    <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1C2028"/><stop offset="100%" stop-color="#161B22"/></linearGradient>
+    <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#221E16"/><stop offset="100%" stop-color="#1C1912"/></linearGradient>
+    <linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#211D1D"/><stop offset="100%" stop-color="#1B1818"/></linearGradient>
+    <linearGradient id="gI" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1E1C24"/><stop offset="100%" stop-color="#18161E"/></linearGradient>
+    <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1C1917" flood-opacity="0.07"/></filter>
+    <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1C1917" flood-opacity="0.05"/></filter>
+    <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#6A6460"/></marker>
+    <marker id="aA" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#C4A050"/></marker>
+  </defs>
+  <rect width="1400" height="920" fill="url(#bg)"/>
+  <rect width="1400" height="920" fill="url(#wm)" pointer-events="none"/>
+  <!-- corner marks -->
+  <path d="M30 30 L30 56 M30 30 L56 30" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1370 30 L1370 56 M1370 30 L1344 30" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M30 890 L30 864 M30 890 L56 890" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1370 890 L1370 864 M1370 890 L1344 890" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- header -->
+  <text x="700" y="48" text-anchor="middle" class="T" font-size="10" fill="#C4A050" letter-spacing="5">SERENITY</text>
+  <text x="700" y="76" text-anchor="middle" class="T" font-size="27" fill="#E8E4DC" letter-spacing="2">System Architecture</text>
+  <rect x="220" y="86" width="960" height="0.8" fill="url(#hl)"/>
+  <text x="700" y="104" text-anchor="middle" class="L" font-size="11" fill="#6A6460" letter-spacing="1">Multi-Modal Mental Health Assistant  ·  Full-Stack Overview</text>
+
+  <!-- ══ FRONTEND ══ -->
+  <rect x="60" y="122" width="388" height="382" rx="6" fill="url(#gF)" stroke="#3A5036" stroke-width="1" filter="url(#s1)"/>
+  <rect x="60" y="122" width="388" height="34" rx="6" fill="#7C9070" opacity="0.25"/>
+  <text x="254" y="145" text-anchor="middle" class="T" font-size="13" fill="#7CB876" letter-spacing="3">REACT FRONTEND</text>
+  <text x="254" y="163" text-anchor="middle" class="M" font-size="9" fill="#5A8454">React 19 · Vite 7 · CSS Modules</text>
+  <!-- Pages -->
+  <text x="80" y="188" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">PAGES</text>
+  <line x1="80" y1="191" x2="428" y2="191" stroke="#3A4A38" stroke-width="0.5"/>
+  <rect x="80" y="197" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="129" y="213" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Landing</text>
+  <rect x="188" y="197" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="237" y="213" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">CheckIn</text>
+  <rect x="296" y="197" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="345" y="213" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Journal</text>
+  <rect x="80" y="228" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="129" y="244" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Insights</text>
+  <rect x="188" y="228" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="237" y="244" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Profile</text>
+  <rect x="296" y="228" width="98" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="345" y="244" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Meditate</text>
+  <!-- Components -->
+  <text x="80" y="272" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">COMPONENTS</text>
+  <line x1="80" y1="275" x2="428" y2="275" stroke="#3A4A38" stroke-width="0.5"/>
+  <rect x="80" y="281" width="146" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="153" y="297" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">SerenityDeck</text>
+  <rect x="236" y="281" width="102" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="287" y="297" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">CrisisAlert</text>
+  <rect x="348" y="281" width="80" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="388" y="297" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Navbar</text>
+  <rect x="80" y="312" width="146" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="153" y="328" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">CustomCursor</text>
+  <rect x="236" y="312" width="102" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="287" y="328" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Toast</text>
+  <rect x="348" y="312" width="80" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="388" y="328" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">PageTrans.</text>
+  <!-- Contexts -->
+  <text x="80" y="354" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">STATE &amp; CONTEXTS</text>
+  <line x1="80" y1="357" x2="428" y2="357" stroke="#3A4A38" stroke-width="0.5"/>
+  <rect x="80" y="363" width="348" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="254" y="379" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">AuthContext · ChatContext · NotificationContext</text>
+  <rect x="80" y="394" width="348" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="254" y="410" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">localStorage — JWT · conversation_id · user_id</text>
+  <!-- Animation -->
+  <text x="80" y="437" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">ANIMATION LIBRARIES</text>
+  <line x1="80" y1="440" x2="428" y2="440" stroke="#3A4A38" stroke-width="0.5"/>
+  <rect x="80" y="446" width="348" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="254" y="462" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">Framer Motion · GSAP · Lenis · React Router DOM</text>
+  <!-- API Services -->
+  <text x="80" y="489" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">API SERVICES</text>
+  <line x1="80" y1="492" x2="428" y2="492" stroke="#3A4A38" stroke-width="0.5"/>
+  <rect x="80" y="498" width="348" height="24" rx="3" fill="#22252B" stroke="#3A4A38" stroke-width="0.8" filter="url(#s2)"/><text x="254" y="514" text-anchor="middle" class="L" font-size="9.5" fill="#7CB876">api.js · emotionService.js · journalService.js</text>
+
+  <!-- ══ BACKEND ══ -->
+  <rect x="498" y="122" width="542" height="538" rx="6" fill="url(#gB)" stroke="#304050" stroke-width="1" filter="url(#s1)"/>
+  <rect x="498" y="122" width="542" height="34" rx="6" fill="#6B7E8F" opacity="0.28"/>
+  <text x="769" y="145" text-anchor="middle" class="T" font-size="13" fill="#7AAECC" letter-spacing="3">FASTAPI BACKEND</text>
+  <text x="769" y="163" text-anchor="middle" class="M" font-size="9" fill="#5C8090">Python · Uvicorn · SQLAlchemy 2.0 Async · Pydantic 2.5</text>
+  <!-- Routers -->
+  <text x="518" y="188" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">API ROUTERS</text>
+  <line x1="518" y1="191" x2="1020" y2="191" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="197" width="88" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="562" y="213" text-anchor="middle" class="M" font-size="9" fill="#7AAECC">/api/auth</text>
+  <rect x="616" y="197" width="88" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="660" y="213" text-anchor="middle" class="M" font-size="9" fill="#7AAECC">/api/chat</text>
+  <rect x="714" y="197" width="108" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="768" y="213" text-anchor="middle" class="M" font-size="9" fill="#7AAECC">/api/emotions</text>
+  <rect x="832" y="197" width="108" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="886" y="213" text-anchor="middle" class="M" font-size="9" fill="#7AAECC">/api/journal</text>
+  <rect x="950" y="197" width="70" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="985" y="213" text-anchor="middle" class="M" font-size="9" fill="#7AAECC">/health</text>
+  <!-- Core Services -->
+  <text x="518" y="242" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">CORE SERVICES</text>
+  <line x1="518" y1="245" x2="1020" y2="245" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="251" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="592" y="267" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">LLMService</text>
+  <rect x="676" y="251" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="750" y="267" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">EmotionService</text>
+  <rect x="834" y="251" width="186" height="24" rx="3" fill="#261A1A" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/><text x="927" y="267" text-anchor="middle" class="L" font-size="9.5" fill="#C47A72">CrisisService  ⚠</text>
+  <rect x="518" y="282" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="592" y="298" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">MemoryService</text>
+  <rect x="676" y="282" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="750" y="298" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">ConversationSvc</text>
+  <rect x="834" y="282" width="186" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="927" y="298" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">JournalService</text>
+  <rect x="518" y="313" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="592" y="329" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">EmbeddingService</text>
+  <rect x="676" y="313" width="148" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="750" y="329" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">ContextManager</text>
+  <rect x="834" y="313" width="186" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="927" y="329" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">EmotionAnalytics</text>
+  <!-- Engine System -->
+  <text x="518" y="357" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">PLUGGABLE ENGINE SYSTEM</text>
+  <line x1="518" y1="360" x2="1020" y2="360" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="366" width="488" height="62" rx="4" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/>
+  <rect x="528" y="374" width="148" height="46" rx="3" fill="#1E2830" stroke="#2E3E4E" stroke-width="0.8"/>
+  <text x="602" y="392" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">EmotionEngine</text>
+  <text x="602" y="407" text-anchor="middle" class="M" font-size="8" fill="#5C8090">keywords / XLNet</text>
+  <text x="602" y="418" text-anchor="middle" class="M" font-size="8" fill="#5C8090">/ Ollama</text>
+  <rect x="686" y="374" width="148" height="46" rx="3" fill="#1E2830" stroke="#2E3E4E" stroke-width="0.8"/>
+  <text x="760" y="392" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">LLMEngine</text>
+  <text x="760" y="407" text-anchor="middle" class="M" font-size="8" fill="#5C8090">Ollama Cloud</text>
+  <text x="760" y="418" text-anchor="middle" class="M" font-size="8" fill="#5C8090">/ Fallback Templates</text>
+  <rect x="844" y="374" width="152" height="46" rx="3" fill="#261A1A" stroke="#6A3A34" stroke-width="0.8"/>
+  <text x="920" y="392" text-anchor="middle" class="L" font-size="9.5" fill="#C47A72">CrisisEngine</text>
+  <text x="920" y="407" text-anchor="middle" class="M" font-size="8" fill="#B07070">keywords → safe</text>
+  <text x="920" y="418" text-anchor="middle" class="M" font-size="8" fill="#B07070">default fallback</text>
+  <!-- Background Tasks -->
+  <text x="518" y="448" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">BACKGROUND TASKS</text>
+  <line x1="518" y1="451" x2="1020" y2="451" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="457" width="488" height="28" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" stroke-dasharray="5,3" filter="url(#s2)"/>
+  <text x="762" y="475" text-anchor="middle" class="L" font-size="9.5" fill="#5C8090">Title Gen  ·  Analytics Update  ·  Journal Extract  ·  Memory Store</text>
+  <!-- Auth -->
+  <text x="518" y="506" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">AUTHENTICATION</text>
+  <line x1="518" y1="509" x2="1020" y2="509" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="515" width="232" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="634" y="531" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">JWT HS256 · PyJWT · Stateless</text>
+  <rect x="760" y="515" width="246" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="883" y="531" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">bcrypt · argon2-cffi</text>
+  <!-- Communication -->
+  <text x="518" y="558" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">COMMUNICATION</text>
+  <line x1="518" y1="561" x2="1020" y2="561" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="567" width="232" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="634" y="583" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">RESTful API — httpx</text>
+  <rect x="760" y="567" width="246" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/><text x="883" y="583" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">Server-Sent Events (SSE)</text>
+  <!-- Migrations -->
+  <text x="518" y="610" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">MIGRATIONS &amp; ORM</text>
+  <line x1="518" y1="613" x2="1020" y2="613" stroke="#2E3E4E" stroke-width="0.5"/>
+  <rect x="518" y="619" width="488" height="24" rx="3" fill="#22252B" stroke="#2E3E4E" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="762" y="635" text-anchor="middle" class="L" font-size="9.5" fill="#7AAECC">Alembic 1.13 · asyncpg (PostgreSQL) · aiosqlite (SQLite dev)</text>
+
+  <!-- ══ DATABASE ══ -->
+  <rect x="60" y="554" width="388" height="318" rx="6" fill="url(#gD)" stroke="#5A4A2A" stroke-width="1" filter="url(#s1)"/>
+  <rect x="60" y="554" width="388" height="34" rx="6" fill="#C4A050" opacity="0.20"/>
+  <text x="254" y="577" text-anchor="middle" class="T" font-size="13" fill="#C4A060" letter-spacing="3">POSTGRESQL</text>
+  <text x="254" y="595" text-anchor="middle" class="M" font-size="9" fill="#B08840">PostgreSQL 15 Alpine · pgAdmin 4</text>
+  <text x="80" y="617" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">TABLES  (10 total)</text>
+  <line x1="80" y1="620" x2="428" y2="620" stroke="#4A3C20" stroke-width="0.5"/>
+  <rect x="80" y="626" width="152" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="156" y="641" text-anchor="middle" class="M" font-size="9" fill="#C4A060">users</text>
+  <rect x="244" y="626" width="170" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="329" y="641" text-anchor="middle" class="M" font-size="9" fill="#C4A060">conversations</text>
+  <rect x="80" y="655" width="152" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="156" y="670" text-anchor="middle" class="M" font-size="9" fill="#C4A060">messages</text>
+  <rect x="244" y="655" width="170" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="329" y="670" text-anchor="middle" class="M" font-size="9" fill="#C4A060">emotion_logs</text>
+  <rect x="80" y="684" width="152" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="156" y="699" text-anchor="middle" class="M" font-size="9" fill="#C4A060">journal_entries</text>
+  <rect x="244" y="684" width="170" height="22" rx="3" fill="#261A1A" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/><text x="329" y="699" text-anchor="middle" class="M" font-size="9" fill="#C47A72">crisis_events</text>
+  <rect x="80" y="713" width="152" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="156" y="728" text-anchor="middle" class="M" font-size="9" fill="#C4A060">semantic_memories</text>
+  <rect x="244" y="713" width="170" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="329" y="728" text-anchor="middle" class="M" font-size="9" fill="#C4A060">emotional_profiles</text>
+  <rect x="80" y="742" width="152" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="156" y="757" text-anchor="middle" class="M" font-size="9" fill="#C4A060">meta_reflections</text>
+  <rect x="244" y="742" width="170" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="329" y="757" text-anchor="middle" class="M" font-size="9" fill="#C4A060">context_cache</text>
+  <text x="80" y="784" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">ORM &amp; VALIDATION</text>
+  <line x1="80" y1="787" x2="428" y2="787" stroke="#4A3C20" stroke-width="0.5"/>
+  <rect x="80" y="793" width="348" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/><text x="254" y="808" text-anchor="middle" class="L" font-size="9.5" fill="#C4A060">SQLAlchemy 2.0 Async · Pydantic 2.5</text>
+  <text x="80" y="832" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">DEV FALLBACK</text>
+  <line x1="80" y1="835" x2="428" y2="835" stroke="#4A3C20" stroke-width="0.5"/>
+  <rect x="80" y="841" width="348" height="22" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" opacity="0.7" filter="url(#s2)"/><text x="254" y="856" text-anchor="middle" class="L" font-size="9" fill="#6A6460">SQLite — aiosqlite — local development only</text>
+
+  <!-- ══ AI/ML ══ -->
+  <rect x="498" y="714" width="542" height="158" rx="6" fill="url(#gA)" stroke="#4E3040" stroke-width="1" filter="url(#s1)"/>
+  <rect x="498" y="714" width="542" height="34" rx="6" fill="#8B7B8B" opacity="0.25"/>
+  <text x="769" y="737" text-anchor="middle" class="T" font-size="13" fill="#A898C8" letter-spacing="3">AI / ML LAYER</text>
+  <text x="769" y="755" text-anchor="middle" class="M" font-size="9" fill="#8A7A8A">Embedded Models · External API · Pluggable Engines</text>
+  <rect x="518" y="766" width="230" height="44" rx="3" fill="#22252B" stroke="#4E3040" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="633" y="785" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Ollama Cloud API</text>
+  <text x="633" y="799" text-anchor="middle" class="M" font-size="8" fill="#8A7A8A">gpt-oss:120b-cloud · Bearer · 30s timeout</text>
+  <text x="633" y="809" text-anchor="middle" class="M" font-size="8" fill="#A09898">Fallback → Template Responses</text>
+  <rect x="760" y="766" width="116" height="44" rx="3" fill="#22252B" stroke="#4E3040" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="818" y="785" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Keyword Eng.</text>
+  <text x="818" y="800" text-anchor="middle" class="M" font-size="8" fill="#8A7A8A">Primary · ~65% acc</text>
+  <text x="818" y="810" text-anchor="middle" class="M" font-size="8" fill="#A09898">fast · no GPU</text>
+  <rect x="888" y="766" width="132" height="44" rx="3" fill="#22252B" stroke="#4E3040" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="954" y="785" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">XLNet + Sentence</text>
+  <text x="954" y="800" text-anchor="middle" class="M" font-size="8" fill="#8A7A8A">~88% · 384-dim vec</text>
+  <text x="954" y="810" text-anchor="middle" class="M" font-size="8" fill="#A09898">Optional / HF cache</text>
+
+  <!-- ══ INFRASTRUCTURE ══ -->
+  <rect x="1090" y="122" width="258" height="750" rx="6" fill="url(#gI)" stroke="#3E3858" stroke-width="1" filter="url(#s1)"/>
+  <rect x="1090" y="122" width="258" height="34" rx="6" fill="#8B7B9B" opacity="0.28"/>
+  <text x="1219" y="145" text-anchor="middle" class="T" font-size="13" fill="#A898C8" letter-spacing="2">INFRASTRUCTURE</text>
+  <text x="1219" y="163" text-anchor="middle" class="M" font-size="9" fill="#8A7A9A">Docker Compose</text>
+  <!-- Containers -->
+  <text x="1110" y="186" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">CONTAINERS</text>
+  <line x1="1110" y1="189" x2="1328" y2="189" stroke="#3C3058" stroke-width="0.5"/>
+  <rect x="1110" y="195" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="212" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">frontend</text>
+  <text x="1219" y="226" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">React · Vite · Node.js</text>
+  <rect x="1110" y="243" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="260" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">backend</text>
+  <text x="1219" y="274" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">FastAPI · Uvicorn · Python</text>
+  <rect x="1110" y="291" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="308" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">postgres</text>
+  <text x="1219" y="322" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">PostgreSQL 15 Alpine</text>
+  <rect x="1110" y="339" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="356" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">pgAdmin</text>
+  <text x="1219" y="370" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">Database Admin UI</text>
+  <!-- Volumes -->
+  <text x="1110" y="398" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">VOLUMES</text>
+  <line x1="1110" y1="401" x2="1328" y2="401" stroke="#3C3058" stroke-width="0.5"/>
+  <rect x="1110" y="407" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="424" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">HuggingFace Cache</text>
+  <text x="1219" y="438" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">Sentence Transformers</text>
+  <!-- External -->
+  <text x="1110" y="466" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">EXTERNAL</text>
+  <line x1="1110" y1="469" x2="1328" y2="469" stroke="#3C3058" stroke-width="0.5"/>
+  <rect x="1110" y="475" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="492" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Ollama Cloud API</text>
+  <text x="1219" y="506" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">ollama.com/v1/chat</text>
+  <rect x="1110" y="523" width="218" height="40" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="540" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Google Fonts</text>
+  <text x="1219" y="554" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">Cormorant · Playfair · Inter</text>
+  <rect x="1110" y="571" width="218" height="52" rx="3" fill="#261A1A" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="1219" y="590" text-anchor="middle" class="L" font-size="9.5" fill="#C47A72">Crisis Resources</text>
+  <text x="1219" y="605" text-anchor="middle" class="M" font-size="8" fill="#B07070">988 · Text 741741</text>
+  <text x="1219" y="618" text-anchor="middle" class="M" font-size="8" fill="#B07070">Emergency 911</text>
+  <!-- Design Philosophy -->
+  <text x="1110" y="644" class="L" font-size="8.5" fill="#6A6460" letter-spacing="2">DESIGN PHILOSOPHY</text>
+  <line x1="1110" y1="647" x2="1328" y2="647" stroke="#3C3058" stroke-width="0.5"/>
+  <rect x="1110" y="653" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="668" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Pluggable AI Engines</text>
+  <rect x="1110" y="682" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="697" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Graceful Degradation</text>
+  <rect x="1110" y="711" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="726" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Background Task Processing</text>
+  <rect x="1110" y="740" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="755" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Layered Memory System</text>
+  <rect x="1110" y="769" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="784" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Async Throughout</text>
+  <rect x="1110" y="798" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="813" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Adaptive Personality System</text>
+  <rect x="1110" y="827" width="218" height="22" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/><text x="1219" y="842" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">CSS Modules Scoped Styling</text>
+
+  <!-- ══ CONNECTORS ══ -->
+  <line x1="449" y1="308" x2="496" y2="308" stroke="#A09890" stroke-width="1.2" marker-end="url(#aG)"/>
+  <line x1="500" y1="322" x2="453" y2="322" stroke="#A09890" stroke-width="1.2" marker-end="url(#aG)"/>
+  <text x="473" y="304" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">REST</text>
+  <text x="473" y="335" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">SSE</text>
+  <line x1="640" y1="662" x2="310" y2="552" stroke="#B5924A" stroke-width="1.1" stroke-dasharray="5,3" marker-end="url(#aA)"/>
+  <text x="448" y="612" text-anchor="middle" class="M" font-size="7.5" fill="#C4A050">SQLAlchemy</text>
+  <line x1="870" y1="662" x2="780" y2="712" stroke="#8B7B8B" stroke-width="1.1" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <line x1="1040" y1="360" x2="1088" y2="360" stroke="#A09890" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+
+  <!-- ══ LEGEND ══ -->
+  <rect x="60" y="888" width="820" height="22" rx="3" fill="#22252B" stroke="#2E2C28" stroke-width="0.8" filter="url(#s2)"/>
+  <rect x="76" y="896" width="9" height="9" rx="2" fill="#7C9070"/><text x="91" y="907" class="L" font-size="8.5" fill="#9A9490">Frontend</text>
+  <rect x="150" y="896" width="9" height="9" rx="2" fill="#6B7E8F"/><text x="165" y="907" class="L" font-size="8.5" fill="#9A9490">Backend</text>
+  <rect x="224" y="896" width="9" height="9" rx="2" fill="#C4A050"/><text x="239" y="907" class="L" font-size="8.5" fill="#9A9490">Database</text>
+  <rect x="300" y="896" width="9" height="9" rx="2" fill="#8B7B8B"/><text x="315" y="907" class="L" font-size="8.5" fill="#9A9490">AI / ML</text>
+  <rect x="362" y="896" width="9" height="9" rx="2" fill="#8B7B9B"/><text x="377" y="907" class="L" font-size="8.5" fill="#9A9490">Infrastructure</text>
+  <rect x="454" y="896" width="9" height="9" rx="2" fill="#B06A64"/><text x="469" y="907" class="L" font-size="8.5" fill="#9A9490">Crisis Path</text>
+  <line x1="534" y1="901" x2="556" y2="901" stroke="#A09890" stroke-width="1.2"/><text x="562" y="907" class="L" font-size="8.5" fill="#9A9490">Data Flow</text>
+  <line x1="614" y1="901" x2="636" y2="901" stroke="#A09890" stroke-width="1" stroke-dasharray="4,2"/><text x="642" y="907" class="L" font-size="8.5" fill="#9A9490">Async / Indirect</text>
+  <!-- footer -->
+  <text x="1219" y="900" text-anchor="middle" class="T" font-size="8.5" fill="#C4A050" letter-spacing="3" opacity="0.7">SERENITY  ·  v1.0</text>
+  <!-- watermark -->
+  <text x="50%" y="97%" text-anchor="middle" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="11" fill="#E8E4DC" opacity="0.55" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+</svg>

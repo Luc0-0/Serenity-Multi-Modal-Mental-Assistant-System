@@ -5,6 +5,7 @@ import { journalService } from "../services/journalService";
 import { Button } from "../components/Button";
 import EntryDetailModal from "../components/EntryDetailModal";
 import { ScrollMist } from "../components/ScrollMist";
+import { ScrollIndicator } from "../components/ScrollIndicator";
 import styles from "./Journal.module.css";
 
 // ── Emotion palette ──────────────────────────────────────────────────────────
@@ -520,7 +521,8 @@ export function Journal() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id="journal-scroll-container">
+      <ScrollIndicator scrollContainerId="journal-scroll-container" />
       <div className={styles.backgroundImage} />
 
       <header className={styles.header}>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { ScrollIndicator } from "../components/ScrollIndicator";
 import styles from "./Landing.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -730,7 +731,8 @@ export function Landing() {
   const handleWelcomeBack = () => navigate("/login");
 
   return (
-    <div className={styles.landing}>
+    <div className={styles.landing} id="landing-scroll-container">
+      <ScrollIndicator scrollContainerId="landing-scroll-container" />
       <div ref={torchRef} className={styles.torch} />
       <div ref={filmGrainRef} className={styles.filmGrain} />
 

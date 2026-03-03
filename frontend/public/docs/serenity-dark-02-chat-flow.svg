@@ -1,0 +1,175 @@
+<svg viewBox="0 0 900 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" x="0" y="0" width="320" height="180" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)">
+      <text x="0" y="80" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+      <text x="80" y="170" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+    </pattern>
+    <style>.T{font-family:'Palatino Linotype',Palatino,'Book Antiqua',serif}.L{font-family:Georgia,'Times New Roman',serif}.M{font-family:'Courier New',Courier,monospace}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A1C20"/><stop offset="100%" stop-color="#141618"/></linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B5924A" stop-opacity="0"/><stop offset="20%" stop-color="#B5924A"/><stop offset="80%" stop-color="#B5924A"/><stop offset="100%" stop-color="#B5924A" stop-opacity="0"/></linearGradient>
+    <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1C1917" flood-opacity="0.07"/></filter>
+    <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1C1917" flood-opacity="0.05"/></filter>
+    <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#6A6460"/></marker>
+    <marker id="aR" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#B06A64"/></marker>
+    <marker id="aS" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#7C9070"/></marker>
+  </defs>
+  <rect width="900" height="1080" fill="url(#bg)"/>
+  <rect width="900" height="1080" fill="url(#wm)" pointer-events="none"/>
+  <!-- corner marks -->
+  <path d="M28 28 L28 52 M28 28 L52 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M872 28 L872 52 M872 28 L848 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M28 1052 L28 1028 M28 1052 L52 1052" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M872 1052 L872 1028 M872 1052 L848 1052" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- header -->
+  <text x="450" y="46" text-anchor="middle" class="T" font-size="10" fill="#C4A050" letter-spacing="5">SERENITY</text>
+  <text x="450" y="74" text-anchor="middle" class="T" font-size="27" fill="#E8E4DC" letter-spacing="2">Chat Message Flow</text>
+  <rect x="120" y="84" width="660" height="0.8" fill="url(#hl)"/>
+  <text x="450" y="102" text-anchor="middle" class="L" font-size="11" fill="#6A6460" letter-spacing="1">Request lifecycle from user input to typewriter display</text>
+
+  <!-- step helper: centered box at given y, width 360 -->
+  <!-- Step 1 -->
+  <rect x="270" y="120" width="360" height="50" rx="5" fill="#22252B" stroke="#3A4A38" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="120" width="360" height="6" rx="5" fill="#5A8054" opacity="0.7"/>
+  <text x="450" y="149" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">User Input — React Frontend</text>
+  <text x="450" y="163" text-anchor="middle" class="M" font-size="9" fill="#9A9490">CheckIn.jsx  ·  ChatContext  ·  api.js validation</text>
+  <line x1="450" y1="170" x2="450" y2="190" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 2 -->
+  <rect x="270" y="190" width="360" height="50" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="190" width="360" height="6" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="450" y="219" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">POST /api/chat — FastAPI Router</text>
+  <text x="450" y="233" text-anchor="middle" class="M" font-size="9" fill="#9A9490">chat.py  ·  Bearer token validation  ·  Pydantic schema</text>
+  <line x1="450" y1="240" x2="450" y2="260" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 3 — CRISIS (highlighted) -->
+  <rect x="248" y="260" width="404" height="60" rx="5" fill="#281E1C" stroke="#6A3A34" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="248" y="260" width="404" height="6" rx="5" fill="#B06A64" opacity="0.6"/>
+  <text x="450" y="290" text-anchor="middle" class="L" font-size="11.5" fill="#C47A72">Crisis Assessment — CrisisService</text>
+  <text x="450" y="306" text-anchor="middle" class="M" font-size="9" fill="#B07070">Keyword matching  ·  Severity classification  ·  CRITICAL PATH</text>
+  <!-- crisis branch right -->
+  <line x1="652" y1="290" x2="705" y2="290" stroke="#6A3A34" stroke-width="1" marker-end="url(#aR)"/>
+  <rect x="705" y="267" width="150" height="46" rx="4" fill="#281E1C" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="780" y="287" text-anchor="middle" class="L" font-size="9.5" fill="#C47A72">Crisis Detected</text>
+  <text x="780" y="300" text-anchor="middle" class="M" font-size="8" fill="#B07070">988 · 741741 · 911</text>
+  <text x="780" y="310" text-anchor="middle" class="M" font-size="8" fill="#B07070">Return &amp; stop</text>
+  <text x="676" y="284" class="L" font-size="8" fill="#B06A64">YES</text>
+  <line x1="450" y1="320" x2="450" y2="340" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <text x="460" y="333" class="L" font-size="8" fill="#7C9070">NO</text>
+
+  <!-- Step 4 -->
+  <rect x="270" y="340" width="360" height="50" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="340" width="360" height="6" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="450" y="369" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">ConversationService</text>
+  <text x="450" y="383" text-anchor="middle" class="M" font-size="9" fill="#9A9490">Create or validate conversation  ·  Save user message to DB</text>
+  <line x1="450" y1="390" x2="450" y2="410" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 5 — Emotion -->
+  <rect x="260" y="410" width="380" height="50" rx="5" fill="#281E1C" stroke="#6A3A34" stroke-width="1" filter="url(#s2)"/>
+  <rect x="260" y="410" width="380" height="6" rx="5" fill="#B06A64" opacity="0.4"/>
+  <text x="450" y="439" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">EmotionService — CRITICAL PATH</text>
+  <text x="450" y="453" text-anchor="middle" class="M" font-size="9" fill="#9A9490">Keyword engine (primary) → XLNet (optional)  ·  Label + Confidence</text>
+  <line x1="450" y1="460" x2="450" y2="480" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 6 -->
+  <rect x="270" y="480" width="360" height="50" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="480" width="360" height="6" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="450" y="509" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">ContextManager</text>
+  <text x="450" y="523" text-anchor="middle" class="M" font-size="9" fill="#9A9490">Optimized history  ·  Truncation  ·  Summarization</text>
+  <line x1="450" y1="530" x2="450" y2="550" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 7 — Memory bundle -->
+  <rect x="210" y="550" width="480" height="110" rx="5" fill="#F3EFE8" stroke="#5A4A2A" stroke-width="1" filter="url(#s1)"/>
+  <rect x="210" y="550" width="480" height="6" rx="5" fill="#C4A050" opacity="0.5"/>
+  <text x="450" y="576" text-anchor="middle" class="L" font-size="11.5" fill="#C4A060">MemoryService — Build Memory Bundle</text>
+  <rect x="222" y="585" width="106" height="64" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="275" y="606" text-anchor="middle" class="L" font-size="9.5" fill="#C4A060">Short-Term</text>
+  <text x="275" y="620" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Cached summaries</text>
+  <text x="275" y="641" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Fast retrieval</text>
+  <rect x="338" y="585" width="106" height="64" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="391" y="606" text-anchor="middle" class="L" font-size="9.5" fill="#C4A060">Semantic</text>
+  <text x="391" y="620" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Vector similarity</text>
+  <text x="391" y="634" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">384-dim · top 3</text>
+  <text x="391" y="648" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">cosine search</text>
+  <rect x="454" y="585" width="106" height="64" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="507" y="606" text-anchor="middle" class="L" font-size="9.5" fill="#C4A060">Emotional</text>
+  <text x="507" y="620" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">30-day profile</text>
+  <text x="507" y="634" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Trends &amp; scores</text>
+  <text x="507" y="648" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">12hr cache</text>
+  <rect x="570" y="585" width="106" height="64" rx="3" fill="#22252B" stroke="#4A3C20" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="623" y="606" text-anchor="middle" class="L" font-size="9.5" fill="#C4A060">Meta</text>
+  <text x="623" y="620" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Pattern synthesis</text>
+  <text x="623" y="634" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">Journal patterns</text>
+  <text x="623" y="648" text-anchor="middle" class="M" font-size="7.5" fill="#9A8460">2-day cache</text>
+  <line x1="450" y1="660" x2="450" y2="680" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 8 — LLM -->
+  <rect x="210" y="680" width="480" height="80" rx="5" fill="#EDECF0" stroke="#3E3858" stroke-width="1" filter="url(#s1)"/>
+  <rect x="210" y="680" width="480" height="6" rx="5" fill="#5A4A70" opacity="0.7"/>
+  <text x="450" y="706" text-anchor="middle" class="L" font-size="11.5" fill="#A898C8">LLMService — Generate Response</text>
+  <rect x="222" y="715" width="140" height="34" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="292" y="730" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Adaptive Prompt</text>
+  <text x="292" y="743" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">4 personality modes</text>
+  <rect x="372" y="715" width="140" height="34" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="442" y="730" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Format History</text>
+  <text x="442" y="743" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">ContextManager out</text>
+  <rect x="522" y="715" width="154" height="34" rx="3" fill="#22252B" stroke="#3C3058" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="599" y="730" text-anchor="middle" class="L" font-size="9.5" fill="#A898C8">Ollama Cloud API</text>
+  <text x="599" y="743" text-anchor="middle" class="M" font-size="8" fill="#8A7A9A">gpt-oss:120b-cloud</text>
+  <line x1="450" y1="760" x2="450" y2="780" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 9 -->
+  <rect x="270" y="780" width="360" height="50" rx="5" fill="#22252B" stroke="#4A3C20" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="780" width="360" height="6" rx="5" fill="#C4A050" opacity="0.4"/>
+  <text x="450" y="809" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">Save Assistant Message → DB</text>
+  <text x="450" y="823" text-anchor="middle" class="M" font-size="9" fill="#9A9490">messages table  ·  role: assistant  ·  conversation_id</text>
+  <line x1="450" y1="830" x2="450" y2="850" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 10 — Background tasks (dashed border) -->
+  <rect x="170" y="850" width="560" height="90" rx="5" fill="#1A1C20" stroke="#3C3E30" stroke-width="1" stroke-dasharray="6,3" filter="url(#s2)"/>
+  <text x="450" y="874" text-anchor="middle" class="L" font-size="11" fill="#9A9490">Background Tasks — Non-Blocking (FastAPI BackgroundTasks)</text>
+  <rect x="182" y="883" width="122" height="46" rx="3" fill="#22252B" stroke="#3C3E30" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="243" y="901" text-anchor="middle" class="L" font-size="9" fill="#5A5250">Title Generation</text>
+  <text x="243" y="916" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">if new conversation</text>
+  <rect x="314" y="883" width="122" height="46" rx="3" fill="#22252B" stroke="#3C3E30" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="375" y="901" text-anchor="middle" class="L" font-size="9" fill="#5A5250">Analytics Update</text>
+  <text x="375" y="916" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">EmotionAnalytics</text>
+  <rect x="446" y="883" width="122" height="46" rx="3" fill="#22252B" stroke="#3C3E30" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="507" y="901" text-anchor="middle" class="L" font-size="9" fill="#5A5250">Journal Extraction</text>
+  <text x="507" y="916" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">if significant</text>
+  <rect x="578" y="883" width="138" height="46" rx="3" fill="#22252B" stroke="#3C3E30" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="647" y="901" text-anchor="middle" class="L" font-size="9" fill="#5A5250">Memory Storage</text>
+  <text x="647" y="916" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">EmbeddingService</text>
+  <line x1="450" y1="940" x2="450" y2="960" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 11 -->
+  <rect x="270" y="960" width="360" height="50" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="960" width="360" height="6" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="450" y="989" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">Return Response → Frontend</text>
+  <text x="450" y="1003" text-anchor="middle" class="M" font-size="9" fill="#9A9490">JSON · crisis_detected flag · resources[]</text>
+  <line x1="450" y1="1010" x2="450" y2="1030" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- Step 12 -->
+  <rect x="270" y="1030" width="360" height="50" rx="5" fill="#22252B" stroke="#3A4A38" stroke-width="1" filter="url(#s2)"/>
+  <rect x="270" y="1030" width="360" height="6" rx="5" fill="#5A8054" opacity="0.7"/>
+  <text x="450" y="1059" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">Typewriter Display — Frontend</text>
+  <text x="450" y="1073" text-anchor="middle" class="M" font-size="9" fill="#9A9490">Framer Motion  ·  character-by-character  ·  &lt; 3s typical</text>
+
+  <!-- Step number badges -->
+  <circle cx="258" cy="145" r="11" fill="#4A7044" opacity="0.9"/><text x="258" y="150" text-anchor="middle" class="T" font-size="9" fill="#22252B">1</text>
+  <circle cx="258" cy="215" r="11" fill="#3A5868" opacity="0.9"/><text x="258" y="220" text-anchor="middle" class="T" font-size="9" fill="#22252B">2</text>
+  <circle cx="236" cy="290" r="11" fill="#B06A64" opacity="0.7"/><text x="236" y="295" text-anchor="middle" class="T" font-size="9" fill="#22252B">3</text>
+  <circle cx="258" cy="365" r="11" fill="#3A5868" opacity="0.9"/><text x="258" y="370" text-anchor="middle" class="T" font-size="9" fill="#22252B">4</text>
+  <circle cx="248" cy="435" r="11" fill="#B06A64" opacity="0.7"/><text x="248" y="440" text-anchor="middle" class="T" font-size="9" fill="#22252B">5</text>
+  <circle cx="258" cy="505" r="11" fill="#3A5868" opacity="0.9"/><text x="258" y="510" text-anchor="middle" class="T" font-size="9" fill="#22252B">6</text>
+  <circle cx="198" cy="605" r="11" fill="#C4A050" opacity="0.7"/><text x="198" y="610" text-anchor="middle" class="T" font-size="9" fill="#22252B">7</text>
+  <circle cx="198" cy="720" r="11" fill="#5A4A70" opacity="0.9"/><text x="198" y="725" text-anchor="middle" class="T" font-size="9" fill="#22252B">8</text>
+  <circle cx="258" cy="805" r="11" fill="#C4A050" opacity="0.7"/><text x="258" y="810" text-anchor="middle" class="T" font-size="9" fill="#22252B">9</text>
+  <circle cx="158" cy="895" r="11" fill="#6A6460" opacity="0.7"/><text x="158" y="900" text-anchor="middle" class="T" font-size="9" fill="#22252B">10</text>
+  <circle cx="258" cy="985" r="11" fill="#3A5868" opacity="0.9"/><text x="258" y="990" text-anchor="middle" class="T" font-size="9" fill="#22252B">11</text>
+  <circle cx="258" cy="1055" r="11" fill="#4A7044" opacity="0.9"/><text x="258" y="1060" text-anchor="middle" class="T" font-size="9" fill="#22252B">12</text>
+
+  <!-- footer -->
+  <text x="450" y="1072" text-anchor="middle" class="T" font-size="8.5" fill="#C4A050" letter-spacing="3" opacity="0.5">SERENITY  ·  CHAT PIPELINE</text>
+  <!-- watermark -->
+  <text x="50%" y="97%" text-anchor="middle" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="11" fill="#E8E4DC" opacity="0.55" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+</svg>

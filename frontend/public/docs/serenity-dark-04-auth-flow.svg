@@ -1,0 +1,154 @@
+<svg viewBox="0 0 1000 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" x="0" y="0" width="320" height="180" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)">
+      <text x="0" y="80" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+      <text x="80" y="170" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+    </pattern>
+    <style>.T{font-family:'Palatino Linotype',Palatino,'Book Antiqua',serif}.L{font-family:Georgia,'Times New Roman',serif}.M{font-family:'Courier New',Courier,monospace}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A1C20"/><stop offset="100%" stop-color="#141618"/></linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B5924A" stop-opacity="0"/><stop offset="20%" stop-color="#B5924A"/><stop offset="80%" stop-color="#B5924A"/><stop offset="100%" stop-color="#B5924A" stop-opacity="0"/></linearGradient>
+    <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1C1917" flood-opacity="0.07"/></filter>
+    <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1C1917" flood-opacity="0.05"/></filter>
+    <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#6A6460"/></marker>
+    <marker id="aR" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#B06A64"/></marker>
+  </defs>
+  <rect width="1000" height="820" fill="url(#bg)"/>
+  <rect width="1000" height="820" fill="url(#wm)" pointer-events="none"/>
+  <path d="M28 28 L28 52 M28 28 L52 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M972 28 L972 52 M972 28 L948 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M28 792 L28 768 M28 792 L52 792" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M972 792 L972 768 M972 792 L948 792" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <text x="500" y="46" text-anchor="middle" class="T" font-size="10" fill="#C4A050" letter-spacing="5">SERENITY</text>
+  <text x="500" y="74" text-anchor="middle" class="T" font-size="27" fill="#E8E4DC" letter-spacing="2">Authentication Flow</text>
+  <rect x="140" y="84" width="720" height="0.8" fill="url(#hl)"/>
+  <text x="500" y="102" text-anchor="middle" class="L" font-size="11" fill="#6A6460" letter-spacing="1">JWT · bcrypt · Stateless Sessions</text>
+
+  <!-- Column headers -->
+  <rect x="68" y="116" width="374" height="30" rx="4" fill="#7C9070" opacity="0.12"/>
+  <text x="255" y="135" text-anchor="middle" class="T" font-size="12" fill="#7CB876" letter-spacing="2">SIGN UP FLOW</text>
+  <rect x="558" y="116" width="374" height="30" rx="4" fill="#6B7E8F" opacity="0.12"/>
+  <text x="745" y="135" text-anchor="middle" class="T" font-size="12" fill="#7AAECC" letter-spacing="2">LOGIN FLOW</text>
+
+  <!-- divider -->
+  <line x1="500" y1="116" x2="500" y2="760" stroke="#2E2C28" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ════ SIGNUP column ════ -->
+  <!-- s1 -->
+  <rect x="80" y="162" width="350" height="48" rx="5" fill="#22252B" stroke="#3A4A38" stroke-width="1" filter="url(#s2)"/>
+  <rect x="80" y="162" width="350" height="5" rx="5" fill="#5A8054" opacity="0.7"/>
+  <text x="255" y="188" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">User submits Signup Form</text>
+  <text x="255" y="202" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">name  ·  email  ·  password</text>
+  <line x1="255" y1="210" x2="255" y2="230" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <!-- s2 -->
+  <rect x="80" y="230" width="350" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="80" y="230" width="350" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="255" y="256" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">POST /api/auth/signup</text>
+  <text x="255" y="270" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">FastAPI router  ·  Pydantic validation</text>
+  <line x1="255" y1="278" x2="255" y2="298" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <!-- s3 — email check with branch -->
+  <rect x="80" y="298" width="350" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="80" y="298" width="350" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="255" y="324" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">Check email uniqueness</text>
+  <text x="255" y="338" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">SELECT FROM users WHERE email = ?</text>
+  <!-- branch: exists -->
+  <line x1="430" y1="322" x2="460" y2="322" stroke="#6A3A34" stroke-width="1" marker-end="url(#aR)"/>
+  <rect x="462" y="308" width="120" height="28" rx="4" fill="#281E1C" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="522" y="322" text-anchor="middle" class="L" font-size="9" fill="#C47A72">Email taken</text>
+  <text x="522" y="333" text-anchor="middle" class="M" font-size="8" fill="#B07070">400 Bad Request</text>
+  <text x="440" y="318" class="L" font-size="7.5" fill="#B06A64">EXISTS</text>
+  <line x1="255" y1="346" x2="255" y2="366" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <text x="264" y="359" class="L" font-size="7.5" fill="#7C9070">OK</text>
+  <!-- s4 -->
+  <rect x="80" y="366" width="350" height="48" rx="5" fill="#22252B" stroke="#4A3C20" stroke-width="1" filter="url(#s2)"/>
+  <rect x="80" y="366" width="350" height="5" rx="5" fill="#C4A050" opacity="0.4"/>
+  <text x="255" y="392" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">Hash password — bcrypt</text>
+  <text x="255" y="406" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">passlib  ·  argon2-cffi available</text>
+  <line x1="255" y1="414" x2="255" y2="434" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <!-- s5 -->
+  <rect x="80" y="434" width="350" height="48" rx="5" fill="#22252B" stroke="#4A3C20" stroke-width="1" filter="url(#s2)"/>
+  <rect x="80" y="434" width="350" height="5" rx="5" fill="#C4A050" opacity="0.4"/>
+  <text x="255" y="460" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">INSERT user → database</text>
+  <text x="255" y="474" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">users table  ·  is_active = true</text>
+  <line x1="255" y1="482" x2="255" y2="502" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- ════ LOGIN column ════ -->
+  <!-- l1 -->
+  <rect x="570" y="162" width="350" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="570" y="162" width="350" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="745" y="188" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">User submits Login Form</text>
+  <text x="745" y="202" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">email  ·  password</text>
+  <line x1="745" y1="210" x2="745" y2="230" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <!-- l2 -->
+  <rect x="570" y="230" width="350" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="570" y="230" width="350" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="745" y="256" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">POST /api/auth/login</text>
+  <text x="745" y="270" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">FastAPI router  ·  Pydantic validation</text>
+  <line x1="745" y1="278" x2="745" y2="298" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <!-- l3 — lookup -->
+  <rect x="570" y="298" width="350" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="570" y="298" width="350" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="745" y="324" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">Look up user by email</text>
+  <text x="745" y="338" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">SELECT FROM users WHERE email = ?</text>
+  <!-- branch: not found -->
+  <line x1="920" y1="322" x2="950" y2="322" stroke="#6A3A34" stroke-width="1" marker-end="url(#aR)"/>
+  <rect x="952" y="308" width="30" height="28" rx="4" fill="#281E1C" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="967" y="326" text-anchor="middle" class="M" font-size="8" fill="#C47A72">404</text>
+  <text x="930" y="318" class="L" font-size="7.5" fill="#B06A64">MISS</text>
+  <line x1="745" y1="346" x2="745" y2="366" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <text x="754" y="359" class="L" font-size="7.5" fill="#7C9070">FOUND</text>
+  <!-- l4 — verify password -->
+  <rect x="570" y="366" width="350" height="48" rx="5" fill="#22252B" stroke="#4A3C20" stroke-width="1" filter="url(#s2)"/>
+  <rect x="570" y="366" width="350" height="5" rx="5" fill="#C4A050" opacity="0.4"/>
+  <text x="745" y="392" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">Verify password — bcrypt</text>
+  <text x="745" y="406" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">passlib.verify(plain, hashed)</text>
+  <!-- branch: wrong pwd -->
+  <line x1="920" y1="390" x2="950" y2="390" stroke="#6A3A34" stroke-width="1" marker-end="url(#aR)"/>
+  <rect x="952" y="376" width="30" height="28" rx="4" fill="#281E1C" stroke="#6A3A34" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="967" y="394" text-anchor="middle" class="M" font-size="8" fill="#C47A72">401</text>
+  <line x1="745" y1="414" x2="745" y2="434" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+  <text x="754" y="427" class="L" font-size="7.5" fill="#7C9070">MATCH</text>
+  <!-- l5 — active check -->
+  <rect x="570" y="434" width="350" height="48" rx="5" fill="#22252B" stroke="#4A3C20" stroke-width="1" filter="url(#s2)"/>
+  <rect x="570" y="434" width="350" height="5" rx="5" fill="#C4A050" opacity="0.4"/>
+  <text x="745" y="460" text-anchor="middle" class="L" font-size="11" fill="#E8E4DC">Check is_active flag</text>
+  <text x="745" y="474" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">users.is_active == True</text>
+  <line x1="745" y1="482" x2="745" y2="502" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- ════ SHARED JWT SECTION ════ -->
+  <rect x="68" y="502" width="864" height="48" rx="5" fill="#EDECF0" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="68" y="502" width="864" height="5" rx="5" fill="#5A4A70" opacity="0.8"/>
+  <text x="500" y="528" text-anchor="middle" class="L" font-size="11.5" fill="#A898C8">Generate JWT Token — PyJWT</text>
+  <text x="500" y="542" text-anchor="middle" class="M" font-size="8.5" fill="#8A7A9A">HS256  ·  Configurable secret key via .env  ·  Expiration via JWT claims</text>
+  <line x1="500" y1="550" x2="500" y2="570" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- shared s2 -->
+  <rect x="68" y="570" width="864" height="48" rx="5" fill="#22252B" stroke="#2E3E4E" stroke-width="1" filter="url(#s2)"/>
+  <rect x="68" y="570" width="864" height="5" rx="5" fill="#4A6878" opacity="0.7"/>
+  <text x="500" y="596" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">Return token + user object  — 200 OK</text>
+  <text x="500" y="610" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">{ token: "...", user: { id, name, email } }</text>
+  <line x1="500" y1="618" x2="500" y2="638" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- shared s3 -->
+  <rect x="68" y="638" width="864" height="48" rx="5" fill="#22252B" stroke="#3A4A38" stroke-width="1" filter="url(#s2)"/>
+  <rect x="68" y="638" width="864" height="5" rx="5" fill="#5A8054" opacity="0.7"/>
+  <text x="500" y="664" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">Frontend stores token in localStorage — AuthContext update</text>
+  <text x="500" y="678" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">auth_token  ·  serenity_user_id  ·  serenity_conversation_id</text>
+  <line x1="500" y1="686" x2="500" y2="706" stroke="#3C3E30" stroke-width="1.2" marker-end="url(#aG)"/>
+
+  <!-- shared s4 -->
+  <rect x="68" y="706" width="864" height="48" rx="5" fill="#22252B" stroke="#3A4A38" stroke-width="1" filter="url(#s2)"/>
+  <rect x="68" y="706" width="864" height="5" rx="5" fill="#5A8054" opacity="0.7"/>
+  <text x="500" y="732" text-anchor="middle" class="L" font-size="11.5" fill="#E8E4DC">All subsequent requests include Bearer token</text>
+  <text x="500" y="746" text-anchor="middle" class="M" font-size="8.5" fill="#9A9490">Authorization: Bearer &lt;JWT&gt;  ·  Verified by get_current_user dependency</text>
+
+  <!-- Protected routes note -->
+  <rect x="68" y="768" width="864" height="28" rx="4" fill="#1A1C20" stroke="#2E2C28" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="500" y="786" text-anchor="middle" class="L" font-size="9.5" fill="#9A9490">Protected Routes: all except  /  ·  /login  ·  /signup  —  Frontend ProtectedRoute component checks isAuthenticated state  ·  Stateless — no server-side sessions</text>
+
+  <!-- Join arrow from signup col 5 to shared -->
+  <line x1="255" y1="502" x2="255" y2="486" stroke="#3C3E30" stroke-width="0" />
+  <!-- vertical line from each col meeting shared box -->
+  <text x="500" y="810" text-anchor="middle" class="T" font-size="8.5" fill="#C4A050" letter-spacing="3" opacity="0.6">SERENITY  ·  AUTHENTICATION</text>
+  <!-- watermark -->
+  <text x="50%" y="97%" text-anchor="middle" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="11" fill="#E8E4DC" opacity="0.55" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+</svg>

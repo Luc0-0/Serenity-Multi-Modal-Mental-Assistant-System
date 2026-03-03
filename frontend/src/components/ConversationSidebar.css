@@ -198,216 +198,350 @@
   background: rgba(196, 168, 130, 0.25);
 }
 
-/* ── DESKTOP CONVERSATION DROPDOWN ── */
-.desktopConversationWrapper {
+/* ── DESKTOP CONVERSATION — TWO MODES ── */
+/* Muted warm color palette: #9B8B77, #B5926E, #8B7A68 */
+.desktopWelcomeMode,
+.desktopChatMode {
   display: none;
 }
 
+/* MODE 1: WELCOME — Top-left dropdown */
+.desktopWelcomeMode {
+  position: fixed;
+  top: 80px;
+  left: 40px;
+  z-index: 90;
+}
+
 .conversationPill {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.12),
+    rgba(139, 122, 104, 0.06)
+  );
+  border: 1px solid rgba(155, 139, 119, 0.2);
+  border-radius: 20px;
+  padding: 0.6rem 1rem;
+  color: rgba(155, 139, 119, 0.85);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+  box-shadow: 
+    inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.08),
+    inset -0.5px -0.5px 1px rgba(0, 0, 0, 0.15);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.conversationPill:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.18),
+    rgba(139, 122, 104, 0.12)
+  );
+  border-color: rgba(155, 139, 119, 0.35);
+  color: rgba(155, 139, 119, 1);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    inset 0.5px 0.5px 2px rgba(255, 255, 255, 0.12),
+    inset -0.5px -0.5px 2px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.conversationPill.active {
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.2),
+    rgba(139, 122, 104, 0.12)
+  );
+  border-color: rgba(155, 139, 119, 0.3);
+  color: rgba(155, 139, 119, 1);
 }
 
 .desktopDropdownPanel {
   display: none;
+  animation: slideDownSmooth 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  margin-top: 0.6rem;
+  padding: 0.75rem;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 18, 15, 0.8),
+    rgba(15, 13, 10, 0.85)
+  );
+  border: 1px solid rgba(155, 139, 119, 0.12);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  width: 380px;
+  z-index: 91;
 }
 
+@keyframes slideDownSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+/* MODE 2: CHAT — Left sidebar */
+.desktopChatMode {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 85;
+  pointer-events: none;
+}
+
+.desktopChatMode > button {
+  pointer-events: all;
+}
+
+.desktopChatMode > div {
+  pointer-events: all;
+}
+
+.conversationPillSidebar {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 86;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.12),
+    rgba(139, 122, 104, 0.06)
+  );
+  border: 1px solid rgba(155, 139, 119, 0.2);
+  color: rgba(155, 139, 119, 0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 
+    inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.08),
+    inset -0.5px -0.5px 1px rgba(0, 0, 0, 0.15);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.conversationPillSidebar:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.18),
+    rgba(139, 122, 104, 0.12)
+  );
+  border-color: rgba(155, 139, 119, 0.35);
+  color: rgba(155, 139, 119, 1);
+  box-shadow: 
+    inset 0.5px 0.5px 2px rgba(255, 255, 255, 0.12),
+    inset -0.5px -0.5px 2px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.conversationPillSidebar.active {
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.2),
+    rgba(139, 122, 104, 0.12)
+  );
+  border-color: rgba(155, 139, 119, 0.3);
+  color: rgba(155, 139, 119, 1);
+}
+
+.desktopSidebarPanel {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 320px;
+  height: 100vh;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 13, 10, 0.95),
+    rgba(10, 8, 6, 0.92)
+  );
+  border-right: 1px solid rgba(155, 139, 119, 0.12);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  z-index: 87;
+  flex-direction: column;
+  animation: slideLeftSmooth 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  overflow: hidden;
+}
+
+@keyframes slideLeftSmooth {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.sidebarPanelHeader {
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(155, 139, 119, 0.08);
+  flex-shrink: 0;
+}
+
+.sidebarPanelHeader h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(155, 139, 119, 0.9);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Shared list styling */
 .desktopConvList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 0.75rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .desktopConvItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(18, 16, 12, 0.3);
-  border: 1px solid rgba(196, 168, 130, 0.05);
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  background: rgba(30, 26, 20, 0.4);
+  border: 1px solid rgba(155, 139, 119, 0.06);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .desktopConvItem:hover {
-  background: rgba(26, 22, 18, 0.4);
-  border-color: rgba(197, 168, 124, 0.15);
+  background: rgba(45, 38, 30, 0.5);
+  border-color: rgba(155, 139, 119, 0.15);
 }
 
 .desktopConvItem.active {
-  background: rgba(197, 168, 124, 0.08);
-  border-color: rgba(197, 168, 124, 0.25);
+  background: rgba(155, 139, 119, 0.08);
+  border-color: rgba(155, 139, 119, 0.22);
 }
 
 .desktopConvItem .convTitle {
   font-size: 13px;
-  color: rgba(217, 206, 176, 0.9);
+  color: rgba(155, 139, 119, 0.9);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
 }
 
 .desktopConvItem .convDate {
   font-size: 11px;
-  color: rgba(189, 161, 123, 0.6);
+  color: rgba(155, 139, 119, 0.55);
   margin: 0;
-  opacity: 0.7;
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: 0.005em;
 }
 
 .desktopConvItem .convContent {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .desktopConvItem .deleteBtn {
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
 }
 
 .desktopConvItem:hover .deleteBtn {
   opacity: 1;
 }
 
+.desktopConvItem .deleteBtn:hover {
+  color: rgba(200, 120, 120, 0.8);
+  background: rgba(200, 120, 120, 0.08);
+}
+
 .newConvBtnDesktop {
-  background: rgba(197, 168, 124, 0.08);
-  border: 1px solid rgba(197, 168, 124, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.08),
+    rgba(139, 122, 104, 0.04)
+  );
+  border: 1px solid rgba(155, 139, 119, 0.15);
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  color: rgba(197, 168, 124, 0.85);
+  padding: 0.6rem 0.75rem;
+  color: rgba(155, 139, 119, 0.8);
   font-family: "Cormorant Garamond", serif;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   width: 100%;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0 0 0;
+  flex-shrink: 0;
 }
 
 .newConvBtnDesktop:hover {
-  background: rgba(197, 168, 124, 0.15);
-  border-color: rgba(197, 168, 124, 0.4);
-  color: rgba(197, 168, 124, 0.95);
+  background: linear-gradient(
+    135deg,
+    rgba(155, 139, 119, 0.15),
+    rgba(139, 122, 104, 0.08)
+  );
+  border-color: rgba(155, 139, 119, 0.28);
+  color: rgba(155, 139, 119, 1);
 }
 
 @media (min-width: 769px) {
-  /* Show desktop conversation wrapper */
-  .desktopConversationWrapper {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 70px;
-    left: 40px;
-    z-index: 90;
-    width: auto;
-    align-items: flex-start;
-  }
-
-  .desktopConversationWrapper.expanded {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 100vh;
-    width: 100vw;
-    background: rgba(10, 8, 6, 0.5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding-top: 60px;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* Conversation Pill Trigger — Clayomorphism */
-  .conversationPill {
-    display: inline-block;
-    background: linear-gradient(
-      135deg,
-      rgba(212, 181, 110, 0.15) 0%,
-      rgba(184, 148, 79, 0.08) 100%
-    );
-    border: 1px solid rgba(212, 181, 110, 0.25);
-    border-radius: 24px;
-    padding: 0.6rem 1.2rem;
-    color: rgba(212, 181, 110, 0.9);
-    font-family: "Cormorant Garamond", serif;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    width: fit-content;
-    box-shadow:
-      inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.1),
-      inset -0.5px -0.5px 1px rgba(0, 0, 0, 0.2),
-      0 6px 16px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .conversationPill:hover {
-    background: linear-gradient(
-      135deg,
-      rgba(212, 181, 110, 0.25) 0%,
-      rgba(184, 148, 79, 0.15) 100%
-    );
-    border-color: rgba(212, 181, 110, 0.4);
-    color: rgba(212, 181, 110, 1);
-    box-shadow:
-      inset 0.5px 0.5px 2px rgba(255, 255, 255, 0.15),
-      inset -0.5px -0.5px 2px rgba(0, 0, 0, 0.3),
-      0 8px 24px rgba(212, 181, 110, 0.15);
-  }
-
-  .conversationPill.open {
-    background: linear-gradient(
-      135deg,
-      rgba(212, 181, 110, 0.22) 0%,
-      rgba(184, 148, 79, 0.12) 100%
-    );
-    border-color: rgba(212, 181, 110, 0.35);
-    color: rgba(212, 181, 110, 1);
-    position: fixed;
-    bottom: 40px;
-    left: 40px;
-    top: auto;
-    z-index: 91;
-  }
-
-  /* Dropdown Panel */
-  .desktopDropdownPanel {
+  /* Show desktop modes */
+  .desktopWelcomeMode {
     display: block;
-    animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    margin-top: 0.5rem;
-    padding: 0.75rem;
-    background: linear-gradient(
-      180deg,
-      rgba(20, 18, 15, 0.85) 0%,
-      rgba(15, 13, 10, 0.9) 100%
-    );
-    border: 1px solid rgba(212, 181, 110, 0.15);
-    border-radius: 16px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
-    max-width: 400px;
-    width: 400px;
   }
 
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px) scaleY(0.95);
-    }
+  .desktopChatMode {
+    display: block;
+  }
 
-    to {
-      opacity: 1;
-      transform: translateY(0) scaleY(1);
-    }
+  /* Welcome mode dropdown panel */
+  .desktopWelcomeMode .desktopDropdownPanel {
+    display: block;
+  }
+
+  /* Chat mode sidebar panel */
+  .desktopChatMode .desktopSidebarPanel {
+    display: flex;
   }
 }
 

@@ -521,7 +521,6 @@ export function Journal() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className={styles.container}>
-      <ScrollMist />
       <div className={styles.backgroundImage} />
 
       <header className={styles.header}>
@@ -881,6 +880,7 @@ export function Journal() {
         onDelete={handleDeleteEntry}
         onEntryUpdated={handleEntryUpdated}
       />
+      <ScrollMist />
     </div>
   );
 }

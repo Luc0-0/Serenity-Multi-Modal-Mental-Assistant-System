@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { validateLogin } from '../utils/validation';
 import { Button } from '../components/Button';
+import { AnimatedInput } from '../components/AnimatedInput';
+import { BorderBeam } from '../components/BorderBeam';
 import styles from './Login.module.css';
 
 export function Login() {
@@ -40,43 +42,34 @@ export function Login() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
+      <div className={styles.card} style={{ position: 'relative', overflow: 'hidden' }}>
+        <BorderBeam />
         <h1 className={styles.title}>Welcome Back</h1>
         <p className={styles.subtitle}>Sign in to your Serenity account</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="email" className={styles.label}>
-              Email
-            </label>
-            <input
-              id="email"
+            <AnimatedInput
+              label="Email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
               placeholder="you@example.com"
               disabled={isLoading}
-              autoComplete="email"
             />
             {errors.email && <span className={styles.error}>{errors.email}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="password" className={styles.label}>
-              Password
-            </label>
-            <input
-              id="password"
+            <AnimatedInput
+              label="Password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
               placeholder="••••••••"
               disabled={isLoading}
-              autoComplete="current-password"
             />
             {errors.password && (
               <span className={styles.error}>{errors.password}</span>

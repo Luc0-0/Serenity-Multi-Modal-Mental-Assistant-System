@@ -1,0 +1,375 @@
+/* 
+  MINI EMOTION GRAPH
+  Compact emotion visualization with expand/collapse
+  Luxury calm design matching Serenity palette
+*/
+
+.miniGraphContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+  animation: slideInFromRight 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.miniGraphContainer.hidden {
+  transform: translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Header with toggle button */
+.graphHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 12px 0;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.15);
+  gap: 12px;
+}
+
+.graphHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.graphTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #d9ceb0;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Toggle button */
+.toggleButton {
+  background: transparent;
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 4px;
+  color: #d4cfc0;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+}
+
+.toggleButton:hover {
+  border-color: rgba(196, 168, 130, 0.4);
+  background: rgba(26, 22, 18, 0.2);
+}
+
+.toggleButton svg {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toggleButton.expanded svg {
+  transform: rotate(90deg);
+}
+
+.toggleButton.collapsed svg {
+  transform: rotate(0deg);
+}
+
+/* Close button */
+.closeButton {
+  background: transparent;
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 4px;
+  color: #d4cfc0;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.closeButton:hover {
+  border-color: rgba(196, 168, 130, 0.4);
+  background: rgba(217, 160, 160, 0.15);
+  color: #d9a0a0;
+}
+
+.closeButton:active {
+  transform: scale(0.9);
+}
+
+/* Expanded content */
+.graphContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: slideDown 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.graphContent.loading {
+  gap: 12px;
+}
+
+/* Loading state */
+.loadingBar {
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(196, 168, 130, 0.1),
+    rgba(196, 168, 130, 0.3),
+    rgba(196, 168, 130, 0.1)
+  );
+  border-radius: 2px;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Empty state */
+.emptyState {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.emptyState p {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  color: #bda17b;
+  margin: 0;
+  letter-spacing: 0.01em;
+  opacity: 0.8;
+}
+
+/* Emotion bars */
+.emotionBars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emotionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.barLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.emotionName {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  color: #d9ceb0;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+.emotionScore {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 12px;
+  color: #bda17b;
+  letter-spacing: 0.01em;
+  opacity: 0.8;
+}
+
+.barContainer {
+  width: 100%;
+  height: 6px;
+  background: rgba(26, 22, 18, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 8px rgba(212, 181, 110, 0.3);
+}
+
+/* Stability indicator */
+.stabilityIndicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(26, 22, 18, 0.3);
+  border: 1px solid rgba(196, 168, 130, 0.1);
+  border-radius: 6px;
+  gap: 8px;
+}
+
+.stabilityIndicator .label {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  color: #d9ceb0;
+  letter-spacing: 0.01em;
+}
+
+.stabilityIndicator .status {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.stabilityIndicator .status.stable {
+  background: rgba(159, 198, 118, 0.15);
+  color: #a8c97a;
+}
+
+.stabilityIndicator .status.moderate {
+  background: rgba(212, 181, 110, 0.15);
+  color: #d4b55e;
+}
+
+.stabilityIndicator .status.unstable {
+  background: rgba(217, 160, 160, 0.15);
+  color: #d9a0a0;
+}
+
+/* View full button */
+.viewFullBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(212, 207, 192, 0.3);
+  border-radius: 6px;
+  color: #d4cfc0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+}
+
+.viewFullBtn:hover {
+  background: rgba(26, 22, 18, 0.3);
+  border-color: rgba(212, 207, 192, 0.6);
+  color: #f0ede3;
+  box-shadow: 0 0 12px rgba(212, 207, 192, 0.1);
+}
+
+.viewFullBtn:active {
+  transform: scale(0.98);
+}
+
+.viewFullBtn svg {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.viewFullBtn:hover svg {
+  transform: translateX(2px);
+}
+
+/* Collapsed preview */
+.collapsedPreview {
+  padding: 8px 0;
+}
+
+.previewBar {
+  display: flex;
+  height: 4px;
+  background: rgba(26, 22, 18, 0.4);
+  border-radius: 2px;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.miniBar {
+  flex: 1;
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 4px rgba(212, 181, 110, 0.2);
+}
+
+.miniBar:hover {
+  box-shadow: 0 0 8px rgba(212, 181, 110, 0.4);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .miniGraphContainer {
+    gap: 12px;
+  }
+
+  .graphTitle {
+    font-size: 14px;
+  }
+
+  .emotionName {
+    font-size: 12px;
+  }
+
+  .viewFullBtn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

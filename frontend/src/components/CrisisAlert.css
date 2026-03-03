@@ -1,0 +1,269 @@
+/* Crisis Alert Styles - Premium Layout */
+
+.crisisAlert {
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  background: rgba(255, 250, 240, 0.08);
+  border-left: 4px solid;
+  animation: slideInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.crisisAlert--danger {
+  border-left-color: rgba(220, 130, 130, 0.8);
+  background: rgba(220, 130, 130, 0.05);
+}
+
+.crisisAlert--emergency {
+  border-left-color: rgba(220, 90, 90, 0.8);
+  background: rgba(220, 90, 90, 0.08);
+  box-shadow: 0 0 30px rgba(220, 90, 90, 0.15);
+}
+
+.crisisAlert--warning {
+  border-left-color: rgba(196, 168, 130, 0.8);
+  background: rgba(196, 168, 130, 0.05);
+}
+
+.crisisAlertContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+.crisisAlertHeader {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.crisisAlertIcon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  background: rgba(220, 130, 130, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: rgba(220, 130, 130, 0.9);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.crisisAlert--emergency .crisisAlertIcon {
+  background: rgba(220, 90, 90, 0.3);
+  color: rgba(220, 90, 90, 0.9);
+}
+
+.crisisAlertTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #d9ceb0;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.01em;
+}
+
+.crisisAlertSubtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: #bda17b;
+  margin: 0;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+
+/* Resources */
+.crisisResources {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.crisisResource {
+  padding: 14px 16px;
+  background: rgba(26, 22, 18, 0.3);
+  border: 1px solid rgba(196, 168, 130, 0.15);
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.crisisResource:hover {
+  background: rgba(26, 22, 18, 0.5);
+  border-color: rgba(196, 168, 130, 0.3);
+}
+
+.resourceHeader {
+  margin-bottom: 10px;
+}
+
+.resourceName {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #d9ceb0;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Contact Links */
+.resourceContacts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.resourceLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(26, 22, 18, 0.4);
+  border: 1px solid rgba(212, 181, 110, 0.2);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.resourceLink:hover {
+  background: rgba(212, 181, 110, 0.1);
+  border-color: rgba(212, 181, 110, 0.4);
+}
+
+.resourceLink--phone:hover {
+  border-color: rgba(100, 200, 100, 0.5);
+  background: rgba(100, 200, 100, 0.08);
+}
+
+.resourceLink--text:hover {
+  border-color: rgba(100, 150, 200, 0.5);
+  background: rgba(100, 150, 200, 0.08);
+}
+
+.resourceLink--web:hover {
+  border-color: rgba(200, 150, 100, 0.5);
+  background: rgba(200, 150, 100, 0.08);
+}
+
+.contactMethod {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #bda17b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 40px;
+}
+
+.contactInfo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: #d9ceb0;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Description & Availability */
+.resourceDescription {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: #bda17b;
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+
+.resourceAvailability {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  color: rgba(189, 161, 123, 0.8);
+  margin: 6px 0 0 0;
+  font-style: italic;
+  letter-spacing: 0.005em;
+}
+
+/* Footer Message */
+.crisisAlertFooter {
+  padding-top: 12px;
+  border-top: 1px solid rgba(196, 168, 130, 0.1);
+}
+
+.crisisAlertMessage {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: #bda17b;
+  margin: 0;
+  line-height: 1.6;
+  text-align: center;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .crisisAlert {
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+
+  .crisisAlertHeader {
+    gap: 12px;
+  }
+
+  .crisisAlertIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .crisisAlertTitle {
+    font-size: 16px;
+  }
+
+  .crisisAlertSubtitle {
+    font-size: 13px;
+  }
+
+  .resourceLink {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .contactMethod {
+    font-size: 11px;
+  }
+
+  .contactInfo {
+    font-size: 13px;
+  }
+}

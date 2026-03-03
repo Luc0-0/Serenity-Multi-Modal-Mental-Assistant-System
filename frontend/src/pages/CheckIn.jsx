@@ -68,8 +68,20 @@ export function CheckIn() {
   const [isRetryable, setIsRetryable] = useState(false);
   const [lastFailedMessage, setLastFailedMessage] = useState(null);
 
-  const [showInsights, setShowInsights] = useState(true);
+  // Insights hidden by default on mobile, shown by default on desktop
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [showInsights, setShowInsights] = useState(window.innerWidth > 768);
   const [isDeckPinned, setIsDeckPinned] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) setShowInsights(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
@@ -628,22 +640,24 @@ export function CheckIn() {
               </aside>
             </div>
 
-            {/* Insights toggle */}
-            <button
-              className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ""}`}
-              onClick={() => setShowInsights(!showInsights)}
-              title={showInsights ? "Hide Insights" : "Show Insights"}
-            >
-              <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-                <path
-                  d={showInsights ? "M3 2L8 8L3 14" : "M7 2L2 8L7 14"}
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+            {/* Insights toggle — mobile only */}
+            {isMobile && (
+              <button
+                className={`${styles.insightsEdgeTab} ${showInsights ? styles.insightsTabOpen : ""}`}
+                onClick={() => setShowInsights(!showInsights)}
+                title={showInsights ? "Hide Insights" : "Show Insights"}
+              >
+                <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+                  <path
+                    d={showInsights ? "M3 2L8 8L3 14" : "M7 2L2 8L7 14"}
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
 
             {/* Chat input */}
             <div className={styles.chatInputArea}>

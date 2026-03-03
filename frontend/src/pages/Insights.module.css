@@ -113,19 +113,80 @@
             rgba(0, 0, 0, 0.2) 100%);
 }
 
+/* ── INSIGHTS CAROUSEL (MOBILE) ── */
+.insightsCarouselWrapper {
+    position: relative;
+}
+
+.swipeHint {
+    display: none;
+}
+
 .insightsGrid {
     width: 100%;
 }
 
 @media (max-width: 768px) {
+    .insightsCarouselWrapper {
+        overflow: hidden;
+        position: relative;
+    }
+
+    .swipeHint {
+        display: block;
+        text-align: center;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: rgba(212, 175, 55, 0.5);
+        padding: 0.5rem 0;
+        animation: swipeFade 3s ease forwards;
+    }
+
+    @keyframes swipeFade {
+        0% { opacity: 1; }
+        60% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    /* Override inline grid for mobile carousel */
     .insightsGrid {
-        grid-template-columns: 1fr !important;
-        overflow-x: hidden;
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 1rem !important;
+        padding: 0 1.5rem 1.5rem !important;
+        scrollbar-width: none;
+        /* Start with the CENTRE card (index 1) visible */
+        scroll-padding-left: 1.5rem;
     }
+
+    .insightsGrid::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Each card becomes a carousel slide */
+    .insightsGrid > div,
     .glassCard {
-        width: 100% !important;
-        min-width: unset !important;
+        flex: 0 0 85vw !important;
+        min-width: 85vw !important;
+        max-width: 85vw !important;
+        scroll-snap-align: center !important;
+        width: 85vw !important;
     }
+
+    /* Carousel dot indicators */
+    .insightsCarouselWrapper::after {
+        content: '● ● ●';
+        display: block;
+        text-align: center;
+        font-size: 0.4rem;
+        letter-spacing: 0.5em;
+        color: rgba(212, 175, 55, 0.4);
+        padding: 0.5rem 0;
+    }
+
     .container {
         overflow-x: hidden;
         padding: 1rem;

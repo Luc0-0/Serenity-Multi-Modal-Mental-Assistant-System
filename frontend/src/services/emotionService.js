@@ -3,7 +3,7 @@
  * Fetch insights and trends.
  */
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 const TIMEOUT_MS = 10000;
 
 /**

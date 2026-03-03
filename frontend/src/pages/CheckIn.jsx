@@ -11,6 +11,8 @@ import { fetchEmotionInsights } from "../services/emotionService";
 import { useEdgeSwipe } from "../hooks/useEdgeSwipe";
 import styles from "./CheckIn.module.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export function CheckIn() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -205,7 +207,7 @@ export function CheckIn() {
       const token = localStorage.getItem("auth_token");
       const headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
-      fetch(`/api/conversations/${convId}/finalize-title`, { method: "POST", headers })
+      fetch(`${API_BASE_URL}/api/conversations/${convId}/finalize-title`, { method: "POST", headers })
         .then(() => triggerRefresh())
         .catch((err) => { console.warn("Failed to finalize title:", err); triggerRefresh(); });
     } else {
@@ -227,7 +229,7 @@ export function CheckIn() {
       const token = localStorage.getItem("auth_token");
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(`/api/conversations/${convId}/messages`, { headers });
+      const response = await fetch(`${API_BASE_URL}/api/conversations/${convId}/messages`, { headers });
       if (response.ok) {
         const data = await response.json();
         setConversationId(convId);

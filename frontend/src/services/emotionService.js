@@ -3,7 +3,8 @@
  * Fetch insights and trends.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+import { apiClient } from './apiClient';
+
 const TIMEOUT_MS = 10000;
 
 /**
@@ -28,32 +29,7 @@ const validateEmotionResponse = (data) => {
  */
 export const fetchEmotionInsights = async (userId, days = 7) => {
   try {
-    const token = localStorage.getItem('auth_token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/emotions/insights/?days=${days}`,
-      { headers }
-    );
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Unauthorized - please log in again');
-      }
-      if (response.status === 404) {
-        // No emotion data yet - this is OK
-        return null;
-      }
-      throw new Error(`HTTP ${response.status}: Failed to fetch emotion insights`);
-    }
-
-    const data = await response.json();
+    const data = await apiClient.get(`/api/emotions/insights/?days=${days}`);
     return data;
   } catch (error) {
     console.error('Emotion insights fetch error:', error);
@@ -71,16 +47,7 @@ export const fetchMiniEmotionSnapshot = async (userId) => {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/emotions/mini/?user_id=${userId}`);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`HTTP ${response.status}: Failed to fetch mini snapshot`);
-    }
-
-    const data = await response.json();
+    const data = await apiClient.get(`/api/emotions/mini/?user_id=${userId}`);
     return data;
   } catch (error) {
     console.error('Mini snapshot fetch error:', error);
@@ -104,18 +71,7 @@ export const fetchEmotionHistory = async (userId, timeRange = '7d') => {
   }
 
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/emotions/history/?user_id=${userId}&range=${timeRange}`
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return [];
-      }
-      throw new Error(`HTTP ${response.status}: Failed to fetch emotion history`);
-    }
-
-    const data = await response.json();
+    const data = await apiClient.get(`/api/emotions/history/?user_id=${userId}&range=${timeRange}`);
     return Array.isArray(data) ? data : data.data || [];
   } catch (error) {
     console.error('Emotion history fetch error:', error);

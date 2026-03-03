@@ -318,3 +318,30 @@
         opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .container {
+        overflow-x: hidden;
+    }
+    .flowContainer {
+        width: min(75vw, 300px) !important;
+        height: min(75vw, 300px) !important;
+    }
+    .bottomNav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(8, 8, 10, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 1rem;
+        z-index: 50;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .navBtn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+    }
+}

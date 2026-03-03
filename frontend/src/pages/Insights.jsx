@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { ScrollIndicator } from "../components/ScrollIndicator";
 import styles from "./Insights.module.css";
 import { getEmotionColor, EMOTION_COLORS } from "../services/emotionService";
 
@@ -337,7 +338,8 @@ export function Insights() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id="insights-scroll-container">
+      <ScrollIndicator scrollContainerId="insights-scroll-container" />
       <div className={styles.backgroundImage} />
       <div className={styles.contentWrapper}>
         {/* Sync Indicator */}

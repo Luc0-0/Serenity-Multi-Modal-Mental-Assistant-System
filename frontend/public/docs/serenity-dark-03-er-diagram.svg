@@ -1,0 +1,246 @@
+<svg viewBox="0 0 1360 980" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" x="0" y="0" width="320" height="180" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)">
+      <text x="0" y="80" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+      <text x="80" y="170" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+    </pattern>
+    <style>.T{font-family:'Palatino Linotype',Palatino,'Book Antiqua',serif}.L{font-family:Georgia,'Times New Roman',serif}.M{font-family:'Courier New',Courier,monospace}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A1C20"/><stop offset="100%" stop-color="#141618"/></linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B5924A" stop-opacity="0"/><stop offset="20%" stop-color="#B5924A"/><stop offset="80%" stop-color="#B5924A"/><stop offset="100%" stop-color="#B5924A" stop-opacity="0"/></linearGradient>
+    <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#1C1917" flood-opacity="0.08"/></filter>
+    <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1C1917" flood-opacity="0.05"/></filter>
+    <marker id="aG" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#4A4C40"/></marker>
+  </defs>
+  <rect width="1360" height="980" fill="url(#bg)"/>
+  <rect width="1360" height="980" fill="url(#wm)" pointer-events="none"/>
+  <path d="M28 28 L28 52 M28 28 L52 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1332 28 L1332 52 M1332 28 L1308 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M28 952 L28 928 M28 952 L52 952" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1332 952 L1332 928 M1332 952 L1308 952" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <text x="680" y="46" text-anchor="middle" class="T" font-size="10" fill="#C4A050" letter-spacing="5">SERENITY</text>
+  <text x="680" y="74" text-anchor="middle" class="T" font-size="27" fill="#E8E4DC" letter-spacing="2">Database ER Diagram</text>
+  <rect x="160" y="84" width="1040" height="0.8" fill="url(#hl)"/>
+  <text x="680" y="102" text-anchor="middle" class="L" font-size="11" fill="#6A6460" letter-spacing="1">PostgreSQL 15  ·  10 Tables  ·  SQLAlchemy 2.0 Async</text>
+
+  <!-- TABLE helper styles — each table: header + rows of (icon, field, type) -->
+  <!-- pk icon = ◆ (amber), fk icon = → (slate blue), plain = · (gray) -->
+
+  <!-- ══ TABLE: users (CENTER-TOP, anchor table) ══ -->
+  <rect x="500" y="118" width="360" height="262" rx="6" fill="#22252B" stroke="#5A4A2A" stroke-width="1.5" filter="url(#s1)"/>
+  <rect x="500" y="118" width="360" height="32" rx="6" fill="#C4A050" opacity="0.15"/>
+  <rect x="500" y="138" width="360" height="12" fill="#C4A050" opacity="0.08"/>
+  <text x="680" y="140" text-anchor="middle" class="T" font-size="13" fill="#C4A060" letter-spacing="3">users</text>
+  <line x1="500" y1="150" x2="860" y2="150" stroke="#3C3020" stroke-width="0.8"/>
+  <!-- rows -->
+  <text x="516" y="167" class="M" font-size="9" fill="#C4A050">◆</text><text x="530" y="167" class="M" font-size="9.5" fill="#E8E4DC">id</text><text x="690" y="167" class="M" font-size="8.5" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="500" y1="172" x2="860" y2="172" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="189" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="189" class="M" font-size="9.5" fill="#E8E4DC">name</text><text x="690" y="189" class="M" font-size="8.5" fill="#9A9490">VARCHAR(255)  NOT NULL</text>
+  <line x1="500" y1="194" x2="860" y2="194" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="211" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="211" class="M" font-size="9.5" fill="#E8E4DC">username</text><text x="690" y="211" class="M" font-size="8.5" fill="#9A9490">VARCHAR(255)  UNIQUE (legacy)</text>
+  <line x1="500" y1="216" x2="860" y2="216" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="233" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="233" class="M" font-size="9.5" fill="#E8E4DC">email</text><text x="690" y="233" class="M" font-size="8.5" fill="#9A9490">VARCHAR(255)  UNIQUE  NOT NULL</text>
+  <line x1="500" y1="238" x2="860" y2="238" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="255" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="255" class="M" font-size="9.5" fill="#E8E4DC">hashed_password</text><text x="690" y="255" class="M" font-size="8.5" fill="#9A9490">VARCHAR(255)</text>
+  <line x1="500" y1="260" x2="860" y2="260" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="277" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="277" class="M" font-size="9.5" fill="#E8E4DC">is_active</text><text x="690" y="277" class="M" font-size="8.5" fill="#9A9490">BOOLEAN  DEFAULT TRUE</text>
+  <line x1="500" y1="282" x2="860" y2="282" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="299" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="299" class="M" font-size="9.5" fill="#E8E4DC">created_at</text><text x="690" y="299" class="M" font-size="8.5" fill="#9A9490">TIMESTAMP  DEFAULT NOW()</text>
+  <line x1="500" y1="304" x2="860" y2="304" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="516" y="321" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="321" class="M" font-size="9.5" fill="#E8E4DC">updated_at</text><text x="690" y="321" class="M" font-size="8.5" fill="#9A9490">TIMESTAMP  ON UPDATE</text>
+  <line x1="500" y1="326" x2="860" y2="326" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="680" y="374" text-anchor="middle" class="M" font-size="7.5" fill="#6A6460">1</text>
+
+  <!-- ══ TABLE: conversations ══ -->
+  <rect x="70" y="420" width="308" height="182" rx="6" fill="#22252B" stroke="#304050" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="70" y="420" width="308" height="32" rx="6" fill="#6B7E8F" opacity="0.12"/>
+  <rect x="70" y="440" width="308" height="12" fill="#6B7E8F" opacity="0.06"/>
+  <text x="224" y="442" text-anchor="middle" class="T" font-size="12" fill="#7AAECC" letter-spacing="2">conversations</text>
+  <line x1="70" y1="452" x2="378" y2="452" stroke="#28343E" stroke-width="0.8"/>
+  <text x="86" y="468" class="M" font-size="9" fill="#C4A050">◆</text><text x="100" y="468" class="M" font-size="9" fill="#E8E4DC">id</text><text x="220" y="468" class="M" font-size="8" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="70" y1="473" x2="378" y2="473" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="489" class="M" font-size="9" fill="#6B7E8F">→</text><text x="100" y="489" class="M" font-size="9" fill="#E8E4DC">user_id</text><text x="220" y="489" class="M" font-size="8" fill="#9A9490">FK → users.id</text>
+  <line x1="70" y1="494" x2="378" y2="494" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="510" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="510" class="M" font-size="9" fill="#E8E4DC">title</text><text x="220" y="510" class="M" font-size="8" fill="#9A9490">VARCHAR(255)  NULL</text>
+  <line x1="70" y1="515" x2="378" y2="515" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="531" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="531" class="M" font-size="9" fill="#E8E4DC">created_at</text><text x="220" y="531" class="M" font-size="8" fill="#9A9490">TIMESTAMP</text>
+  <line x1="70" y1="536" x2="378" y2="536" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="552" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="552" class="M" font-size="9" fill="#E8E4DC">updated_at</text><text x="220" y="552" class="M" font-size="8" fill="#9A9490">TIMESTAMP</text>
+  <line x1="70" y1="557" x2="378" y2="557" stroke="#222830" stroke-width="0.5"/>
+  <text x="224" y="570" text-anchor="middle" class="M" font-size="7" fill="#6A6460">INDEX: user_id</text>
+  <!-- cardinality labels -->
+  <text x="492" y="385" text-anchor="middle" class="T" font-size="9" fill="#6A6460">1</text>
+  <text x="374" y="430" text-anchor="middle" class="T" font-size="9" fill="#6A6460">M</text>
+
+  <!-- ══ TABLE: messages ══ -->
+  <rect x="70" y="640" width="308" height="182" rx="6" fill="#22252B" stroke="#304050" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="70" y="640" width="308" height="32" rx="6" fill="#6B7E8F" opacity="0.12"/>
+  <rect x="70" y="660" width="308" height="12" fill="#6B7E8F" opacity="0.06"/>
+  <text x="224" y="662" text-anchor="middle" class="T" font-size="12" fill="#7AAECC" letter-spacing="2">messages</text>
+  <line x1="70" y1="672" x2="378" y2="672" stroke="#28343E" stroke-width="0.8"/>
+  <text x="86" y="688" class="M" font-size="9" fill="#C4A050">◆</text><text x="100" y="688" class="M" font-size="9" fill="#E8E4DC">id</text><text x="220" y="688" class="M" font-size="8" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="70" y1="693" x2="378" y2="693" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="709" class="M" font-size="9" fill="#6B7E8F">→</text><text x="100" y="709" class="M" font-size="9" fill="#E8E4DC">conversation_id</text><text x="220" y="709" class="M" font-size="8" fill="#9A9490">FK → conversations.id</text>
+  <line x1="70" y1="714" x2="378" y2="714" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="730" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="730" class="M" font-size="9" fill="#E8E4DC">role</text><text x="220" y="730" class="M" font-size="8" fill="#9A9490">ENUM user/assistant/system</text>
+  <line x1="70" y1="735" x2="378" y2="735" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="751" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="751" class="M" font-size="9" fill="#E8E4DC">content</text><text x="220" y="751" class="M" font-size="8" fill="#9A9490">TEXT  NOT NULL</text>
+  <line x1="70" y1="756" x2="378" y2="756" stroke="#222830" stroke-width="0.5"/>
+  <text x="86" y="772" class="M" font-size="9" fill="#6A6460">·</text><text x="100" y="772" class="M" font-size="9" fill="#E8E4DC">created_at</text><text x="220" y="772" class="M" font-size="8" fill="#9A9490">TIMESTAMP</text>
+  <line x1="70" y1="777" x2="378" y2="777" stroke="#222830" stroke-width="0.5"/>
+  <text x="224" y="790" text-anchor="middle" class="M" font-size="7" fill="#6A6460">INDEX: conversation_id</text>
+
+  <!-- ══ TABLE: emotion_logs ══ -->
+  <rect x="982" y="118" width="310" height="272" rx="6" fill="#22252B" stroke="#5A4A2A" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="982" y="118" width="310" height="32" rx="6" fill="#C4A050" opacity="0.10"/>
+  <rect x="982" y="138" width="310" height="12" fill="#C4A050" opacity="0.06"/>
+  <text x="1137" y="140" text-anchor="middle" class="T" font-size="12" fill="#C4A060" letter-spacing="2">emotion_logs</text>
+  <line x1="982" y1="150" x2="1292" y2="150" stroke="#3C3020" stroke-width="0.8"/>
+  <text x="998" y="167" class="M" font-size="9" fill="#C4A050">◆</text><text x="1012" y="167" class="M" font-size="9" fill="#E8E4DC">id</text><text x="1130" y="167" class="M" font-size="8" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="982" y1="172" x2="1292" y2="172" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="189" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="189" class="M" font-size="9" fill="#E8E4DC">user_id</text><text x="1130" y="189" class="M" font-size="8" fill="#9A9490">FK → users.id</text>
+  <line x1="982" y1="194" x2="1292" y2="194" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="211" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="211" class="M" font-size="9" fill="#E8E4DC">conversation_id</text><text x="1130" y="211" class="M" font-size="8" fill="#9A9490">FK nullable</text>
+  <line x1="982" y1="216" x2="1292" y2="216" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="233" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="233" class="M" font-size="9" fill="#E8E4DC">message_id</text><text x="1130" y="233" class="M" font-size="8" fill="#9A9490">FK nullable</text>
+  <line x1="982" y1="238" x2="1292" y2="238" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="255" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="255" class="M" font-size="9" fill="#E8E4DC">primary_emotion</text><text x="1130" y="255" class="M" font-size="8" fill="#9A9490">VARCHAR(50)  NOT NULL</text>
+  <line x1="982" y1="260" x2="1292" y2="260" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="277" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="277" class="M" font-size="9" fill="#E8E4DC">confidence</text><text x="1130" y="277" class="M" font-size="8" fill="#9A9490">FLOAT  DEFAULT 0.0</text>
+  <line x1="982" y1="282" x2="1292" y2="282" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="299" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="299" class="M" font-size="9" fill="#E8E4DC">intensity</text><text x="1130" y="299" class="M" font-size="8" fill="#9A9490">FLOAT  DEFAULT 0.0</text>
+  <line x1="982" y1="304" x2="1292" y2="304" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="321" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="321" class="M" font-size="9" fill="#E8E4DC">tags  /  notes</text><text x="1130" y="321" class="M" font-size="8" fill="#9A9490">TEXT  nullable</text>
+  <line x1="982" y1="326" x2="1292" y2="326" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="998" y="343" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="343" class="M" font-size="9" fill="#E8E4DC">created_at</text><text x="1130" y="343" class="M" font-size="8" fill="#9A9490">TIMESTAMP</text>
+  <line x1="982" y1="348" x2="1292" y2="348" stroke="#2C2820" stroke-width="0.5"/>
+  <text x="1137" y="362" text-anchor="middle" class="M" font-size="7" fill="#6A6460">INDEX: user_id, conversation_id, message_id</text>
+
+  <!-- ══ TABLE: journal_entries ══ -->
+  <rect x="982" y="420" width="310" height="302" rx="6" fill="#22252B" stroke="#3A5036" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="982" y="420" width="310" height="32" rx="6" fill="#7C9070" opacity="0.10"/>
+  <rect x="982" y="440" width="310" height="12" fill="#7C9070" opacity="0.06"/>
+  <text x="1137" y="442" text-anchor="middle" class="T" font-size="12" fill="#7CB876" letter-spacing="2">journal_entries</text>
+  <line x1="982" y1="452" x2="1292" y2="452" stroke="#2C3E2A" stroke-width="0.8"/>
+  <text x="998" y="468" class="M" font-size="9" fill="#C4A050">◆</text><text x="1012" y="468" class="M" font-size="9" fill="#E8E4DC">id</text><text x="1130" y="468" class="M" font-size="8" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="982" y1="473" x2="1292" y2="473" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="489" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="489" class="M" font-size="9" fill="#E8E4DC">user_id</text><text x="1130" y="489" class="M" font-size="8" fill="#9A9490">FK → users.id</text>
+  <line x1="982" y1="494" x2="1292" y2="494" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="510" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="510" class="M" font-size="9" fill="#E8E4DC">conversation_id</text><text x="1130" y="510" class="M" font-size="8" fill="#9A9490">FK  nullable</text>
+  <line x1="982" y1="515" x2="1292" y2="515" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="531" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1012" y="531" class="M" font-size="9" fill="#E8E4DC">message_id</text><text x="1130" y="531" class="M" font-size="8" fill="#9A9490">FK  nullable</text>
+  <line x1="982" y1="536" x2="1292" y2="536" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="552" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="552" class="M" font-size="9" fill="#E8E4DC">title  /  content</text><text x="1130" y="552" class="M" font-size="8" fill="#9A9490">TEXT</text>
+  <line x1="982" y1="557" x2="1292" y2="557" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="573" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="573" class="M" font-size="9" fill="#E8E4DC">emotion  /  mood</text><text x="1130" y="573" class="M" font-size="8" fill="#9A9490">VARCHAR(50)</text>
+  <line x1="982" y1="578" x2="1292" y2="578" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="594" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="594" class="M" font-size="9" fill="#E8E4DC">tags</text><text x="1130" y="594" class="M" font-size="8" fill="#9A9490">JSON  DEFAULT []</text>
+  <line x1="982" y1="599" x2="1292" y2="599" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="615" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="615" class="M" font-size="9" fill="#E8E4DC">ai_summary  /  ai_confidence</text><text x="1130" y="615" class="M" font-size="8" fill="#9A9490">TEXT · FLOAT</text>
+  <line x1="982" y1="620" x2="1292" y2="620" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="636" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="636" class="M" font-size="9" fill="#E8E4DC">extraction_method</text><text x="1130" y="636" class="M" font-size="8" fill="#9A9490">VARCHAR(50)  manual</text>
+  <line x1="982" y1="641" x2="1292" y2="641" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="998" y="657" class="M" font-size="9" fill="#6A6460">·</text><text x="1012" y="657" class="M" font-size="9" fill="#E8E4DC">auto_extract</text><text x="1130" y="657" class="M" font-size="8" fill="#9A9490">BOOLEAN</text>
+  <line x1="982" y1="662" x2="1292" y2="662" stroke="#2A3C28" stroke-width="0.5"/>
+  <text x="1137" y="678" text-anchor="middle" class="M" font-size="7" fill="#6A6460">INDEX: user_id, conversation_id</text>
+
+  <!-- ══ TABLE: crisis_events ══ -->
+  <rect x="500" y="420" width="380" height="252" rx="6" fill="#22252B" stroke="#6A3A34" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="500" y="420" width="380" height="32" rx="6" fill="#B06A64" opacity="0.18"/>
+  <rect x="500" y="440" width="380" height="12" fill="#B06A64" opacity="0.06"/>
+  <text x="690" y="442" text-anchor="middle" class="T" font-size="12" fill="#C47A72" letter-spacing="2">crisis_events</text>
+  <line x1="500" y1="452" x2="880" y2="452" stroke="#3C2420" stroke-width="0.8"/>
+  <text x="516" y="468" class="M" font-size="9" fill="#C4A050">◆</text><text x="530" y="468" class="M" font-size="9" fill="#E8E4DC">id</text><text x="680" y="468" class="M" font-size="8" fill="#9A9490">INTEGER  PRIMARY KEY</text>
+  <line x1="500" y1="473" x2="880" y2="473" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="489" class="M" font-size="9" fill="#6B7E8F">→</text><text x="530" y="489" class="M" font-size="9" fill="#E8E4DC">user_id  /  conversation_id  /  message_id</text><text x="780" y="489" class="M" font-size="8" fill="#9A9490">FK</text>
+  <line x1="500" y1="494" x2="880" y2="494" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="510" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="510" class="M" font-size="9" fill="#E8E4DC">severity</text><text x="680" y="510" class="M" font-size="8" fill="#9A9490">VARCHAR(20)  NOT NULL</text>
+  <line x1="500" y1="515" x2="880" y2="515" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="531" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="531" class="M" font-size="9" fill="#E8E4DC">confidence  /  keywords_detected</text><text x="780" y="531" class="M" font-size="8" fill="#9A9490">FLOAT · TEXT</text>
+  <line x1="500" y1="536" x2="880" y2="536" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="552" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="552" class="M" font-size="9" fill="#E8E4DC">escalated_to_professional</text><text x="780" y="552" class="M" font-size="8" fill="#9A9490">BOOLEAN</text>
+  <line x1="500" y1="557" x2="880" y2="557" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="573" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="573" class="M" font-size="9" fill="#E8E4DC">user_acknowledged</text><text x="780" y="573" class="M" font-size="8" fill="#9A9490">BOOLEAN</text>
+  <line x1="500" y1="578" x2="880" y2="578" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="594" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="594" class="M" font-size="9" fill="#E8E4DC">response_sent</text><text x="780" y="594" class="M" font-size="8" fill="#9A9490">TEXT  nullable</text>
+  <line x1="500" y1="599" x2="880" y2="599" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="516" y="615" class="M" font-size="9" fill="#6A6460">·</text><text x="530" y="615" class="M" font-size="9" fill="#E8E4DC">notes  /  created_at</text><text x="780" y="615" class="M" font-size="8" fill="#9A9490">TEXT · TIMESTAMP</text>
+  <line x1="500" y1="620" x2="880" y2="620" stroke="#3C2820" stroke-width="0.5"/>
+  <text x="690" y="634" text-anchor="middle" class="M" font-size="7" fill="#6A6460">INDEX: user_id, severity, created_at</text>
+
+  <!-- ══ 4 MEMORY TABLES (bottom row) ══ -->
+  <!-- semantic_memories -->
+  <rect x="70" y="850" width="280" height="102" rx="6" fill="#22252B" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="70" y="850" width="280" height="26" rx="6" fill="#8B7B9B" opacity="0.10"/>
+  <text x="210" y="868" text-anchor="middle" class="T" font-size="11" fill="#A898C8" letter-spacing="2">semantic_memories</text>
+  <line x1="70" y1="876" x2="350" y2="876" stroke="#342E48" stroke-width="0.8"/>
+  <text x="86" y="892" class="M" font-size="9" fill="#C4A050">◆</text><text x="100" y="892" class="M" font-size="8.5" fill="#E8E4DC">id</text><text x="200" y="892" class="M" font-size="8" fill="#9A9490">INTEGER  PK</text>
+  <text x="86" y="906" class="M" font-size="9" fill="#6B7E8F">→</text><text x="100" y="906" class="M" font-size="8.5" fill="#E8E4DC">user_id / message_id / convo_id</text>
+  <text x="86" y="920" class="M" font-size="8.5" fill="#6A6460">·</text><text x="100" y="920" class="M" font-size="8.5" fill="#E8E4DC">embedding</text><text x="200" y="920" class="M" font-size="8" fill="#9A9490">JSON 384-dim vector</text>
+  <text x="86" y="934" class="M" font-size="8.5" fill="#6A6460">·</text><text x="100" y="934" class="M" font-size="8.5" fill="#E8E4DC">importance_score</text><text x="200" y="934" class="M" font-size="8" fill="#9A9490">FLOAT</text>
+
+  <!-- emotional_profiles -->
+  <rect x="380" y="850" width="280" height="102" rx="6" fill="#22252B" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="380" y="850" width="280" height="26" rx="6" fill="#8B7B9B" opacity="0.10"/>
+  <text x="520" y="868" text-anchor="middle" class="T" font-size="11" fill="#A898C8" letter-spacing="2">emotional_profiles</text>
+  <line x1="380" y1="876" x2="660" y2="876" stroke="#342E48" stroke-width="0.8"/>
+  <text x="396" y="892" class="M" font-size="9" fill="#C4A050">◆</text><text x="410" y="892" class="M" font-size="8.5" fill="#E8E4DC">id</text><text x="510" y="892" class="M" font-size="8" fill="#9A9490">INTEGER  PK</text>
+  <text x="396" y="906" class="M" font-size="9" fill="#6B7E8F">→</text><text x="410" y="906" class="M" font-size="8.5" fill="#E8E4DC">user_id</text><text x="510" y="906" class="M" font-size="8" fill="#9A9490">FK → users.id</text>
+  <text x="396" y="920" class="M" font-size="8.5" fill="#6A6460">·</text><text x="410" y="920" class="M" font-size="8.5" fill="#E8E4DC">dominant_emotion</text><text x="510" y="920" class="M" font-size="8" fill="#9A9490">VARCHAR(32)</text>
+  <text x="396" y="934" class="M" font-size="8.5" fill="#6A6460">·</text><text x="410" y="934" class="M" font-size="8.5" fill="#E8E4DC">anxiety / resilience / volatility</text>
+
+  <!-- meta_reflections -->
+  <rect x="690" y="850" width="280" height="102" rx="6" fill="#22252B" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="690" y="850" width="280" height="26" rx="6" fill="#8B7B9B" opacity="0.10"/>
+  <text x="830" y="868" text-anchor="middle" class="T" font-size="11" fill="#A898C8" letter-spacing="2">meta_reflections</text>
+  <line x1="690" y1="876" x2="970" y2="876" stroke="#342E48" stroke-width="0.8"/>
+  <text x="706" y="892" class="M" font-size="9" fill="#C4A050">◆</text><text x="720" y="892" class="M" font-size="8.5" fill="#E8E4DC">id</text><text x="820" y="892" class="M" font-size="8" fill="#9A9490">INTEGER  PK</text>
+  <text x="706" y="906" class="M" font-size="9" fill="#6B7E8F">→</text><text x="720" y="906" class="M" font-size="8.5" fill="#E8E4DC">user_id</text><text x="820" y="906" class="M" font-size="8" fill="#9A9490">FK → users.id</text>
+  <text x="706" y="920" class="M" font-size="8.5" fill="#6A6460">·</text><text x="720" y="920" class="M" font-size="8.5" fill="#E8E4DC">reflection_summary</text><text x="820" y="920" class="M" font-size="8" fill="#9A9490">TEXT</text>
+  <text x="706" y="934" class="M" font-size="8.5" fill="#6A6460">·</text><text x="720" y="934" class="M" font-size="8.5" fill="#E8E4DC">detected_patterns</text><text x="820" y="934" class="M" font-size="8" fill="#9A9490">JSON</text>
+
+  <!-- context_cache -->
+  <rect x="1000" y="850" width="290" height="102" rx="6" fill="#22252B" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="1000" y="850" width="290" height="26" rx="6" fill="#8B7B9B" opacity="0.10"/>
+  <text x="1145" y="868" text-anchor="middle" class="T" font-size="11" fill="#A898C8" letter-spacing="2">context_cache</text>
+  <line x1="1000" y1="876" x2="1290" y2="876" stroke="#342E48" stroke-width="0.8"/>
+  <text x="1016" y="892" class="M" font-size="9" fill="#C4A050">◆</text><text x="1030" y="892" class="M" font-size="8.5" fill="#E8E4DC">conversation_id</text><text x="1180" y="892" class="M" font-size="8" fill="#9A9490">PK  FK</text>
+  <text x="1016" y="906" class="M" font-size="9" fill="#6B7E8F">→</text><text x="1030" y="906" class="M" font-size="8.5" fill="#E8E4DC">last_message_id</text><text x="1180" y="906" class="M" font-size="8" fill="#9A9490">FK  nullable</text>
+  <text x="1016" y="920" class="M" font-size="8.5" fill="#6A6460">·</text><text x="1030" y="920" class="M" font-size="8.5" fill="#E8E4DC">summary</text><text x="1180" y="920" class="M" font-size="8" fill="#9A9490">TEXT  nullable</text>
+  <text x="1016" y="934" class="M" font-size="8.5" fill="#6A6460">·</text><text x="1030" y="934" class="M" font-size="8.5" fill="#E8E4DC">message_count</text><text x="1180" y="934" class="M" font-size="8" fill="#9A9490">INTEGER</text>
+
+  <!-- ══ RELATIONSHIP LINES ══ -->
+  <!-- users → conversations (1:M) -->
+  <line x1="540" y1="380" x2="224" y2="420" stroke="#5A4A2A" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <text x="350" y="395" text-anchor="middle" class="L" font-size="8" fill="#6A6460">1 : M</text>
+  <!-- users → emotion_logs -->
+  <line x1="820" y1="380" x2="1080" y2="118" stroke="#5A4A2A" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <text x="970" y="270" text-anchor="middle" class="L" font-size="8" fill="#6A6460">1 : M</text>
+  <!-- users → crisis_events -->
+  <line x1="680" y1="380" x2="680" y2="420" stroke="#6A3A34" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <text x="692" y="404" class="L" font-size="8" fill="#6A6460">1 : M</text>
+  <!-- users → journal_entries -->
+  <line x1="820" y1="310" x2="1080" y2="420" stroke="#5A4A2A" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <text x="980" y="360" text-anchor="middle" class="L" font-size="8" fill="#6A6460">1 : M</text>
+  <!-- users → memory tables -->
+  <line x1="500" y1="310" x2="210" y2="850" stroke="#3E3858" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+  <line x1="540" y1="310" x2="520" y2="850" stroke="#3E3858" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+  <line x1="680" y1="380" x2="830" y2="850" stroke="#3E3858" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+  <line x1="780" y1="310" x2="1145" y2="850" stroke="#3E3858" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+  <!-- conversations → messages (1:M) -->
+  <line x1="224" y1="602" x2="224" y2="640" stroke="#304050" stroke-width="1" marker-end="url(#aG)"/>
+  <text x="236" y="624" class="L" font-size="8" fill="#6A6460">1 : M</text>
+  <!-- conversations → context_cache (1:1) -->
+  <line x1="378" y1="500" x2="1000" y2="880" stroke="#5A4A2A" stroke-width="0.8" stroke-dasharray="4,3" marker-end="url(#aG)"/>
+  <text x="690" y="710" text-anchor="middle" class="L" font-size="8" fill="#6A6460">1 : 1</text>
+
+  <!-- ══ LEGEND ══ -->
+  <rect x="60" y="950" width="640" height="22" rx="3" fill="#22252B" stroke="#2E2C28" stroke-width="0.8" filter="url(#s2)"/>
+  <text x="76" y="965" class="M" font-size="9" fill="#C4A050">◆</text><text x="92" y="965" class="L" font-size="8.5" fill="#9A9490">Primary Key</text>
+  <text x="178" y="965" class="M" font-size="9" fill="#6B7E8F">→</text><text x="194" y="965" class="L" font-size="8.5" fill="#9A9490">Foreign Key</text>
+  <text x="276" y="965" class="M" font-size="9" fill="#6A6460">·</text><text x="290" y="965" class="L" font-size="8.5" fill="#9A9490">Column</text>
+  <line x1="354" y1="961" x2="378" y2="961" stroke="#5A4A2A" stroke-width="1" stroke-dasharray="5,2"/><text x="386" y="965" class="L" font-size="8.5" fill="#9A9490">1:M Relationship</text>
+  <line x1="494" y1="961" x2="518" y2="961" stroke="#3E3858" stroke-width="0.8" stroke-dasharray="4,2"/><text x="526" y="965" class="L" font-size="8.5" fill="#9A9490">Indirect Reference</text>
+  <text x="1137" y="965" text-anchor="middle" class="T" font-size="8.5" fill="#C4A050" letter-spacing="3" opacity="0.7">SERENITY  ·  ER DIAGRAM</text>
+  <!-- watermark -->
+  <text x="50%" y="97%" text-anchor="middle" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="11" fill="#E8E4DC" opacity="0.55" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+</svg>

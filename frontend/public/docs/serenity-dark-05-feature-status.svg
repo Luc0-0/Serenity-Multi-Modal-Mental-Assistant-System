@@ -1,0 +1,252 @@
+<svg viewBox="0 0 1200 860" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" x="0" y="0" width="320" height="180" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)">
+      <text x="0" y="80" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+      <text x="80" y="170" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="13" fill="#E8E4DC" opacity="0.065" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+    </pattern>
+    <style>.T{font-family:'Palatino Linotype',Palatino,'Book Antiqua',serif}.L{font-family:Georgia,'Times New Roman',serif}.M{font-family:'Courier New',Courier,monospace}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A1C20"/><stop offset="100%" stop-color="#141618"/></linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B5924A" stop-opacity="0"/><stop offset="20%" stop-color="#B5924A"/><stop offset="80%" stop-color="#B5924A"/><stop offset="100%" stop-color="#B5924A" stop-opacity="0"/></linearGradient>
+    <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#1C1917" flood-opacity="0.08"/></filter>
+    <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1C1917" flood-opacity="0.05"/></filter>
+  </defs>
+  <rect width="1200" height="860" fill="url(#bg)"/>
+  <rect width="1200" height="860" fill="url(#wm)" pointer-events="none"/>
+  <path d="M28 28 L28 52 M28 28 L52 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1172 28 L1172 52 M1172 28 L1148 28" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M28 832 L28 808 M28 832 L52 832" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M1172 832 L1172 808 M1172 832 L1148 832" stroke="#B5924A" stroke-width="1.2" fill="none" opacity="0.5"/>
+
+  <text x="600" y="46" text-anchor="middle" class="T" font-size="10" fill="#C4A050" letter-spacing="5">SERENITY</text>
+  <text x="600" y="74" text-anchor="middle" class="T" font-size="27" fill="#E8E4DC" letter-spacing="2">Feature Status</text>
+  <rect x="160" y="84" width="880" height="0.8" fill="url(#hl)"/>
+  <text x="600" y="102" text-anchor="middle" class="L" font-size="11" fill="#6A6460" letter-spacing="1">Implemented  ·  In Progress  ·  Planned</text>
+
+  <!-- ════ THREE COLUMN LAYOUT ════ -->
+
+  <!-- ── COLUMN 1: IMPLEMENTED ── -->
+  <rect x="48" y="118" width="348" height="692" rx="6" fill="#22252B" stroke="#3A5036" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="48" y="118" width="348" height="38" rx="6" fill="#7C9070" opacity="0.22"/>
+  <!-- status dot -->
+  <circle cx="74" cy="137" r="7" fill="#7C9070" opacity="0.8"/>
+  <text x="600" y="0" fill="none"/><!-- spacer -->
+  <text x="200" y="143" text-anchor="middle" class="T" font-size="13" fill="#7CB876" letter-spacing="2">IMPLEMENTED</text>
+  <!-- categories -->
+
+  <!-- Core Chat -->
+  <text x="68" y="178" class="L" font-size="9" fill="#6A6460" letter-spacing="2">CORE CHAT</text>
+  <line x1="68" y1="181" x2="376" y2="181" stroke="#304030" stroke-width="0.5"/>
+  <rect x="68" y="186" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="198" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="202" class="L" font-size="10" fill="#E8E4DC">Real-time chat with streaming (SSE)</text>
+  <rect x="68" y="216" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="228" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="232" class="L" font-size="10" fill="#E8E4DC">Conversation history &amp; management</text>
+  <rect x="68" y="246" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="258" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="262" class="L" font-size="10" fill="#E8E4DC">Auto conversation title generation</text>
+  <rect x="68" y="276" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="288" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="292" class="L" font-size="10" fill="#E8E4DC">Typewriter display effect</text>
+
+  <!-- AI System -->
+  <text x="68" y="318" class="L" font-size="9" fill="#6A6460" letter-spacing="2">AI &amp; PERSONALITY</text>
+  <line x1="68" y1="321" x2="376" y2="321" stroke="#304030" stroke-width="0.5"/>
+  <rect x="68" y="326" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="338" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="342" class="L" font-size="10" fill="#E8E4DC">Shapeshifter personality (4 modes)</text>
+  <rect x="68" y="356" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="368" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="372" class="L" font-size="10" fill="#E8E4DC">Adaptive system prompt construction</text>
+  <rect x="68" y="386" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="398" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="402" class="L" font-size="10" fill="#1C1911">Pluggable engine architecture</text>
+  <rect x="68" y="416" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="428" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="432" class="L" font-size="10" fill="#E8E4DC">Graceful degradation / fallback chains</text>
+
+  <!-- Memory -->
+  <text x="68" y="458" class="L" font-size="9" fill="#6A6460" letter-spacing="2">MEMORY SYSTEM</text>
+  <line x1="68" y1="461" x2="376" y2="461" stroke="#304030" stroke-width="0.5"/>
+  <rect x="68" y="466" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="478" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="482" class="L" font-size="10" fill="#E8E4DC">Short-term context caching</text>
+  <rect x="68" y="496" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="508" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="512" class="L" font-size="10" fill="#E8E4DC">Semantic memory (384-dim vectors)</text>
+  <rect x="68" y="526" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="538" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="542" class="L" font-size="10" fill="#E8E4DC">Emotional profile (30-day window)</text>
+  <rect x="68" y="556" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="568" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="572" class="L" font-size="10" fill="#E8E4DC">Meta-reflections from journal patterns</text>
+
+  <!-- Other -->
+  <text x="68" y="598" class="L" font-size="9" fill="#6A6460" letter-spacing="2">SAFETY &amp; WELLNESS</text>
+  <line x1="68" y1="601" x2="376" y2="601" stroke="#304030" stroke-width="0.5"/>
+  <rect x="68" y="606" width="316" height="24" rx="3" fill="#281E1C" stroke="#6A3A34" stroke-width="0.8"/>
+  <circle cx="84" cy="618" r="4" fill="#B06A64" opacity="0.7"/>
+  <text x="96" y="622" class="L" font-size="10" fill="#E8E4DC">Crisis detection &amp; resource provision</text>
+  <rect x="68" y="636" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="648" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="652" class="L" font-size="10" fill="#E8E4DC">Emotion detection (text-based)</text>
+  <rect x="68" y="666" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="678" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="682" class="L" font-size="10" fill="#E8E4DC">Journal with AI extraction</text>
+  <rect x="68" y="696" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="708" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="712" class="L" font-size="10" fill="#E8E4DC">Emotion analytics dashboard</text>
+  <rect x="68" y="726" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="738" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="742" class="L" font-size="10" fill="#E8E4DC">JWT auth · bcrypt · protected routes</text>
+  <rect x="68" y="756" width="316" height="24" rx="3" fill="#1E2420" stroke="#3A4A38" stroke-width="0.8"/>
+  <circle cx="84" cy="768" r="4" fill="#4A7044" opacity="0.9"/>
+  <text x="96" y="772" class="L" font-size="10" fill="#E8E4DC">Docker Compose deployment</text>
+
+  <!-- ── COLUMN 2: IN PROGRESS ── -->
+  <rect x="426" y="118" width="348" height="692" rx="6" fill="#22252B" stroke="#5A4A2A" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="426" y="118" width="348" height="38" rx="6" fill="#C4A050" opacity="0.13"/>
+  <circle cx="452" cy="137" r="7" fill="#C4A050" opacity="0.7"/>
+  <text x="600" y="143" text-anchor="middle" class="T" font-size="13" fill="#C4A060" letter-spacing="2">IN PROGRESS</text>
+
+  <!-- -->
+  <text x="446" y="178" class="L" font-size="9" fill="#6A6460" letter-spacing="2">AI IMPROVEMENTS</text>
+  <line x1="446" y1="181" x2="754" y2="181" stroke="#3C3020" stroke-width="0.5"/>
+  <rect x="446" y="186" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="198" r="4" fill="#C4A050" opacity="0.5"/>
+  <rect x="462" y="193" width="46" height="10" rx="2" fill="#C4A050" opacity="0.15"/>
+  <text x="462" y="202" class="M" font-size="7" fill="#C4A050" dx="2">active</text>
+  <text x="516" y="202" class="L" font-size="10" fill="#E8E4DC">XLNet as default emotion engine</text>
+  <rect x="446" y="216" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="228" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="232" class="L" font-size="10" fill="#E8E4DC">Ollama-based emotion detection</text>
+  <rect x="446" y="246" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="258" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="262" class="L" font-size="10" fill="#E8E4DC">Improved context window management</text>
+  <rect x="446" y="276" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="288" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="292" class="L" font-size="10" fill="#E8E4DC">Pattern-based crisis detection (ML)</text>
+
+  <text x="446" y="318" class="L" font-size="9" fill="#6A6460" letter-spacing="2">FRONTEND &amp; UX</text>
+  <line x1="446" y1="321" x2="754" y2="321" stroke="#3C3020" stroke-width="0.5"/>
+  <rect x="446" y="326" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="338" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="342" class="L" font-size="10" fill="#E8E4DC">Meditation / mindfulness feature</text>
+  <rect x="446" y="356" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="368" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="372" class="L" font-size="10" fill="#E8E4DC">Emotion picker (6-level visual UI)</text>
+  <rect x="446" y="386" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="398" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="402" class="L" font-size="10" fill="#E8E4DC">Swipe gestures for SerenityDeck</text>
+  <rect x="446" y="416" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="428" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="432" class="L" font-size="10" fill="#E8E4DC">Mobile responsiveness polish</text>
+
+  <text x="446" y="458" class="L" font-size="9" fill="#6A6460" letter-spacing="2">BACKEND &amp; INFRA</text>
+  <line x1="446" y1="461" x2="754" y2="461" stroke="#3C3020" stroke-width="0.5"/>
+  <rect x="446" y="466" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="478" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="482" class="L" font-size="10" fill="#E8E4DC">Alembic migration refinement</text>
+  <rect x="446" y="496" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="508" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="512" class="L" font-size="10" fill="#E8E4DC">Improved background task queue</text>
+  <rect x="446" y="526" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="538" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="542" class="L" font-size="10" fill="#E8E4DC">Rate limiting on API endpoints</text>
+  <rect x="446" y="556" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="568" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="572" class="L" font-size="10" fill="#E8E4DC">pgAdmin production hardening</text>
+
+  <text x="446" y="598" class="L" font-size="9" fill="#6A6460" letter-spacing="2">ANALYTICS</text>
+  <line x1="446" y1="601" x2="754" y2="601" stroke="#3C3020" stroke-width="0.5"/>
+  <rect x="446" y="606" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="618" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="622" class="L" font-size="10" fill="#E8E4DC">Emotional trend graph (Insights page)</text>
+  <rect x="446" y="636" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="648" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="652" class="L" font-size="10" fill="#E8E4DC">Weekly mood summary report</text>
+  <rect x="446" y="666" width="316" height="24" rx="3" fill="#231E16" stroke="#4A3C20" stroke-width="0.8"/>
+  <circle cx="462" cy="678" r="4" fill="#C4A050" opacity="0.5"/>
+  <text x="476" y="682" class="L" font-size="10" fill="#E8E4DC">Journal insight extraction pipeline</text>
+
+  <!-- ── COLUMN 3: FUTURE ── -->
+  <rect x="804" y="118" width="348" height="692" rx="6" fill="#22252B" stroke="#3E3858" stroke-width="1.2" filter="url(#s1)"/>
+  <rect x="804" y="118" width="348" height="38" rx="6" fill="#8B7B9B" opacity="0.12"/>
+  <circle cx="830" cy="137" r="7" fill="#5A4A70" opacity="0.8"/>
+  <text x="978" y="143" text-anchor="middle" class="T" font-size="13" fill="#A898C8" letter-spacing="2">PLANNED</text>
+
+  <text x="824" y="178" class="L" font-size="9" fill="#6A6460" letter-spacing="2">MULTI-MODAL INPUT</text>
+  <line x1="824" y1="181" x2="1132" y2="181" stroke="#302C44" stroke-width="0.5"/>
+  <rect x="824" y="186" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="198" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="202" class="L" font-size="10" fill="#E8E4DC">Voice input &amp; emotion detection</text>
+  <rect x="824" y="216" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="228" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="232" class="L" font-size="10" fill="#E8E4DC">Facial expression analysis (camera)</text>
+  <rect x="824" y="246" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="258" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="262" class="L" font-size="10" fill="#E8E4DC">Image &amp; file attachments in chat</text>
+  <rect x="824" y="276" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="288" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="292" class="L" font-size="10" fill="#E8E4DC">Combined audio + text analysis</text>
+
+  <text x="824" y="318" class="L" font-size="9" fill="#6A6460" letter-spacing="2">ADVANCED AI</text>
+  <line x1="824" y1="321" x2="1132" y2="321" stroke="#302C44" stroke-width="0.5"/>
+  <rect x="824" y="326" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="338" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="342" class="L" font-size="10" fill="#E8E4DC">Predictive crisis detection (patterns)</text>
+  <rect x="824" y="356" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="368" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="372" class="L" font-size="10" fill="#E8E4DC">Personalized response style learning</text>
+  <rect x="824" y="386" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="398" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="402" class="L" font-size="10" fill="#E8E4DC">Fine-tuned mental health LLM</text>
+  <rect x="824" y="416" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="428" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="432" class="L" font-size="10" fill="#E8E4DC">Sentiment trajectory forecasting</text>
+
+  <text x="824" y="458" class="L" font-size="9" fill="#6A6460" letter-spacing="2">PLATFORM EXPANSION</text>
+  <line x1="824" y1="461" x2="1132" y2="461" stroke="#302C44" stroke-width="0.5"/>
+  <rect x="824" y="466" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="478" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="482" class="L" font-size="10" fill="#E8E4DC">Native mobile app (React Native)</text>
+  <rect x="824" y="496" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="508" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="512" class="L" font-size="10" fill="#E8E4DC">Wearable integration (heart rate)</text>
+  <rect x="824" y="526" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="538" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="542" class="L" font-size="10" fill="#E8E4DC">Professional therapist portal</text>
+  <rect x="824" y="556" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="568" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="572" class="L" font-size="10" fill="#E8E4DC">Multi-language support</text>
+
+  <text x="824" y="598" class="L" font-size="9" fill="#6A6460" letter-spacing="2">INFRASTRUCTURE</text>
+  <line x1="824" y1="601" x2="1132" y2="601" stroke="#302C44" stroke-width="0.5"/>
+  <rect x="824" y="606" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="618" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="622" class="L" font-size="10" fill="#E8E4DC">Kubernetes orchestration</text>
+  <rect x="824" y="636" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="648" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="652" class="L" font-size="10" fill="#E8E4DC">Redis caching layer</text>
+  <rect x="824" y="666" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="678" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="682" class="L" font-size="10" fill="#E8E4DC">End-to-end encryption</text>
+  <rect x="824" y="696" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="708" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="712" class="L" font-size="10" fill="#E8E4DC">HIPAA compliance layer</text>
+  <rect x="824" y="726" width="316" height="24" rx="3" fill="#1E1C24" stroke="#3C3850" stroke-width="0.8"/>
+  <circle cx="840" cy="738" r="4" fill="#8B7B9B" opacity="0.4"/>
+  <text x="854" y="742" class="L" font-size="10" fill="#E8E4DC">CDN &amp; reverse proxy (Nginx)</text>
+
+  <!-- ════ LEGEND FOOTER ════ -->
+  <rect x="48" y="826" width="1104" height="22" rx="3" fill="#22252B" stroke="#2E2C28" stroke-width="0.8" filter="url(#s2)"/>
+  <circle cx="72" cy="837" r="5" fill="#7C9070" opacity="0.8"/>
+  <text x="84" y="841" class="L" font-size="9" fill="#9A9490">Implemented  —  fully shipped and in production</text>
+  <circle cx="352" cy="837" r="5" fill="#C4A050" opacity="0.7"/>
+  <text x="364" y="841" class="L" font-size="9" fill="#9A9490">In Progress  —  actively being built or refined</text>
+  <circle cx="622" cy="837" r="5" fill="#5A4A70" opacity="0.8"/>
+  <text x="634" y="841" class="L" font-size="9" fill="#9A9490">Planned  —  on the roadmap for future releases</text>
+  <text x="978" y="841" text-anchor="middle" class="T" font-size="8.5" fill="#C4A050" letter-spacing="3" opacity="0.6">SERENITY  ·  ROADMAP</text>
+  <!-- watermark -->
+  <text x="50%" y="97%" text-anchor="middle" font-family="Palatino Linotype,Palatino,Book Antiqua,serif" font-size="11" fill="#E8E4DC" opacity="0.55" letter-spacing="3">Nipun Sujesh  [Luc0-0]</text>
+</svg>

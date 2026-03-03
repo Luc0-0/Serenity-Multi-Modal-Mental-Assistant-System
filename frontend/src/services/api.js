@@ -3,7 +3,7 @@
  * Centralized HTTP client with validation.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 const TIMEOUT_MS = 20000; // 20 seconds
 
 /**

@@ -390,12 +390,12 @@
 }
 
 .inputContainer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  border-bottom: 1.5px solid rgba(255, 248, 240, 0.15);
-  transition: border-color 0.4s ease;
-}
+   position: relative;
+   display: flex;
+   align-items: center;
+   border-bottom: 1.5px solid rgba(35, 28, 22, 0.2);
+   transition: border-color 0.4s ease;
+ }
 
 /* Center-out underline on focus */
 .inputContainer::after {
@@ -417,8 +417,8 @@
 }
 
 .inputContainer:focus-within {
-  border-bottom-color: rgba(255, 248, 240, 0.25);
-}
+   border-bottom-color: rgba(35, 28, 22, 0.35);
+ }
 
 .minimalInput {
    width: 100%;

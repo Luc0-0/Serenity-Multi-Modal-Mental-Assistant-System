@@ -30,7 +30,7 @@ env/
 .env.local
 .env.*
 !.env.example
-!.env.docker
+# !.env.docker
 
 # Installer logs
 pip-log.txt

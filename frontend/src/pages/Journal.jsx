@@ -386,7 +386,10 @@ export function Journal() {
       });
     } catch (err) {
       console.error("Failed to fetch journal entries:", err);
-      setError("Failed to load journal entries");
+      console.error("  Error status:", err?.status);
+      console.error("  Error message:", err?.message);
+      console.error("  Error detail:", err?.detail);
+      setError(`Failed to load journal entries: ${err?.message || 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }

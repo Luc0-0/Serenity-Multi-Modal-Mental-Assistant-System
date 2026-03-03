@@ -67,17 +67,21 @@ class EmotionService:
             return None
     
     async def detect_crisis_signals(self, message: str) -> bool:
-        """Detect crisis signals."""
+        """Detect crisis signals - only for actual harm indicators, not sadness."""
+        # Only detect actual crisis keywords related to self-harm or suicide
         crisis_keywords = [
             "hurt myself",
             "cut myself",
             "kill myself",
-            "kill myself",
             "suicide",
-            "end it",
+            "suicidal",
+            "end it all",
             "overdose",
             "not worth living",
-            "better off dead"
+            "better off dead",
+            "want to die",
+            "don't want to live",
+            "harm myself"
         ]
         
         message_lower = message.lower()

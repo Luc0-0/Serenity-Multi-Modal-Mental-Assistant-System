@@ -34,18 +34,18 @@ export function CopyButton({ text }) {
         display: "inline-flex",
         alignItems: "center",
         gap: "0.3rem",
-        padding: "0.25rem 0.6rem",
+        padding: "0.25rem 0.5rem",
         background: state === "success"
-          ? "rgba(197, 168, 124, 0.15)"
-          : "rgba(255, 255, 255, 0.04)",
-        border: `1px solid ${state === "success" ? "rgba(197, 168, 124, 0.4)" : "rgba(255, 255, 255, 0.08)"}`,
-        borderRadius: "6px",
+          ? "rgba(35, 28, 22, 0.08)"
+          : "rgba(35, 28, 22, 0.05)",
+        border: `1px solid ${state === "success" ? "rgba(35, 28, 22, 0.2)" : "rgba(35, 28, 22, 0.1)"}`,
+        borderRadius: "5px",
         cursor: state === "idle" ? "pointer" : "default",
-        color: state === "success" ? "rgba(197, 168, 124, 0.9)" : "rgba(240, 235, 225, 0.4)",
-        fontSize: "0.7rem",
-        letterSpacing: "0.05em",
-        transition: "all 0.3s ease",
-        backdropFilter: "blur(8px)",
+        color: state === "success" ? "rgba(35, 28, 22, 0.7)" : "rgba(35, 28, 22, 0.45)",
+        fontSize: "0.65rem",
+        letterSpacing: "0.04em",
+        transition: "all 0.25s ease",
+        backdropFilter: "blur(4px)",
       }}
     >
       <AnimatePresence mode="popLayout" initial={false}>

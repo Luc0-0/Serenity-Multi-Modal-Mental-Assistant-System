@@ -4,11 +4,10 @@ import ReactMarkdown from "react-markdown";
 import { useAuth } from "../context/AuthContext";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
 import { CrisisAlert } from "../components/CrisisAlert";
-import { SerenityDeck } from "../components/SerenityDeck"; // Changed import
+import { SerenityDeck } from "../components/SerenityDeck";
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { CopyButton } from "../components/CopyButton";
 import { AnimatedTooltip } from "../components/AnimatedTooltip";
-import { ShinyText } from "../components/ShinyText";
 import { sendChatMessage, getErrorDisplay } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
 import styles from "./CheckIn.module.css";
@@ -345,7 +344,7 @@ export function CheckIn() {
               {/* Glass interior */}
               <div className={styles.orb}>
                 <div className={styles.orbContent}>
-                   <h1 className={styles.welcomeHeading}><ShinyText>Welcome.</ShinyText></h1>
+                   <h1 className={styles.welcomeHeading}>Welcome.</h1>
 
                   <p className={styles.subtitle}>
                     You can talk, write, or just sit here.
@@ -462,7 +461,7 @@ export function CheckIn() {
                           style={{
                             display: "flex",
                             justifyContent: "flex-end",
-                            marginTop: "0.4rem",
+                            marginTop: "0.2rem",
                             opacity: 0,
                             transition: "opacity 0.2s ease",
                           }}

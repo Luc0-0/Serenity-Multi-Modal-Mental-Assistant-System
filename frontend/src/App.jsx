@@ -10,6 +10,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import {
   Landing,
@@ -31,6 +32,7 @@ import "./App.css";
 
 import { Navbar } from "./components/Navbar";
 import { CustomCursor } from "./components/CustomCursor";
+import { PageTransition } from "./components/PageTransition";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading, token } = useAuth();
@@ -52,55 +54,60 @@ function ProtectedRoute({ children }) {
 }
 
 function AppRoutes() {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+    <>
+      <PageTransition location={location} />
+      <Routes location={location}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-      <Route
-        path="/check-in"
-        element={
-          <ProtectedRoute>
-            <CheckIn />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/journal"
-        element={
-          <ProtectedRoute>
-            <Journal />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/insights"
-        element={
-          <ProtectedRoute>
-            <Insights />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/meditate"
-        element={
-          <ProtectedRoute>
-            <Meditate />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/check-in"
+          element={
+            <ProtectedRoute>
+              <CheckIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/journal"
+          element={
+            <ProtectedRoute>
+              <Journal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/insights"
+          element={
+            <ProtectedRoute>
+              <Insights />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meditate"
+          element={
+            <ProtectedRoute>
+              <Meditate />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 

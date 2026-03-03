@@ -16,6 +16,7 @@ export function ConversationSidebar({
   const { refreshTrigger } = useConversationRefresh();
 
   useEffect(() => {
+    console.log("[Sidebar] Refresh triggered, fetching conversations...");
     fetchConversations();
   }, [userId, refreshTrigger]);
 
@@ -28,6 +29,7 @@ export function ConversationSidebar({
       const response = await fetch(`/api/conversations/`, { headers });
       if (response.ok) {
         const data = await response.json();
+        console.log("[Sidebar] Fetched conversations:", data.map(c => ({ id: c.id, title: c.title })));
         const sorted = (Array.isArray(data) ? data : []).sort(
           (a, b) =>
             new Date(b.updated_at || b.created_at) -

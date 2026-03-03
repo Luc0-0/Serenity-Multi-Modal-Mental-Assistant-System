@@ -4,7 +4,7 @@
  */
 
 const API_BASE_URL = '/api';
-const TIMEOUT_MS = 10000; // 10 seconds
+const TIMEOUT_MS = 20000; // 20 seconds
 
 /**
  * Validate Chat Response.

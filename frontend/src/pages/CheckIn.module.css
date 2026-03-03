@@ -1176,7 +1176,7 @@
   /* Chat input adjustments */
   .chatInputArea {
     position: fixed;
-    bottom: 0;
+    bottom: 60px;
     left: 0;
     right: 0;
     padding: 10px 12px 14px 12px;
@@ -1223,12 +1223,12 @@
   /* Insights sidebar — becomes overlay on mobile */
   .insightsPanel {
     position: fixed;
-    bottom: 70px;
+    bottom: 130px;
     right: 0;
     left: 0;
     width: 100%;
     max-width: 100%;
-    max-height: 40vh;
+    max-height: 35vh;
     min-width: unset;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;

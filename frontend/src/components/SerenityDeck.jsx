@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./SerenityDeck.css";
 
 /* ─── ICONS (Custom Luxury Set) ─── */
@@ -64,6 +64,19 @@ const TrashIcon = () => (
   </svg>
 );
 
+const CloseIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /* ─── COMPONENT ─── */
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -78,10 +91,28 @@ export function SerenityDeck({
   const [isOpen, setIsOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [loading, setLoading] = useState(false);
+  const drawerRef = useRef(null);
 
   useEffect(() => {
     if (isOpen || isPinned) fetchConversations();
   }, [isOpen, isPinned, userId]);
+
+  // Close drawer on outside click (mobile only)
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!isPinned && isOpen && drawerRef.current && !drawerRef.current.contains(e.target)) {
+        // Don't close if clicking the trigger
+        if (!e.target.closest(".deck-trigger-zone")) {
+          setIsOpen(false);
+        }
+      }
+    };
+
+    if (isOpen && !isPinned) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [isOpen, isPinned]);
 
   const fetchConversations = async () => {
     setLoading(true);
@@ -164,6 +195,7 @@ export function SerenityDeck({
 
       {/* 2. The Deck (Drawer) */}
       <div
+        ref={drawerRef}
         className={`deck-drawer ${isOpen || isPinned ? "open" : ""}`}
         onMouseLeave={handleMouseLeave}
       >
@@ -174,13 +206,24 @@ export function SerenityDeck({
           {/* Header */}
           <div className="deck-header">
             <span className="deck-logo">Archives</span>
-            <button
-              className={`deck-pin-btn ${isPinned ? "active" : ""}`}
-              onClick={togglePin}
-              title={isPinned ? "Unpin" : "Pin Sidebar"}
-            >
-              <LuxuryPin filled={isPinned} />
-            </button>
+            <div className="deck-header-actions">
+              <button
+                className={`deck-pin-btn ${isPinned ? "active" : ""}`}
+                onClick={togglePin}
+                title={isPinned ? "Unpin" : "Pin Sidebar"}
+              >
+                <LuxuryPin filled={isPinned} />
+              </button>
+              {!isPinned && (
+                <button
+                  className="deck-close-btn"
+                  onClick={() => setIsOpen(false)}
+                  title="Close"
+                >
+                  <CloseIcon />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* New Chat Button */}

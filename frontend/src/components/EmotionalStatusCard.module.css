@@ -147,9 +147,9 @@
 /* Pie Chart Section */
 .chartContainer {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0.5rem auto 1rem;
+  width: 160px;
+  height: 160px;
+  margin: 1.5rem auto 1.5rem;
 }
 
 .chartContainer svg {
@@ -260,4 +260,72 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
+}
+
+/* Donut Chart Animations */
+@keyframes emotionEnter {
+  from {
+    stroke-dashoffset: 75.4;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: var(--dash-offset, 0);
+    opacity: 0.9;
+  }
+}
+
+@keyframes dominantGlow {
+  0% {
+    filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
+  }
+  50% {
+    filter: url(#softGlow) drop-shadow(0 0 6px rgba(212, 165, 116, 0.25));
+  }
+  100% {
+    filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
+  }
+}
+
+@keyframes innerCoreGlow {
+  0% {
+    opacity: 0.3;
+    filter: blur(0.5px);
+  }
+  50% {
+    opacity: 0.5;
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 0.3;
+    filter: blur(0.5px);
+  }
+}
+
+.emotionSegment {
+  animation: emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.emotionSegment[data-index="0"] {
+  animation: emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    dominantGlow 3s ease-in-out 0.8s infinite;
+}
+
+.emotionSegment[data-index="1"] {
+  animation-delay: 0.1s;
+}
+
+.emotionSegment[data-index="2"] {
+  animation-delay: 0.15s;
+}
+
+.emotionSegment[data-index="3"] {
+  animation-delay: 0.2s;
+}
+
+.innerCore {
+  animation: innerCoreGlow 4s ease-in-out 1.2s infinite;
+}
+
+.chartContainer svg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }

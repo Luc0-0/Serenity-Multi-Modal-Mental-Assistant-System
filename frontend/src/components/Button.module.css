@@ -17,6 +17,15 @@
   text-transform: uppercase;
 }
 
+.button:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.75);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 1px rgba(5, 5, 5, 0.8),
+    0 0 0 3px rgba(212, 175, 55, 0.45),
+    0 8px 24px rgba(196, 168, 114, 0.35);
+}
+
 /* Primary Variant (Warm Gradient - High Visibility) */
 .primary {
   background: linear-gradient(135deg, #c5955c 0%, #a87d4a 100%);

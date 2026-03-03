@@ -3,9 +3,7 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    """
-    Application configuration settings.
-    """
+    """Application configuration settings."""
     
     app_name: str = "Serenity"
     environment: str = "development"
@@ -14,12 +12,26 @@ class Settings(BaseSettings):
     database_url: Optional[str] = None
     secret_key: str = "dev-secret-key-change-in-production"
     
+    # Engine selection
+    emotion_provider: str = "keywords"
+    emotion_fallback: str = "keywords"
+    llm_provider: str = "ollama"
+    llm_fallback: str = "fallback"
+    crisis_provider: str = "keywords"
+    crisis_fallback: str = "keywords"
+    
+    # Ollama settings
     ollama_endpoint: Optional[str] = "https://ollama.com/v1/chat/completions"
     ollama_api_key: Optional[str] = None
     ollama_model: Optional[str] = "gpt-oss:120b-cloud"
-    ollama_max_tokens: Optional[int] = 256
+    ollama_max_tokens: Optional[int] = 2000
     
+    # CORS
     cors_origins: list = ["http://localhost:5173", "http://localhost:3000"]
+    
+    # Engine monitoring
+    engine_health_check: bool = True
+    engine_log_switches: bool = True
     
     class Config:
         env_file = ".env"

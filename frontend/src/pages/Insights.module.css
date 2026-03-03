@@ -126,19 +126,52 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    overflow-x: hidden;
+    padding: 0;
+  }
+
+  .backgroundImage {
+    opacity: 0.2;
+  }
+
+  .contentWrapper {
+    padding: 12px;
+  }
+
+  .glassNavbar {
+    padding: 1rem 14px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .glassCard {
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .glassCard:hover {
+    transform: none;
+  }
+
+  /* Insights carousel for mobile */
   .insightsCarouselWrapper {
     overflow: hidden;
     position: relative;
+    width: 100%;
   }
 
   .swipeHint {
     display: block;
     text-align: center;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
     color: rgba(212, 175, 55, 0.5);
-    padding: 0.5rem 0;
+    padding: 0.75rem 14px;
     animation: swipeFade 3s ease forwards;
+    text-transform: uppercase;
   }
 
   @keyframes swipeFade {
@@ -161,11 +194,9 @@
     scroll-snap-type: x mandatory !important;
     -webkit-overflow-scrolling: touch;
     gap: 1rem !important;
-    padding: 0 1.5rem 1.5rem !important;
-    padding-left: 4vw !important;
+    padding: 0 12px 1rem 12px !important;
     scrollbar-width: none;
-    /* Start with the CENTRE card (index 1) visible */
-    scroll-padding-left: 1.5rem;
+    scroll-padding-left: 12px;
   }
 
   .insightsGrid::-webkit-scrollbar {
@@ -175,11 +206,11 @@
   /* Each card becomes a carousel slide */
   .insightsGrid > div,
   .glassCard {
-    flex: 0 0 92vw !important;
-    min-width: 92vw !important;
-    max-width: 92vw !important;
+    flex: 0 0 85vw !important;
+    min-width: 85vw !important;
+    max-width: 85vw !important;
     scroll-snap-align: center !important;
-    width: 92vw !important;
+    width: 85vw !important;
   }
 
   /* Carousel dot indicators */
@@ -187,17 +218,44 @@
     content: "● ● ●";
     display: block;
     text-align: center;
-    font-size: 0.4rem;
-    letter-spacing: 0.5em;
+    font-size: 0.35rem;
+    letter-spacing: 0.4em;
     color: rgba(212, 175, 55, 0.4);
     padding: 0.5rem 0;
+    margin-top: 8px;
   }
 
-  .container {
-    overflow-x: hidden;
-    padding: 1rem;
+  /* Chart adjustments for mobile */
+  svg {
+    max-width: 100%;
+    height: auto;
   }
-  .contentWrapper {
-    padding: 0.5rem;
+
+  /* Text sizing for mobile charts */
+  text {
+    font-size: clamp(9px, 2vw, 11px) !important;
+  }
+
+  /* Touch interactions */
+  .glassCard:active {
+    opacity: 0.9;
+  }
+
+  /* Stat cards stacking */
+  [class*="stat"] {
+    flex: 1;
+    min-width: 100%;
+  }
+
+  /* Legend adjustments */
+  [class*="legend"] {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  [class*="legend"] > div {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
   }
 }

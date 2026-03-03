@@ -1000,46 +1000,307 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    overflow-x: hidden;
+  }
+
   .contentWrapper {
-    padding: 0 1.25rem 3rem;
+    padding: 0 14px 3rem;
+    max-width: 100%;
   }
+
   .heroSection {
-    padding: 2.5rem 0 1.5rem;
-    gap: 1.75rem;
+    padding: 2rem 0 1.25rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
+    align-items: center;
   }
+
   .heroName {
-    font-size: 2.1rem;
+    font-size: 1.8rem;
+    margin: 0;
   }
+
   .heroStat {
     display: none;
   }
+
   .avatar {
-    width: 88px;
-    height: 88px;
-    font-size: 2.2rem;
+    width: 72px;
+    height: 72px;
+    font-size: 1.8rem;
+    min-width: 72px;
+    min-height: 72px;
   }
+
+  .avatarAtmosphere {
+    width: 100px;
+    height: 100px;
+  }
+
+  .glassCard {
+    padding: 1.25rem;
+    border-radius: 16px;
+    margin-bottom: 12px;
+  }
+
+  .glassCard:hover {
+    transform: none;
+  }
+
+  .glassCardDanger {
+    background:
+      radial-gradient(
+        80% 60% at 50% -10%,
+        rgba(180, 70, 60, 0.04) 0%,
+        transparent 100%
+      ),
+      linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+
+  .cardMeta {
+    font-size: 0.65rem;
+  }
+
+  .prefList {
+    gap: 8px;
+  }
+
+  .prefItem {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
   .emotionDisplay {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
   }
+
+  .emotionName {
+    font-size: 1.1rem;
+  }
+
+  .emotionDesc {
+    font-size: 0.8rem;
+  }
+
   .trendRow {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
+
+  .trendItem {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .trendItemLabel {
+    font-size: 0.6rem;
+  }
+
+  .trendItemValue {
+    font-size: 1.8rem;
+  }
+
+  .trendItemStatus {
+    font-size: 0.75rem;
+  }
+
+  .instrumentPanel {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .instrument {
+    padding: 1.2rem 1rem 1rem;
+    border-radius: 14px;
+  }
+
+  .instrument:hover {
+    transform: none;
+  }
+
+  .instrumentGhost {
+    font-size: 2.5rem;
+    bottom: -4px;
+    right: 4px;
+  }
+
+  .instrumentValue {
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .instrumentLabel {
+    font-size: 0.6rem;
+  }
+
+  .journalRows {
+    gap: 6px;
+  }
+
+  .journalRow {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .journalRow:hover {
+    background: rgba(212, 165, 116, 0.02);
+  }
+
+  .journalRowLabel {
+    font-size: 0.6rem;
+  }
+
+  .journalRowValue {
+    font-size: 1.2rem;
+  }
+
+  .prefLabel {
+    font-size: 0.85rem;
+  }
+
+  .prefBadge {
+    font-size: 0.7rem;
+  }
+
+  .streakCard {
+    padding: 1.25rem;
+  }
+
+  .streakNumberRow {
+    margin-bottom: 8px;
+  }
+
+  .streakNum {
+    font-size: 2.5rem;
+  }
+
+  .streakUnit {
+    font-size: 0.85rem;
+  }
+
+  .streakLabel {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  .streakCaption {
+    font-size: 0.75rem;
+  }
+
+  .sessionText,
+  .dangerText {
+    font-size: 0.75rem;
+    margin: 0 0 1rem;
+  }
+
+  .deleteBtn,
+  .editBtn {
+    padding: 8px 12px;
+    font-size: 0.65rem;
+    min-height: 36px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .formInput {
+    font-size: 14px;
+    padding: 10px;
+    min-height: 40px;
+  }
+
+  .formActions {
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .infoRow {
+    padding: 10px 0;
+    font-size: 0.9rem;
+  }
+
+  .infoLabel {
+    font-size: 0.75rem;
+  }
+
+  .infoValue {
+    font-size: 0.9rem;
+  }
+
+  /* Grid adjustments */
+  .gridLayout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .leftCol,
+  .rightCol {
+    width: 100%;
+  }
+
+  /* Touch interactions */
+  .glassCard:active {
+    opacity: 0.9;
+  }
+
+  .deleteBtn:active,
+  .editBtn:active {
+    opacity: 0.8;
+  }
+
+  /* Remove hover-only states */
+  .glassCard:hover {
+    transform: none;
+  }
+
+  .instrument:hover {
+    transform: none;
+  }
+
+  .journalRow:hover {
+    background: transparent;
+  }
+
+  .deleteBtn:hover {
+    background: transparent;
+    color: rgba(200, 90, 80, 0.6);
+  }
+
+  /* Avatar ray adjustment for mobile */
   .avatarRay::before,
   .avatarRay::after {
     -webkit-mask-image: radial-gradient(
-      ellipse 85% 85% at 18% 26%,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 0.5) 40%,
+      ellipse 70% 70% at 20% 30%,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.4) 50%,
       rgba(0, 0, 0, 0) 100%
     );
     mask-image: radial-gradient(
-      ellipse 85% 85% at 18% 26%,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 0.5) 40%,
+      ellipse 70% 70% at 20% 30%,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.4) 50%,
       rgba(0, 0, 0, 0) 100%
     );
+  }
+
+  /* Reduce glow intensity on mobile */
+  .ambientGlow {
+    width: 600px;
+    height: 400px;
   }
 }
 

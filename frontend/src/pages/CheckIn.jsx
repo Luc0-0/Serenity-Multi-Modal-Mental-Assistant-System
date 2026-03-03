@@ -619,15 +619,13 @@ export function CheckIn() {
                 <div ref={chatEndRef} />
               </div>
 
-              {showInsights && (
-                <aside className={styles.insightsPanel}>
-                  <EmotionalStatusCard
-                    emotionData={emotionData}
-                    isLoading={emotionLoading}
-                    onClose={() => setShowInsights(false)}
-                  />
-                </aside>
-              )}
+              <aside className={`${styles.insightsPanel} ${showInsights ? styles.insightsPanelOpen : ''}`}>
+                <EmotionalStatusCard
+                  emotionData={emotionData}
+                  isLoading={emotionLoading}
+                  onClose={() => setShowInsights(false)}
+                />
+              </aside>
             </div>
 
             {/* Insights toggle */}

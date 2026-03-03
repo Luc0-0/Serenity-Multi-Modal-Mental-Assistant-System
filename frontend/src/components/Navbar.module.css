@@ -1,0 +1,141 @@
+/* 
+  Global Navbar - Hybrid Design 
+  Layout/Size: Compact (from Insights)
+  Style/Typography: Cormorant Garamond / Gold (from CheckIn)
+*/
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 3rem;
+    background: rgba(10, 10, 11, 0.15);
+    /* Significantly more transparent */
+    backdrop-filter: blur(16px);
+    /* Increased blur for better readability */
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    /* Subtle border */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    /* Soft shadow for depth */
+}
+
+/* Logo Section */
+.logo {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.5rem;
+    color: #d4cfc0;
+    /* Beige/Gold from CheckIn */
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-shadow: 0 0 20px rgba(196, 168, 130, 0.2);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Navigation Links Container */
+.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+/* Individual Link - CheckIn Style */
+.navLink {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 17px;
+    /* Sizing from CheckIn */
+    font-weight: 400;
+    color: #a0a0a0;
+    /* Muted default */
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.navLink.active {
+    color: #d4cfc0;
+    /* Active gold */
+}
+
+/* CheckIn Underline Effect */
+.navLink::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: linear-gradient(to right, #d4cfc0, transparent);
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.navLink:hover {
+    color: #f0ede3;
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+.navLink.active::after {
+    width: 100%;
+    background: linear-gradient(to right, #d4cfc0, rgba(212, 207, 192, 0.2));
+}
+
+/* Resources Dropdown - From CheckIn */
+.resourcesDropdown {
+    background: none;
+    border: none;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: #a0a0a0;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.4s;
+    padding: 0;
+}
+
+.resourcesDropdown:hover {
+    color: #f0ede3;
+}
+
+/* Settings Icon - Simple Gear from Insights */
+.settingsButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #a0a0a0;
+    font-size: 1.2rem;
+    /* Adjusted for balance */
+    transition: all 0.3s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settingsButton:hover {
+    color: #f0ede3;
+    transform: rotate(45deg);
+}
+
+/* Right Side Group */
+.rightGroup {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}

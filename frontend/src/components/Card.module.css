@@ -1,0 +1,41 @@
+.card {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--spacing-3);
+  transition: all var(--transition-base);
+}
+
+/* Subtle variant - just background shift */
+.subtle {
+  border: none;
+}
+
+/* Bordered variant - soft border */
+.bordered {
+  border: 1px solid var(--color-border);
+  background-color: rgba(22, 22, 27, 0.5);
+}
+
+/* Elevated variant - with shadow */
+.elevated {
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Padding options */
+.padding-sm {
+  padding: var(--spacing-4);
+}
+
+.padding-base {
+  padding: var(--spacing-6);
+}
+
+.padding-lg {
+  padding: var(--spacing-8);
+}
+
+/* Hover effect for interactive cards */
+.card:hover {
+  border-color: var(--color-accent-primary);
+  border-color: rgba(212, 175, 55, 0.2);
+}

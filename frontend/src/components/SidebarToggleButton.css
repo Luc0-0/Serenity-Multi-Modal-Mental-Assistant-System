@@ -1,0 +1,48 @@
+/* 
+  SIDEBAR TOGGLE BUTTON - THIN ARROW
+  Always visible at top-left, fixed position
+  Luxury minimal design, no emojis
+*/
+
+.sidebarArrowButton {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  width: 32px;
+  height: 32px;
+  background: rgba(26, 22, 18, 0.6);
+  border: 1px solid rgba(196, 168, 130, 0.3);
+  border-radius: 6px;
+  color: #d4cfc0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 170;
+}
+
+.sidebarArrowButton:hover {
+  border-color: rgba(196, 168, 130, 0.6);
+  background: rgba(26, 22, 18, 0.8);
+  color: #f0ede3;
+}
+
+.sidebarArrowButton:active {
+  background: rgba(26, 22, 18, 0.95);
+  transform: scale(0.95);
+}
+
+.sidebarArrowButton.open svg {
+  transform: rotate(0deg);
+}
+
+.sidebarArrowButton.closed svg {
+  transform: rotate(180deg);
+}
+
+.sidebarArrowButton svg {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 14px;
+  height: 14px;
+}

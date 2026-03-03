@@ -1,0 +1,191 @@
+/* Error Boundary Styles */
+
+.errorBoundary {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-base);
+  padding: 20px;
+}
+
+.errorBoundaryContent {
+  max-width: 500px;
+  text-align: center;
+  padding: 40px 32px;
+  background: rgba(26, 22, 18, 0.4);
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: slideInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.errorBoundaryIcon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background: rgba(220, 130, 130, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 28px;
+  color: rgba(220, 130, 130, 0.8);
+}
+
+.errorBoundaryTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: #d9ceb0;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.errorBoundarySubtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: #bda17b;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+/* Error Details (Development) */
+.errorDetails {
+  margin: 24px 0;
+  text-align: left;
+}
+
+.errorStack {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(196, 168, 130, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.errorStack summary {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: #bda17b;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.errorStack summary:hover {
+  color: #d9ceb0;
+}
+
+.errorMessage,
+.errorStack {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(189, 161, 123, 0.7);
+  margin: 12px 0 0 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Action Buttons */
+.errorActions {
+  display: flex;
+  gap: 12px;
+  margin: 28px 0 24px 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.errorActionBtn {
+  padding: 12px 24px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: none;
+}
+
+.errorActionBtn--primary {
+  background: linear-gradient(135deg, rgba(212, 181, 110, 0.15), rgba(184, 148, 79, 0.1));
+  border-color: rgba(212, 181, 110, 0.4);
+  color: #d9ceb0;
+}
+
+.errorActionBtn--primary:hover {
+  background: linear-gradient(135deg, rgba(212, 181, 110, 0.25), rgba(184, 148, 79, 0.15));
+  border-color: rgba(212, 181, 110, 0.6);
+  box-shadow: 0 0 20px rgba(212, 181, 110, 0.2);
+}
+
+.errorActionBtn--secondary {
+  background: transparent;
+  border-color: rgba(196, 168, 130, 0.3);
+  color: #bda17b;
+}
+
+.errorActionBtn--secondary:hover {
+  background: rgba(196, 168, 130, 0.1);
+  border-color: rgba(196, 168, 130, 0.5);
+  color: #d9ceb0;
+}
+
+/* Support Message */
+.errorSupport {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: rgba(189, 161, 123, 0.7);
+  margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.005em;
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .errorBoundaryContent {
+    padding: 28px 20px;
+  }
+
+  .errorBoundaryTitle {
+    font-size: 24px;
+  }
+
+  .errorBoundarySubtitle {
+    font-size: 14px;
+  }
+
+  .errorActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .errorActionBtn {
+    width: 100%;
+  }
+}

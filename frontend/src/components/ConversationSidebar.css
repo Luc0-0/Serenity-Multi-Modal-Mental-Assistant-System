@@ -1,0 +1,230 @@
+/* 
+  SERENITY CONVERSATION SIDEBAR
+  Overlay drawer with collapsible arrow button
+  Luxury minimal design, smooth animations
+*/
+
+.conversationSidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 320px;
+  height: 100vh;
+  background: rgba(5, 5, 5, 0.7);
+  border-right: 1px solid rgba(196, 168, 130, 0.2);
+  display: flex;
+  flex-direction: column;
+  z-index: 160;
+  transform: translateX(-100%);
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  visibility: hidden;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.conversationSidebar.open {
+  transform: translateX(0);
+  visibility: visible;
+  background: rgba(5, 5, 5, 0.85);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.sidebarHeader {
+  position: relative;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.1);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 70px;
+}
+
+.sidebarHeader h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  color: #d9ceb0;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* New Conversation Button */
+.newConvBtn {
+  margin: 12px 16px;
+  padding: 10px 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 181, 110, 0.15),
+    rgba(184, 148, 79, 0.1)
+  );
+  border: 1px solid rgba(212, 181, 110, 0.4);
+  border-radius: 6px;
+  color: #d9ceb0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.newConvBtn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 181, 110, 0.25),
+    rgba(184, 148, 79, 0.15)
+  );
+  border-color: rgba(212, 181, 110, 0.6);
+  box-shadow: 0 0 16px rgba(212, 181, 110, 0.15);
+}
+
+.newConvBtn:active {
+  transform: scale(0.98);
+}
+
+/* Conversations List */
+.conversationsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loadingText,
+.emptyText {
+  text-align: center;
+  color: #bda17b;
+  font-size: 13px;
+  padding: 20px 16px;
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+
+/* Conversation Item */
+.conversationItem {
+  padding: 12px 12px;
+  margin-bottom: 0;
+  background: rgba(26, 22, 18, 0.3);
+  border: 1px solid rgba(196, 168, 130, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.conversationItem:hover {
+  background: rgba(26, 22, 18, 0.5);
+  border-color: rgba(196, 168, 130, 0.3);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.conversationItem.active {
+  background: rgba(212, 181, 110, 0.1);
+  border-color: rgba(212, 181, 110, 0.4);
+  box-shadow: 0 0 12px rgba(212, 181, 110, 0.1);
+}
+
+/* Conversation Content */
+.convContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.convTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  color: #d9ceb0;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+.convDate {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 11px;
+  color: #bda17b;
+  margin: 0;
+  letter-spacing: 0.005em;
+  opacity: 0.8;
+}
+
+/* Delete Button */
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #bda17b;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 4px;
+}
+
+.conversationItem:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  color: #d9a0a0;
+  background: rgba(217, 160, 160, 0.1);
+}
+
+.deleteBtn:active {
+  transform: scale(0.9);
+}
+
+/* Scrollbar Styling */
+.conversationsList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.conversationsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversationsList::-webkit-scrollbar-thumb {
+  background: rgba(196, 168, 130, 0.2);
+  border-radius: 2px;
+}
+
+.conversationsList::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 168, 130, 0.4);
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   RESPONSIVE
+   ━━━━━━━━━━━━━━━━━━ */
+
+@media (max-width: 768px) {
+  .conversationSidebar {
+    width: 280px;
+  }
+
+  .convTitle {
+    font-size: 13px;
+  }
+
+  .newConvBtn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { journalService } from "../services/journalService";
 import { Button } from "../components/Button";
 import EntryDetailModal from "../components/EntryDetailModal";
@@ -79,21 +80,36 @@ const formatEmotionText = (value) => {
 };
 
 const normalizeEntryTags = (value) => {
-  const clean = (tag) => {
-    if (tag === null || tag === undefined) return null;
-    const text = String(tag).trim();
-    if (
-      !text ||
-      ["null", "none", "undefined", "[]"].includes(text.toLowerCase())
-    )
-      return null;
-    return text;
-  };
-  if (Array.isArray(value)) return value.map(clean).filter(Boolean);
-  if (typeof value === "string" && value.trim())
-    return value.split(",").map(clean).filter(Boolean);
-  return [];
-};
+   const clean = (tag) => {
+     if (tag === null || tag === undefined) return null;
+     let text = String(tag).trim();
+     // Remove escaped quotes and brackets
+     text = text.replace(/^\["/, "").replace(/"\]$/, "").replace(/["\[\]\\]/g, "");
+     text = text.trim();
+     if (
+       !text ||
+       ["null", "none", "undefined", "[]"].includes(text.toLowerCase())
+     )
+       return null;
+     return text.toLowerCase();
+   };
+   
+   let tags = [];
+   if (Array.isArray(value)) {
+     tags = value.map(clean).filter(Boolean);
+   } else if (typeof value === "string" && value.trim()) {
+     try {
+       // Try parsing as JSON first
+       const parsed = JSON.parse(value);
+       tags = Array.isArray(parsed) ? parsed.map(clean).filter(Boolean) : [clean(value)];
+     } catch {
+       tags = value.split(",").map(clean).filter(Boolean);
+     }
+   }
+   
+   // Deduplicate
+   return [...new Set(tags)];
+ };
 
 // ── SVG face builders ────────────────────────────────────────────────────────
 const createSphereBase = (key, color) => {
@@ -792,7 +808,11 @@ export function Journal() {
                     </div>
 
                     {/* Content preview */}
-                    <p className={styles.entryContent}>{entry.content}</p>
+                     <div className={styles.entryContent}>
+                       <ReactMarkdown>
+                         {entry.content || ""}
+                       </ReactMarkdown>
+                     </div>
 
                     {/* Footer: chips left, tags right */}
                     <div className={styles.entryFooter}>

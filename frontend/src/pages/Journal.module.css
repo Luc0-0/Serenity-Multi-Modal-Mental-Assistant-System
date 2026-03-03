@@ -626,8 +626,11 @@
 }
 
 .textArea:focus {
-  border-color: rgba(200, 164, 106, 0.4);
-  box-shadow: 0 0 0 3px rgba(200, 164, 106, 0.06);
+  border-color: rgba(200, 164, 106, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(200, 164, 106, 0.3),
+    0 0 20px rgba(200, 164, 106, 0.12),
+    inset 0 0 12px rgba(200, 164, 106, 0.05);
 }
 
 .wordCount {

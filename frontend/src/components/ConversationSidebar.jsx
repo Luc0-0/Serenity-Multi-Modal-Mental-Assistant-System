@@ -128,12 +128,11 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Desktop Conversation History Bar — left-aligned dropdown */}
-      <div
-        className={`desktopConversationBar ${isDesktopExpanded ? "expanded" : "collapsed"}`}
-      >
+      {/* Desktop Conversation Dropdown — New Design */}
+      <div className={`desktopConversationWrapper ${isDesktopExpanded ? "expanded" : "collapsed"}`}>
+        {/* Pill Trigger */}
         <button
-          className={`triggerPill ${isDesktopExpanded ? "open" : "closed"}`}
+          className={`conversationPill ${isDesktopExpanded ? "open" : "closed"}`}
           onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
           aria-label={
             isDesktopExpanded
@@ -144,56 +143,56 @@ export function ConversationSidebar({
           Conversations {isDesktopExpanded ? "▴" : "▾"}
         </button>
 
-        {/* Expanded conversation list dropdown */}
-        <div
-          className={`desktopBarExpanded ${isDesktopExpanded ? "visible" : "hidden"}`}
-        >
-          <div className="desktopConvList">
-            {loading ? (
-              <p className="loadingText">Loading...</p>
-            ) : conversations.length === 0 ? (
-              <p className="emptyText">No conversations yet</p>
-            ) : (
-              conversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={`desktopConvItem ${currentConversationId === conv.id ? "active" : ""}`}
-                  onClick={() => {
-                    onSelectConversation(conv.id);
-                    setIsDesktopExpanded(false);
-                  }}
-                >
-                  <div className="convContent">
-                    <p className="convTitle">{getConversationTitle(conv)}</p>
-                    <p className="convDate">
-                      {formatConversationDate(
-                        conv.updated_at || conv.created_at,
-                      )}
-                    </p>
-                  </div>
-                  <button
-                    className="deleteBtn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteConversation(conv.id);
+        {/* Dropdown Panel — Only visible when expanded */}
+        {isDesktopExpanded && (
+          <div className="desktopDropdownPanel">
+            <div className="desktopConvList">
+              {loading ? (
+                <p className="loadingText">Loading...</p>
+              ) : conversations.length === 0 ? (
+                <p className="emptyText">No conversations yet</p>
+              ) : (
+                conversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className={`desktopConvItem ${currentConversationId === conv.id ? "active" : ""}`}
+                    onClick={() => {
+                      onSelectConversation(conv.id);
+                      setIsDesktopExpanded(false);
                     }}
                   >
-                    <TrashIcon />
-                  </button>
-                </div>
-              ))
-            )}
+                    <div className="convContent">
+                      <p className="convTitle">{getConversationTitle(conv)}</p>
+                      <p className="convDate">
+                        {formatConversationDate(
+                          conv.updated_at || conv.created_at,
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      className="deleteBtn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteConversation(conv.id);
+                      }}
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <button
+              className="newConvBtnDesktop"
+              onClick={() => {
+                onNewConversation();
+                setIsDesktopExpanded(false);
+              }}
+            >
+              + New
+            </button>
           </div>
-          <button
-            className="newConvBtnDesktop"
-            onClick={() => {
-              onNewConversation();
-              setIsDesktopExpanded(false);
-            }}
-          >
-            + New
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Ancient Scroll Toggle — Desktop only (now hidden, kept for backward compat) */}

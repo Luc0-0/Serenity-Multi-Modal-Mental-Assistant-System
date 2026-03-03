@@ -155,26 +155,29 @@ export const parseEmotionData = (detectedEmotions) => {
 };
 
 /**
+ * Canonical emotion color palette for the app.
+ * Use these for all emotion-based visuals to keep the system consistent.
+ */
+export const EMOTION_COLORS = {
+  joy: '#c4a882',          // warm cream/gold
+  sadness: '#6b7f8e',      // muted slate blue
+  anger: '#9e6b6b',        // muted mauve/burgundy
+  anxiety: '#b8956a',      // warm tan
+  fear: '#8b7ba8',         // soft muted purple
+  surprise: '#7a9e8b',     // soft sage/teal
+  disgust: '#8b9570',      // muted olive
+  trust: '#a8b89a',        // soft sage cream
+  anticipation: '#7a9eb5', // muted teal
+  neutral: '#8a8a7e',      // warm taupe gray
+};
+
+/**
  * Get visualization color.
  * @param {string} emotion - Label
- * @param {number} score - Intensity
+ * @param {number} score - Intensity (reserved for future tuning)
  */
 export const getEmotionColor = (emotion, score = 0.5) => {
-  const colors = {
-    joy: '#c4a882',        // warm cream/gold
-    sadness: '#6b7f8e',    // muted slate blue
-    anger: '#9e6b6b',      // muted mauve/burgundy
-    anxiety: '#b8956a',    // warm tan
-    fear: '#8b7ba8',       // soft muted purple
-    surprise: '#7a9e8b',   // soft sage/teal
-    disgust: '#8b9570',    // muted olive
-    trust: '#a8b89a',      // soft sage cream
-    anticipation: '#7a9eb5', // muted teal
-    neutral: '#8a8a7e',    // warm taupe gray
-  };
-
-  const baseColor = colors[emotion] || '#9a9a8e';
-  return baseColor;
+  return EMOTION_COLORS[emotion] || '#9a9a8e';
 };
 
 /**

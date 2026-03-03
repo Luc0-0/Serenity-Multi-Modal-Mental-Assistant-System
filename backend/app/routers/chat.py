@@ -8,6 +8,7 @@ from app.services.conversation_service import ConversationService
 from app.services.journal_service import JournalService
 from app.services.emotion_analytics_service import EmotionAnalyticsService
 from app.services.context_manager import ContextManager
+from app.services.memory_service import memory_service
 from app.db.session import get_db
 import app.main as main_app
 
@@ -99,32 +100,26 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     except Exception as e:
         print(f"✗ Failed to log emotion: {str(e)}")
     
-    # AI-based journal extraction (analyze last 5-10 messages)
+    # AI-based journal extraction (conversation-level, LLM-only)
     try:
-        should_extract, ai_summary, confidence = await journal_service.should_create_entry_ai(
-            ollama_service=main_app.llm_service,
-            conversation_history=history,
+        summary = " ".join([m.get("content", "")[:100] for m in history[-3:]])
+        should_extract = await main_app.llm_service.should_create_journal_entry(
+            conversation_summary=summary,
             user_message=request.message,
-            emotion_label=emotion["label"]
         )
         
-        # Only extract if confidence is acceptable
-        if should_extract and confidence > 0.5:
-            await journal_service.create_entry(
+        if should_extract:
+            # Use conversation-level extraction with LLM-generated content
+            await journal_service.create_or_update_entry(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
-                message_id=user_message_id, message_text=request.message,
+                conversation_history=history + [{"role": "user", "content": request.message}],
                 emotion_label=emotion["label"],
-                ai_summary=ai_summary,
-                ai_confidence=confidence,
-                extraction_method="ai"
+                llm_service=main_app.llm_service,
+                ai_confidence=0.95
             )
-            logger.info(f"[JOURNAL] Extracted entry with confidence {confidence:.2f}")
-        else:
-            logger.debug(f"[JOURNAL] Skipped extraction: extract={should_extract}, confidence={confidence:.2f}")
+            logger.info("[JOURNAL] Entry created/updated via LLM conversation analysis")
     except Exception as e:
-        logger.warning(f"✗ Failed to create journal entry (AI extraction): {str(e)}")
-        import traceback
-        logger.warning(traceback.format_exc())
+        logger.warning(f"Journal extraction failed: {str(e)}")
     
     try:
         insight = await emotion_analytics_service.generate_user_insights(
@@ -141,6 +136,27 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     except Exception as e:
         logger.warning(f"Analytics failed (non-blocking): {str(e)}")
         insight = None
+
+    # Store semantic memory only after we know the message id / emotion context
+    try:
+        await memory_service.maybe_store_semantic_memory(
+            db=db,
+            user_id=request.user_id,
+            conversation_id=conversation_id,
+            message_id=user_message_id,
+            message_text=request.message,
+            emotion_label=emotion.get("label") if emotion else None,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to capture semantic memory: {str(e)}")
+
+    memory_bundle = await memory_service.build_memory_bundle(
+        db=db,
+        user_id=request.user_id,
+        conversation_id=conversation_id,
+        history=history,
+        user_message=request.message,
+    )
     
     logger.info(f"[DEBUG] History: {len(history)} messages")
     if history:
@@ -151,7 +167,8 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         user_message=request.message,
         conversation_history=history,
         emotional_insight=insight,
-        crisis_detected=insight.high_risk if insight else False
+        crisis_detected=insight.high_risk if insight else False,
+        memory_bundle=memory_bundle,
     )
     
     # Log interaction context
@@ -194,7 +211,7 @@ async def chat_stream_endpoint(request: ChatRequest, db: AsyncSession = Depends(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-    crisis_assessment = await crisis_service.assess_threat(
+    crisis_assessment = await main_app.crisis_service.assess_threat(
         message=request.message,
         emotion_label=None,
         conversation_history=None,
@@ -206,21 +223,21 @@ async def chat_stream_endpoint(request: ChatRequest, db: AsyncSession = Depends(
             db, conversation_id, "user", request.message
         )
         try:
-            emotion = await emotion_service.detect_emotion(request.message)
-            await emotion_service.log_emotion(
+            emotion = await main_app.emotion_service.detect_emotion(request.message)
+            await main_app.emotion_service.log_emotion(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
                 confidence=emotion["confidence"]
             )
         except Exception as e:
-            print(f"Failed to log emotion in crisis response: {str(e)}")
+            logger.warning(f"Failed to log emotion in crisis response: {str(e)}")
         try:
-            await crisis_service.log_crisis_event(
+            await main_app.crisis_service.log_crisis_event(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
                 message_id=user_message_id, assessment=crisis_assessment
             )
         except Exception as e:
-            print(f"Failed to log crisis event: {str(e)}")
+            logger.warning(f"Failed to log crisis event: {str(e)}")
         await db.commit()
         
         async def crisis_generator():
@@ -231,42 +248,51 @@ async def chat_stream_endpoint(request: ChatRequest, db: AsyncSession = Depends(
             yield f"data: __CRISIS__{crisis_assessment['severity']}__{len(crisis_assessment.get('resources', []))}\n\n"
         
         return StreamingResponse(crisis_generator(), media_type="text/event-stream")
-        
-        # Retrieve optimized conversation history (hierarchical context management)
-        history = await context_manager.get_optimized_history(
-        db, conversation_id
-        )
     
+    history = await context_manager.get_optimized_history(
+        db, conversation_id
+    )
     user_message_id = await conversation_service.save_message(
         db, conversation_id, "user", request.message
     )
-    await db.commit()  # Commit immediately
+    await db.commit()
     
     if request.conversation_id is None:
-        await conversation_service.auto_title_conversation(
-            db, conversation_id, request.message
-        )
+        try:
+            title = await main_app.llm_service.generate_title(request.message)
+            await conversation_service.update_conversation_title(db, conversation_id, title)
+        except Exception as e:
+            logger.warning(f"Failed to generate title: {str(e)}")
     
     emotion = {"label": "neutral", "confidence": 0.5}
     try:
-        emotion = await emotion_service.detect_emotion(request.message)
-        await emotion_service.log_emotion(
+        emotion = await main_app.emotion_service.detect_emotion(request.message)
+        await main_app.emotion_service.log_emotion(
             db=db, user_id=request.user_id, conversation_id=conversation_id,
             message_id=user_message_id, label=emotion["label"],
             confidence=emotion["confidence"]
         )
     except Exception as e:
-        print(f"Failed to log emotion: {str(e)}")
+        logger.warning(f"Failed to log emotion: {str(e)}")
     
     try:
-        if journal_service.should_create_entry(request.message, emotion["label"]):
-            await journal_service.create_entry(
+        summary = " ".join([m.get("content", "")[:100] for m in history[-3:]])
+        should_extract = await main_app.llm_service.should_create_journal_entry(
+            conversation_summary=summary,
+            user_message=request.message,
+        )
+        
+        if should_extract:
+            await journal_service.create_or_update_entry(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
-                message_id=user_message_id, message_text=request.message,
-                emotion_label=emotion["label"]
+                conversation_history=history + [{"role": "user", "content": request.message}],
+                emotion_label=emotion["label"],
+                llm_service=main_app.llm_service,
+                ai_confidence=0.95
             )
+            logger.info("[JOURNAL] Entry created/updated via LLM conversation analysis (stream)")
     except Exception as e:
-        print(f"Failed to create journal entry: {str(e)}")
+        logger.warning(f"Journal extraction failed: {str(e)}")
     
     try:
         insight = await emotion_analytics_service.generate_user_insights(
@@ -283,22 +309,32 @@ async def chat_stream_endpoint(request: ChatRequest, db: AsyncSession = Depends(
         logger.warning(f"Analytics failed (non-blocking): {str(e)}")
         insight = None
     
-    logger.info(f"[DEBUG] History: {len(history)} messages")
-    if history:
-        logger.info(f"[DEBUG] Last history message: role={history[-1].get('role')}, content_len={len(history[-1].get('content', ''))}")
-    logger.info(f"[DEBUG] Current user message: {request.message[:50]}...")
+    try:
+        await memory_service.maybe_store_semantic_memory(
+            db=db,
+            user_id=request.user_id,
+            conversation_id=conversation_id,
+            message_id=user_message_id,
+            message_text=request.message,
+            emotion_label=emotion.get("label") if emotion else None,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to capture semantic memory: {str(e)}")
     
-    reply = await ollama_service.get_response(
+    memory_bundle = await memory_service.build_memory_bundle(
+        db=db,
+        user_id=request.user_id,
+        conversation_id=conversation_id,
+        history=history,
+        user_message=request.message,
+    )
+    
+    reply = await main_app.llm_service.get_response(
         user_message=request.message,
         conversation_history=history,
         emotional_insight=insight,
-        crisis_detected=insight.high_risk if insight else False
-    )
-    
-    logger.info(
-        f"[CHAT] user={request.user_id} | "
-        f"emotion={insight.dominant_emotion if insight else 'unknown'} | "
-        f"response_len={len(reply)}"
+        crisis_detected=insight.high_risk if insight else False,
+        memory_bundle=memory_bundle,
     )
     
     assistant_message_id = await conversation_service.save_message(

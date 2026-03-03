@@ -1,104 +1,135 @@
-/* ─── VARIABLES ─── */
+/* ─── LUXURY VARIABLES ─── */
 :root {
-  --deck-width: 280px;
-  --deck-bg: rgba(13, 10, 8, 0.92); /* Deep warm black */
-  --deck-border: rgba(196, 168, 130, 0.12); /* Muted gold */
-  --deck-gold: #d4a574;
-  --deck-text-main: #e8dece;
-  --deck-text-muted: rgba(232, 222, 206, 0.5);
-  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+  --deck-width: 300px;
+
+  /* The "Smoked Obsidian" Palette */
+  --deck-glass-start: rgba(20, 16, 14, 0.85);
+  --deck-glass-end: rgba(10, 8, 6, 0.96);
+
+  /* Metallic Accents */
+  --gold-primary: #d4a574;
+  --gold-muted: rgba(212, 165, 116, 0.5);
+  --gold-faint: rgba(212, 165, 116, 0.15);
+
+  /* Typography */
+  --font-display: "Playfair Display", serif;
+  --font-body: "Cormorant Garamond", serif;
+  --font-meta: "Inter", sans-serif;
+
+  /* Animation */
+  --ease-cinematic: cubic-bezier(
+    0.19,
+    1,
+    0.22,
+    1
+  ); /* "Expo" ease for premium feel */
 }
 
-/* ─── 1. THE GLASS WHISPER TAB (Visual Cue) ─── */
-.deck-tab-trigger {
+/* ─── 1. TRIGGER ZONE ─── */
+.deck-trigger-zone {
   position: fixed;
   top: 0;
   left: 0;
-  width: 40px; /* Hit area width */
+  width: 50px;
   height: 100vh;
   z-index: 2000;
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Align tab to left edge */
   cursor: pointer;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
 }
 
-.deck-tab-trigger.hidden {
+.deck-trigger-zone.hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-/* The visible "pill" inside the trigger area */
-.tab-glass {
-  width: 24px;
-  height: 64px;
-  background: rgba(255, 255, 255, 0.03);
+/* The Glass Pill */
+.trigger-pill {
+  width: 28px;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(196, 168, 130, 0.15);
-  border-right: 1px solid rgba(196, 168, 130, 0.15);
-  border-bottom: 1px solid rgba(196, 168, 130, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-left: none;
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 16px 16px 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(196, 168, 130, 0.5);
-  transition: all 0.4s var(--ease-luxury);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-
-  /* Subtle breathing animation to invite click */
-  animation: tabBreathe 4s infinite ease-in-out;
+  color: var(--gold-muted);
+  transition: all 0.5s var(--ease-cinematic);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes tabBreathe {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: translateX(0);
-  }
-  50% {
-    opacity: 0.9;
-    transform: translateX(2px);
-    box-shadow: 0 0 15px rgba(196, 168, 130, 0.15);
-  }
+.deck-trigger-zone:hover .trigger-pill {
+  width: 36px;
+  background: rgba(20, 16, 14, 0.6);
+  color: var(--gold-primary);
+  border-color: var(--gold-muted);
+  box-shadow: 0 0 20px rgba(212, 165, 116, 0.15);
 }
 
-/* Hover effect for the Tab */
-.deck-tab-trigger:hover .tab-glass {
-  width: 32px;
-  background: rgba(196, 168, 130, 0.1);
-  color: var(--deck-gold);
-  border-color: rgba(196, 168, 130, 0.4);
-  animation: none; /* Stop breathing on hover */
-  opacity: 1;
-}
-
-/* ─── 2. THE DRAWER (Sidebar) ─── */
+/* ─── 2. THE DRAWER ─── */
 .deck-drawer {
   position: fixed;
   top: 0;
   left: 0;
   width: var(--deck-width);
   height: 100vh;
-  background: var(--deck-bg);
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  border-right: 1px solid var(--deck-border);
   z-index: 2001;
-  padding: 28px 20px;
   display: flex;
   flex-direction: column;
 
-  /* Smooth Slide Logic */
-  transform: translateX(-105%); /* Hidden */
-  transition: transform 0.6s var(--ease-luxury);
-  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.4);
+  /* The Smoked Glass Background */
+  background: linear-gradient(
+    180deg,
+    var(--deck-glass-start) 0%,
+    var(--deck-glass-end) 100%
+  );
+
+  /* Deep Blur */
+  backdrop-filter: blur(40px) saturate(120%);
+  -webkit-backdrop-filter: blur(40px) saturate(120%);
+
+  /* The "Light Catching" Right Border (Gradient) */
+  border-right: 1px solid transparent;
+  border-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.02) 40%,
+      transparent
+    )
+    1;
+
+  transform: translateX(-105%);
+  transition: transform 0.8s var(--ease-cinematic);
+  box-shadow: 20px 0 80px rgba(0, 0, 0, 0.6);
 }
 
 .deck-drawer.open {
   transform: translateX(0);
+}
+
+/* ─── NOISE TEXTURE ─── */
+/* This is crucial for the "Smoked" look */
+.deck-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.deck-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ─── HEADER ─── */
@@ -107,178 +138,176 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(196, 168, 130, 0.08);
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.1);
 }
 
-.deck-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.25rem;
-  color: var(--deck-gold);
-  letter-spacing: 0.04em;
+.deck-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold-primary);
+  letter-spacing: 0.02em;
   font-weight: 500;
-  text-shadow: 0 0 20px rgba(212, 165, 116, 0.2);
+  background: linear-gradient(135deg, #e8dece 0%, #d4a574 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(212, 165, 116, 0.2));
 }
 
-/* Pin Button */
-.pin-btn {
+/* Luxury Pin Button */
+.deck-pin-btn {
   background: transparent;
   border: none;
   color: rgba(196, 168, 130, 0.3);
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
 }
 
-.pin-btn:hover {
-  color: var(--deck-gold);
-  background: rgba(196, 168, 130, 0.08);
-  transform: scale(1.05);
+.deck-pin-btn:hover {
+  color: var(--gold-primary);
+  background: rgba(196, 168, 130, 0.05);
+  transform: translateY(-2px);
 }
 
-.pin-btn.active {
-  color: var(--deck-gold);
-  background: rgba(196, 168, 130, 0.15);
-  box-shadow: inset 0 0 10px rgba(196, 168, 130, 0.05);
+.deck-pin-btn.active {
+  color: var(--gold-primary);
+  background: rgba(196, 168, 130, 0.1);
+  box-shadow: inset 0 0 15px rgba(196, 168, 130, 0.05);
 }
 
-/* ─── NEW BUTTON ─── */
+/* ─── NEW CHAT BUTTON ─── */
 .deck-new-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   width: 100%;
-  padding: 14px;
-  margin-bottom: 28px;
+  padding: 16px;
+  margin-bottom: 32px;
+  /* Glass gradient button */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.03),
     rgba(255, 255, 255, 0)
   );
-  border: 1px solid rgba(196, 168, 130, 0.15);
-  border-radius: 8px;
-  color: var(--deck-text-main);
-  font-family: "Cormorant Garamond", serif;
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 4px; /* Keeping it sharp/classic */
+
+  color: #e8dece;
+  font-family: var(--font-display);
   font-size: 1.05rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s var(--ease-cinematic);
 }
 
 .deck-new-btn:hover {
   background: rgba(196, 168, 130, 0.08);
-  border-color: rgba(196, 168, 130, 0.3);
+  border-color: var(--gold-primary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  color: #fff;
 }
 
 .deck-new-btn:active {
   transform: scale(0.98);
 }
 
-/* ─── LIST AREA ─── */
+/* ─── LIST ─── */
 .deck-list {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 4px; /* Space for scrollbar */
+  gap: 4px;
+  padding-right: 4px;
 }
 
-/* Custom Scrollbar */
+/* Thin Gold Scrollbar */
 .deck-list::-webkit-scrollbar {
-  width: 3px;
-}
-.deck-list::-webkit-scrollbar-track {
-  background: transparent;
+  width: 2px;
 }
 .deck-list::-webkit-scrollbar-thumb {
-  background: rgba(196, 168, 130, 0.1);
-  border-radius: 4px;
-}
-.deck-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(196, 168, 130, 0.25);
+  background: rgba(196, 168, 130, 0.2);
 }
 
-/* Status Text (Empty/Loading) */
 .deck-status {
   text-align: center;
-  padding: 40px 10px;
-  color: var(--deck-text-muted);
-  font-family: "Cormorant Garamond", serif;
+  padding: 40px 0;
+  color: rgba(232, 222, 206, 0.4);
+  font-family: var(--font-body);
   font-style: italic;
-  font-size: 0.95rem;
 }
 
-/* ─── LIST ITEMS ─── */
+/* ─── ITEMS ─── */
 .deck-item {
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  border-radius: 6px;
+  padding: 16px 14px;
+  border-radius: 4px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.25s ease;
+  transition: all 0.4s ease;
 }
 
 .deck-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .deck-item.active {
-  background: rgba(196, 168, 130, 0.08);
-  border-color: rgba(196, 168, 130, 0.18);
+  background: linear-gradient(90deg, rgba(196, 168, 130, 0.08), transparent);
+  border-left: 2px solid var(--gold-primary);
 }
 
-/* Text Content */
 .item-content {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   overflow: hidden;
   flex: 1;
 }
 
 .item-title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.1rem;
-  color: var(--deck-text-main);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #e8dece;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.deck-item.active .item-title {
+  color: var(--gold-primary);
 }
 
 .item-date {
-  font-family: "Inter", sans-serif; /* Clean sans-serif for tiny dates */
-  font-size: 0.65rem;
-  color: var(--deck-text-muted);
+  font-family: var(--font-meta);
+  font-size: 0.6rem;
+  color: rgba(232, 222, 206, 0.4);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
 }
 
-/* Delete Button */
+/* Delete Action */
 .item-delete {
   background: transparent;
   border: none;
-  color: rgba(200, 100, 100, 0.6);
+  color: rgba(180, 100, 100, 0.5);
   cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
+  padding: 8px;
   opacity: 0;
   transform: translateX(10px);
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  display: flex;
-  align-items: center;
+  transition: all 0.4s var(--ease-cinematic);
 }
 
 .deck-item:hover .item-delete {
@@ -287,6 +316,6 @@
 }
 
 .item-delete:hover {
-  background: rgba(200, 100, 100, 0.1);
-  color: #ff8888;
+  color: #ff9999;
+  transform: scale(1.1);
 }

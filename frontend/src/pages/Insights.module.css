@@ -158,9 +158,9 @@
 
   /* Insights carousel for mobile */
   .insightsCarouselWrapper {
-    overflow: hidden;
     position: relative;
-    width: 100%;
+    width: 100vw;
+    margin-left: -12px;
   }
 
   .swipeHint {
@@ -194,9 +194,8 @@
     scroll-snap-type: x mandatory !important;
     -webkit-overflow-scrolling: touch;
     gap: 1rem !important;
-    padding: 0 12px 1rem 12px !important;
+    padding: 0 calc((100vw - 85vw) / 2) 1rem !important;
     scrollbar-width: none;
-    scroll-padding-left: 12px;
   }
 
   .insightsGrid::-webkit-scrollbar {

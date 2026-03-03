@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Insights.module.css";
 import { getEmotionColor, EMOTION_COLORS } from "../services/emotionService";
-import { ScrollMist } from "../components/ScrollMist";
 
 export function Insights() {
   const navigate = useNavigate();
@@ -1590,7 +1589,7 @@ function Legend({ data }) {
           </span>
         </div>
       ))}
-      <ScrollMist />
+
     </div>
   );
 }

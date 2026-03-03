@@ -105,15 +105,32 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
     except Exception as e:
         print(f"✗ Failed to log emotion: {str(e)}")
     
+    # AI-based journal extraction (analyze last 5-10 messages)
     try:
-        if journal_service.should_create_entry(request.message, emotion["label"]):
+        should_extract, ai_summary, confidence = await journal_service.should_create_entry_ai(
+            ollama_service=ollama_service,
+            conversation_history=history,
+            user_message=request.message,
+            emotion_label=emotion["label"]
+        )
+        
+        # Only extract if confidence is acceptable
+        if should_extract and confidence > 0.5:
             await journal_service.create_entry(
                 db=db, user_id=request.user_id, conversation_id=conversation_id,
                 message_id=user_message_id, message_text=request.message,
-                emotion_label=emotion["label"]
+                emotion_label=emotion["label"],
+                ai_summary=ai_summary,
+                ai_confidence=confidence,
+                extraction_method="ai"
             )
+            logger.info(f"[JOURNAL] Extracted entry with confidence {confidence:.2f}")
+        else:
+            logger.debug(f"[JOURNAL] Skipped extraction: extract={should_extract}, confidence={confidence:.2f}")
     except Exception as e:
-        print(f"✗ Failed to create journal entry: {str(e)}")
+        logger.warning(f"✗ Failed to create journal entry (AI extraction): {str(e)}")
+        import traceback
+        logger.warning(traceback.format_exc())
     
     try:
         insight = await emotion_analytics_service.generate_user_insights(

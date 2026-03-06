@@ -1008,78 +1008,80 @@
 }
 
 .closingQuote {
-  margin-bottom: 3.5rem;
+  margin-bottom: 3rem;
   order: -1;
 }
 
 .quoteLine1 {
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  color: #a85a6a;
+  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  color: rgba(200, 160, 170, 0.9);
   font-style: italic;
-  margin: 0 0 2rem 0;
-  line-height: 1.4;
+  margin: 0 0 1.2rem 0;
+  line-height: 1.35;
   opacity: 0;
+  text-shadow: 0 0 30px rgba(168, 90, 106, 0.25);
 }
 
 .quoteLine2 {
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
   font-weight: 400;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: #f5f1e8;
   font-style: italic;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
   opacity: 0;
+  text-shadow: 0 0 40px rgba(245, 241, 232, 0.15);
 }
 
 .closingCtas {
   opacity: 0;
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
+  align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
-  padding: 3rem 3.5rem;
-  max-width: 600px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 60px;
+  padding: 1.2rem 2.5rem;
+  max-width: 480px;
   margin-left: auto;
   margin-right: auto;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   z-index: 3;
-  animation: glassShimmer 8s ease-in-out infinite;
+  animation: glassShimmer 6s ease-in-out infinite;
 }
 
 @keyframes glassShimmer {
   0%,
   100% {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
   }
   50% {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.18);
   }
 }
 
 .glassBtn {
-  background: #a85a6a;
-  border: 2px solid #a85a6a;
+  background: linear-gradient(135deg, #a85a6a, #c4707f);
+  border: none;
   color: #f5f1e8;
-  padding: 0.9rem 3rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  letter-spacing: 0.25em;
+  padding: 0.85rem 2.8rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
   font-family: inherit;
@@ -1088,6 +1090,7 @@
   will-change: transform;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(168, 90, 106, 0.3);
 }
 
 .glassBtn::after {
@@ -1097,7 +1100,7 @@
   background: linear-gradient(
     120deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.12) 50%,
     transparent 70%
   );
   transform: translateX(-100%);
@@ -1109,52 +1112,44 @@
 }
 
 .glassBtn:hover {
-  background: #9a4d5d;
-  border-color: #9a4d5d;
-  color: #f5f1e8;
-  box-shadow: 0 4px 25px rgba(168, 90, 106, 0.35);
+  background: linear-gradient(135deg, #9a4d5d, #b86475);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(168, 90, 106, 0.45);
 }
 
 .glassBtnSecondary {
   background: transparent;
-  border: none;
-  color: #a85a6a;
-  padding: 1rem 0;
-  font-size: 0.7rem;
+  border: 1px solid rgba(168, 90, 106, 0.4);
+  color: rgba(200, 160, 170, 0.9);
+  padding: 0.8rem 2.4rem;
+  border-radius: 50px;
+  font-size: 0.68rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
   font-family: inherit;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
   position: relative;
 }
 
 .glassBtnSecondary::after {
-  content: "";
-  position: absolute;
-  bottom: 0.7rem;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: #a85a6a;
-  transition: width 0.4s ease;
-}
-
-.glassBtnSecondary:hover::after {
-  width: 100%;
+  display: none;
 }
 
 .glassBtnSecondary:hover {
-  color: #c97080;
+  color: #f5f1e8;
+  border-color: rgba(168, 90, 106, 0.7);
+  background: rgba(168, 90, 106, 0.15);
+  transform: translateY(-2px);
 }
 
 .disclaimer {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #7a7068;
-  margin-top: 3.5rem;
+  color: rgba(122, 112, 104, 0.7);
+  margin-top: 2.5rem;
   order: 1;
 }
 

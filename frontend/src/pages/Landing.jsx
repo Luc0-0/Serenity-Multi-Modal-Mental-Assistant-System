@@ -659,28 +659,28 @@ export function Landing() {
     // Line 1 fades in with upward drift
     tl.fromTo(
       line1,
-      { opacity: 0, y: 50, filter: "blur(3px)" },
+      { opacity: 0, y: 30, filter: "blur(2px)" },
       {
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
-        duration: 1.3,
+        duration: 0.7,
         ease: "power2.out",
       },
     );
 
-    // THE SILENCE — 1.5s of nothing. The most powerful beat.
-    tl.to({}, { duration: 1.5 });
+    // Brief pause between lines
+    tl.to({}, { duration: 0.6 });
 
     // Line 2 — the resolution
     tl.fromTo(
       line2,
-      { opacity: 0, y: 40, filter: "blur(3px)" },
+      { opacity: 0, y: 25, filter: "blur(2px)" },
       {
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
-        duration: 1.3,
+        duration: 0.7,
         ease: "power2.out",
       },
     );
@@ -688,9 +688,9 @@ export function Landing() {
     // CTA container slides up after the quote lands
     tl.fromTo(
       closingCtasRef.current,
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" },
-      "-=0.4",
+      { opacity: 0, y: 25 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+      "-=0.2",
     );
   }, []);
 

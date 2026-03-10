@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-key-change-in-production"
     
     # Engine selection
-    emotion_provider: str = "keywords"
+    emotion_provider: str = "ollama"
     emotion_fallback: str = "keywords"
     llm_provider: str = "ollama"
     llm_fallback: str = "fallback"

@@ -319,14 +319,16 @@ export const sendChatMessageStream = async ({ message, conversation_id = null },
           const data = line.slice(6);
 
           if (data.startsWith('__CRISIS__')) {
+            // "__CRISIS__severity__count".split("__") → ["", "CRISIS", severity, count]
             const parts = data.split('__');
-            crisisSeverity = parts[1];
-            crisisResourceCount = parseInt(parts[2], 10);
+            crisisSeverity = parts[2];
+            crisisResourceCount = parseInt(parts[3], 10);
             isCrisis = true;
           } else if (data.startsWith('__END__')) {
+            // "__END__convId__msgId".split("__") → ["", "END", convId, msgId]
             const parts = data.split('__');
-            conversationId = parseInt(parts[1], 10);
-            messageId = parseInt(parts[2], 10);
+            conversationId = parseInt(parts[2], 10);
+            messageId = parseInt(parts[3], 10);
           } else {
             fullText += data;
             onChunk(fullText);

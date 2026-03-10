@@ -1,3 +1,4 @@
+import json
 import logging
 import httpx
 from typing import Dict, List
@@ -66,6 +67,52 @@ class OllamaLLMEngine(LLMEngine):
             logger.error(f"Ollama generation failed: {e}")
             raise
     
+    async def generate_stream(self, system_prompt: str, messages: List[Dict[str, str]], **kwargs):
+        """Stream tokens from Ollama Cloud via OpenAI-compatible SSE."""
+        if not self._available:
+            raise RuntimeError("Ollama engine not available")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        full_messages = [{"role": "system", "content": system_prompt}] + messages
+
+        payload = {
+            "model": self.model,
+            "messages": full_messages,
+            "max_tokens": kwargs.get("max_tokens", self.max_tokens),
+            "temperature": kwargs.get("temperature", 0.7),
+            "stream": True,
+        }
+
+        # Use a longer read timeout for streaming; connect timeout stays short.
+        timeout = httpx.Timeout(connect=10.0, read=120.0, write=10.0, pool=5.0)
+
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                async with client.stream("POST", self.endpoint, json=payload, headers=headers) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line or line == "data: [DONE]":
+                            continue
+                        if not line.startswith("data: "):
+                            continue
+                        try:
+                            chunk = json.loads(line[6:])
+                            token = chunk["choices"][0]["delta"].get("content", "")
+                            if token:
+                                yield token
+                        except (json.JSONDecodeError, KeyError, IndexError):
+                            continue
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Ollama streaming API error: {e.status_code} - {e.response.text}")
+            raise RuntimeError(f"Ollama streaming API failed: {e.status_code}")
+        except Exception as e:
+            logger.error(f"Ollama streaming failed: {e}")
+            raise
+
     async def generate_title(self, text: str) -> str:
         """Generate short conversation title from text snippet."""
         if not self._available:

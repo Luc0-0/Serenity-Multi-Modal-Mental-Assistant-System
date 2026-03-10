@@ -387,34 +387,48 @@ async def chat_stream_endpoint(
     
     # Only trigger crisis mode for actual crisis keywords, not just negative emotions
     actual_crisis = await main_app.emotion_service.detect_crisis_signals(request.message)
-    reply = await main_app.llm_service.get_response(
-        user_message=request.message,
-        conversation_history=history,
-        emotional_insight=insight,
-        crisis_detected=actual_crisis,
-        memory_bundle=memory_bundle,
-    )
-    
-    assistant_message_id = await conversation_service.save_message(
-        db, conversation_id, "assistant", reply
-    )
-    await db.commit()
-    
-    # Schedule background processing
-    background_tasks.add_task(
-        post_process_chat_async,
-        user_id=current_user.id,
-        conversation_id=conversation_id,
-        message_id=user_message_id,
-        history=history,
-        user_message=request.message,
-        emotion_label=emotion.get("label", "neutral")
-    )
-    
+
     async def stream_generator():
-        for char in reply:
-            yield f"data: {char}\n\n"
-            await asyncio.sleep(0.01)
-        yield f"data: __END__{conversation_id}__{assistant_message_id}\n\n"
-    
+        from app.db.session import SessionLocal
+
+        full_reply = ""
+        try:
+            async for token in main_app.llm_service.get_response_stream(
+                user_message=request.message,
+                conversation_history=history,
+                emotional_insight=insight,
+                crisis_detected=actual_crisis,
+                memory_bundle=memory_bundle,
+            ):
+                full_reply += token
+                yield f"data: {token}\n\n"
+        except Exception as e:
+            logger.error(f"Stream generation error: {e}")
+            if not full_reply:
+                full_reply = main_app.llm_service._get_fallback_response(request.message)
+                yield f"data: {full_reply}\n\n"
+
+        # Save assistant message once stream is complete
+        saved_message_id = 0
+        async with SessionLocal() as save_db:
+            try:
+                saved_message_id = await conversation_service.save_message(
+                    save_db, conversation_id, "assistant", full_reply
+                )
+                await save_db.commit()
+            except Exception as e:
+                logger.error(f"Failed to save streamed assistant message: {e}")
+
+        # Fire post-processing in background
+        asyncio.create_task(post_process_chat_async(
+            user_id=current_user.id,
+            conversation_id=conversation_id,
+            message_id=user_message_id,
+            history=history,
+            user_message=request.message,
+            emotion_label=emotion.get("label", "neutral"),
+        ))
+
+        yield f"data: __END__{conversation_id}__{saved_message_id}\n\n"
+
     return StreamingResponse(stream_generator(), media_type="text/event-stream")

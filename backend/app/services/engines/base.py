@@ -31,7 +31,7 @@ class EmotionEngine(ABC):
 
 class LLMEngine(ABC):
     """Base interface for LLM providers."""
-    
+
     @abstractmethod
     async def generate(
         self,
@@ -41,7 +41,17 @@ class LLMEngine(ABC):
     ) -> str:
         """Generate response from LLM."""
         pass
-    
+
+    async def generate_stream(
+        self,
+        system_prompt: str,
+        messages: List[Dict[str, str]],
+        **kwargs
+    ):
+        """Stream response tokens. Default: yield full response as one chunk."""
+        result = await self.generate(system_prompt, messages, **kwargs)
+        yield result
+
     @abstractmethod
     async def generate_title(self, text: str) -> str:
         """Generate conversation title from text."""

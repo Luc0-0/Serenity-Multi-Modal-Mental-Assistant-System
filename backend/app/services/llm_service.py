@@ -65,6 +65,29 @@ Consider these criteria:
             logger.error(f"LLM generation failed: {e}")
             return self._get_fallback_response(user_message)
     
+    async def get_response_stream(
+        self,
+        user_message: str,
+        conversation_history: List[Dict],
+        emotional_insight: Optional[EmotionInsight] = None,
+        crisis_detected: bool = False,
+        memory_bundle: Optional[MemoryBundle] = None,
+    ):
+        """Stream response tokens. Yields str chunks as they arrive from the LLM."""
+        if crisis_detected:
+            yield self._get_crisis_response()
+            return
+
+        system_prompt = self._build_system_prompt(emotional_insight, memory_bundle)
+        messages = self._build_message_history(conversation_history, user_message)
+
+        try:
+            async for token in self.engine.generate_stream(system_prompt, messages):
+                yield token
+        except Exception as e:
+            logger.error(f"LLM streaming failed: {e}")
+            yield self._get_fallback_response(user_message)
+
     async def generate_title(self, text: str) -> str:
         """Generate conversation title."""
         logger.info(f"[LLM] generate_title called with {len(text)} chars")

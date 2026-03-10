@@ -259,7 +259,6 @@ export function CheckIn() {
 
     try {
       const response = await sendChatMessage({
-        user_id: userId,
         message: trimmedMessage,
         conversation_id: conversationId,
       });

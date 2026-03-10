@@ -97,16 +97,7 @@ const fetchWithTimeout = (url, options = {}, timeout = TIMEOUT_MS) => {
   ]);
 };
 
-export const sendChatMessage = async ({ user_id, message, conversation_id = null }) => {
-  // Input validation
-  if (!user_id || !Number.isInteger(user_id) || user_id <= 0) {
-    throw {
-      message: 'Invalid user ID',
-      code: 'VALIDATION_ERROR',
-      retryable: false,
-    };
-  }
-
+export const sendChatMessage = async ({ message, conversation_id = null }) => {
   if (!message || typeof message !== 'string') {
     throw {
       message: 'Message is required',
@@ -141,7 +132,6 @@ export const sendChatMessage = async ({ user_id, message, conversation_id = null
   }
 
   const payload = {
-    user_id,
     message: trimmedMessage,
     conversation_id,
   };
@@ -236,15 +226,7 @@ export const getErrorDisplay = (error) => {
   };
 };
 
-export const sendChatMessageStream = async ({ user_id, message, conversation_id = null }, onChunk) => {
-  if (!user_id || !Number.isInteger(user_id) || user_id <= 0) {
-    throw {
-      message: 'Invalid user ID',
-      code: 'VALIDATION_ERROR',
-      retryable: false,
-    };
-  }
-
+export const sendChatMessageStream = async ({ message, conversation_id = null }, onChunk) => {
   if (!message || typeof message !== 'string') {
     throw {
       message: 'Message is required',
@@ -279,7 +261,6 @@ export const sendChatMessageStream = async ({ user_id, message, conversation_id 
   }
 
   const payload = {
-    user_id,
     message: trimmedMessage,
     conversation_id,
   };

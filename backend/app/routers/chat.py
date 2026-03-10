@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.chat import ChatRequest, ChatResponse
@@ -13,6 +13,7 @@ from app.db.session import get_db
 from app.routers.auth import get_current_user
 from app.models.user import User
 import app.main as main_app
+from app.core.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -128,22 +129,24 @@ async def post_process_chat_async(
 
 
 @router.post("/", response_model=ChatResponse)
+@limiter.limit("20/minute")
 async def chat_endpoint(
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if request.conversation_id is None:
+        if body.conversation_id is None:
             conversation_id = await conversation_service.create_conversation(db, current_user.id)
         else:
             owns_conversation = await conversation_service.validate_conversation_ownership(
-                db, current_user.id, request.conversation_id
+                db, current_user.id, body.conversation_id
             )
             if not owns_conversation:
-                raise HTTPException(status_code=403, detail=f"User does not own conversation {request.conversation_id}")
-            conversation_id = request.conversation_id
+                raise HTTPException(status_code=403, detail=f"User does not own conversation {body.conversation_id}")
+            conversation_id = body.conversation_id
     except HTTPException:
         raise
     except ValueError as e:
@@ -151,7 +154,7 @@ async def chat_endpoint(
     
     # CRITICAL PATH: Crisis Assessment (stays in sync path)
     crisis_assessment = await main_app.crisis_service.assess_threat(
-        message=request.message,
+        message=body.message,
         emotion_label=None,
         conversation_history=None,
         user_id=current_user.id
@@ -159,10 +162,10 @@ async def chat_endpoint(
     
     if crisis_assessment["requires_escalation"]:
         user_message_id = await conversation_service.save_message(
-            db, conversation_id, "user", request.message
+            db, conversation_id, "user", body.message
         )
         try:
-            emotion = await main_app.emotion_service.detect_emotion(request.message)
+            emotion = await main_app.emotion_service.detect_emotion(body.message)
             await main_app.emotion_service.log_emotion(
                 db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
@@ -192,44 +195,51 @@ async def chat_endpoint(
     
     # CRITICAL PATH: Save user message
     user_message_id = await conversation_service.save_message(
-        db, conversation_id, "user", request.message
+        db, conversation_id, "user", body.message
     )
     await db.commit()
     
     # Generate conversation title in background if new conversation
-    if request.conversation_id is None:
+    if body.conversation_id is None:
         background_tasks.add_task(
             generate_title_async,
             conversation_id=conversation_id,
-            user_message=request.message
+            user_message=body.message
         )
     
-    # CRITICAL PATH: Detect emotion for this message
-    emotion = {"label": "neutral", "confidence": 0.5}
-    try:
-        emotion = await main_app.emotion_service.detect_emotion(request.message)
-        await main_app.emotion_service.log_emotion(
-            db=db, user_id=current_user.id, conversation_id=conversation_id,
-            message_id=user_message_id, label=emotion["label"],
-            confidence=emotion["confidence"]
-        )
-    except Exception as e:
-        logger.warning(f"Failed to log emotion: {str(e)}")
-
-    # CRITICAL PATH: Build memory bundle and generate response
-    memory_bundle = await memory_service.build_memory_bundle(
-        db=db,
-        user_id=current_user.id,
-        conversation_id=conversation_id,
-        history=history,
-        user_message=request.message,
+    # Run emotion detection and memory bundle concurrently — they don't depend on each other
+    emotion_result, memory_bundle = await asyncio.gather(
+        main_app.emotion_service.detect_emotion(body.message),
+        memory_service.build_memory_bundle(
+            db=db,
+            user_id=current_user.id,
+            conversation_id=conversation_id,
+            history=history,
+            user_message=body.message,
+        ),
+        return_exceptions=True,
     )
-    
-    logger.info(f"[DEBUG] History: {len(history)} messages")
-    if history:
-        logger.info(f"[DEBUG] Last message: role={history[-1].get('role')}, len={len(history[-1].get('content', ''))}")
-    logger.info(f"[DEBUG] User message: {request.message[:50]}...")
-    
+
+    emotion = {"label": "neutral", "confidence": 0.5}
+    if isinstance(emotion_result, Exception):
+        logger.warning(f"Emotion detection failed: {emotion_result}")
+    else:
+        emotion = emotion_result
+        try:
+            await main_app.emotion_service.log_emotion(
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
+                message_id=user_message_id, label=emotion["label"],
+                confidence=emotion["confidence"],
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log emotion: {str(e)}")
+
+    if isinstance(memory_bundle, Exception):
+        logger.warning(f"Memory bundle failed: {memory_bundle}")
+        memory_bundle = None
+
+    logger.info(f"[DEBUG] History: {len(history)} messages, user message: {body.message[:50]}...")
+
     # Get insight for response generation (lightweight query)
     insight = None
     try:
@@ -241,9 +251,9 @@ async def chat_endpoint(
     
     # CRITICAL PATH: Generate LLM response
     # Only trigger crisis mode for actual crisis keywords, not just negative emotions
-    actual_crisis = await main_app.emotion_service.detect_crisis_signals(request.message)
+    actual_crisis = await main_app.emotion_service.detect_crisis_signals(body.message)
     reply = await main_app.llm_service.get_response(
-        user_message=request.message,
+        user_message=body.message,
         conversation_history=history,
         emotional_insight=insight,
         crisis_detected=actual_crisis,
@@ -269,7 +279,7 @@ async def chat_endpoint(
         conversation_id=conversation_id,
         message_id=user_message_id,
         history=history,
-        user_message=request.message,
+        user_message=body.message,
         emotion_label=emotion.get("label", "neutral")
     )
     
@@ -281,29 +291,31 @@ async def chat_endpoint(
 
 
 @router.post("/stream/")
+@limiter.limit("20/minute")
 async def chat_stream_endpoint(
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if request.conversation_id is None:
+        if body.conversation_id is None:
             conversation_id = await conversation_service.create_conversation(db, current_user.id)
         else:
             owns_conversation = await conversation_service.validate_conversation_ownership(
-                db, current_user.id, request.conversation_id
+                db, current_user.id, body.conversation_id
             )
             if not owns_conversation:
-                raise HTTPException(status_code=403, detail=f"User does not own conversation {request.conversation_id}")
-            conversation_id = request.conversation_id
+                raise HTTPException(status_code=403, detail=f"User does not own conversation {body.conversation_id}")
+            conversation_id = body.conversation_id
     except HTTPException:
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
     crisis_assessment = await main_app.crisis_service.assess_threat(
-        message=request.message,
+        message=body.message,
         emotion_label=None,
         conversation_history=None,
         user_id=current_user.id
@@ -311,10 +323,10 @@ async def chat_stream_endpoint(
     
     if crisis_assessment["requires_escalation"]:
         user_message_id = await conversation_service.save_message(
-            db, conversation_id, "user", request.message
+            db, conversation_id, "user", body.message
         )
         try:
-            emotion = await main_app.emotion_service.detect_emotion(request.message)
+            emotion = await main_app.emotion_service.detect_emotion(body.message)
             await main_app.emotion_service.log_emotion(
                 db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
@@ -344,30 +356,49 @@ async def chat_stream_endpoint(
         db, conversation_id
     )
     user_message_id = await conversation_service.save_message(
-        db, conversation_id, "user", request.message
+        db, conversation_id, "user", body.message
     )
     await db.commit()
     
     # Generate conversation title in background if new
-    if request.conversation_id is None:
+    if body.conversation_id is None:
         background_tasks.add_task(
             generate_title_async,
             conversation_id=conversation_id,
-            user_message=request.message
+            user_message=body.message
         )
     
-    # CRITICAL: Detect emotion for this message
+    # Run emotion detection and memory bundle concurrently — they don't depend on each other
+    emotion_result, memory_bundle = await asyncio.gather(
+        main_app.emotion_service.detect_emotion(body.message),
+        memory_service.build_memory_bundle(
+            db=db,
+            user_id=current_user.id,
+            conversation_id=conversation_id,
+            history=history,
+            user_message=body.message,
+        ),
+        return_exceptions=True,
+    )
+
     emotion = {"label": "neutral", "confidence": 0.5}
-    try:
-        emotion = await main_app.emotion_service.detect_emotion(request.message)
-        await main_app.emotion_service.log_emotion(
-            db=db, user_id=current_user.id, conversation_id=conversation_id,
-            message_id=user_message_id, label=emotion["label"],
-            confidence=emotion["confidence"]
-        )
-    except Exception as e:
-        logger.warning(f"Failed to log emotion: {str(e)}")
-    
+    if isinstance(emotion_result, Exception):
+        logger.warning(f"Emotion detection failed: {emotion_result}")
+    else:
+        emotion = emotion_result
+        try:
+            await main_app.emotion_service.log_emotion(
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
+                message_id=user_message_id, label=emotion["label"],
+                confidence=emotion["confidence"],
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log emotion: {str(e)}")
+
+    if isinstance(memory_bundle, Exception):
+        logger.warning(f"Memory bundle failed: {memory_bundle}")
+        memory_bundle = None
+
     # Get insight for response generation
     insight = None
     try:
@@ -377,16 +408,8 @@ async def chat_stream_endpoint(
     except Exception as e:
         logger.warning(f"Analytics query failed: {str(e)}")
     
-    memory_bundle = await memory_service.build_memory_bundle(
-        db=db,
-        user_id=current_user.id,
-        conversation_id=conversation_id,
-        history=history,
-        user_message=request.message,
-    )
-    
     # Only trigger crisis mode for actual crisis keywords, not just negative emotions
-    actual_crisis = await main_app.emotion_service.detect_crisis_signals(request.message)
+    actual_crisis = await main_app.emotion_service.detect_crisis_signals(body.message)
 
     async def stream_generator():
         from app.db.session import SessionLocal
@@ -394,7 +417,7 @@ async def chat_stream_endpoint(
         full_reply = ""
         try:
             async for token in main_app.llm_service.get_response_stream(
-                user_message=request.message,
+                user_message=body.message,
                 conversation_history=history,
                 emotional_insight=insight,
                 crisis_detected=actual_crisis,
@@ -405,7 +428,7 @@ async def chat_stream_endpoint(
         except Exception as e:
             logger.error(f"Stream generation error: {e}")
             if not full_reply:
-                full_reply = main_app.llm_service._get_fallback_response(request.message)
+                full_reply = main_app.llm_service._get_fallback_response(body.message)
                 yield f"data: {full_reply}\n\n"
 
         # Save assistant message once stream is complete
@@ -425,7 +448,7 @@ async def chat_stream_endpoint(
             conversation_id=conversation_id,
             message_id=user_message_id,
             history=history,
-            user_message=request.message,
+            user_message=body.message,
             emotion_label=emotion.get("label", "neutral"),
         ))
 

@@ -107,9 +107,8 @@ export const ChatProvider = ({ children }) => {
       try {
         // Call backend API
         const response = await sendChatMessage({
-          user_id: state.userId,
           message: trimmed,
-          conversation_id: state.conversationId, // null for new, or existing ID
+          conversation_id: state.conversationId,
         });
 
         // Update conversation ID if this was the first message

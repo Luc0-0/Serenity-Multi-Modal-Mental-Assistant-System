@@ -3,27 +3,12 @@ from typing import Optional, List
 
 
 class ChatRequest(BaseModel):
-    user_id: int = Field(..., gt=0, description="User ID")
     message: str = Field(..., min_length=1, max_length=2000, description="Message content")
     conversation_id: Optional[int] = Field(None, gt=0, description="Conversation ID (null = new conversation)")
-    
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate_message
-    
-    @staticmethod
-    def validate_message(v):
-        if isinstance(v, str):
-            # Strip whitespace and prevent empty messages
-            v = v.strip()
-            if not v:
-                raise ValueError("Message cannot be empty or whitespace only")
-        return v
-    
+
     class Config:
         json_schema_extra = {
             "example": {
-                "user_id": 1,
                 "message": "I'm feeling anxious today",
                 "conversation_id": None
             }

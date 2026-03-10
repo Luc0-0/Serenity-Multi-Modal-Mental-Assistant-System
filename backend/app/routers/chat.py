@@ -10,6 +10,8 @@ from app.services.emotion_analytics_service import EmotionAnalyticsService
 from app.services.context_manager import ContextManager
 from app.services.memory_service import memory_service
 from app.db.session import get_db
+from app.routers.auth import get_current_user
+from app.models.user import User
 import app.main as main_app
 
 logger = logging.getLogger(__name__)
@@ -129,14 +131,15 @@ async def post_process_chat_async(
 async def chat_endpoint(
     request: ChatRequest,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         if request.conversation_id is None:
-            conversation_id = await conversation_service.create_conversation(db, request.user_id)
+            conversation_id = await conversation_service.create_conversation(db, current_user.id)
         else:
             owns_conversation = await conversation_service.validate_conversation_ownership(
-                db, request.user_id, request.conversation_id
+                db, current_user.id, request.conversation_id
             )
             if not owns_conversation:
                 raise HTTPException(status_code=403, detail=f"User does not own conversation {request.conversation_id}")
@@ -151,7 +154,7 @@ async def chat_endpoint(
         message=request.message,
         emotion_label=None,
         conversation_history=None,
-        user_id=request.user_id
+        user_id=current_user.id
     )
     
     if crisis_assessment["requires_escalation"]:
@@ -161,7 +164,7 @@ async def chat_endpoint(
         try:
             emotion = await main_app.emotion_service.detect_emotion(request.message)
             await main_app.emotion_service.log_emotion(
-                db=db, user_id=request.user_id, conversation_id=conversation_id,
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
                 confidence=emotion["confidence"]
             )
@@ -169,7 +172,7 @@ async def chat_endpoint(
             logger.warning(f"Failed to log emotion in crisis response: {str(e)}")
         try:
             await main_app.crisis_service.log_crisis_event(
-                db=db, user_id=request.user_id, conversation_id=conversation_id,
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, assessment=crisis_assessment
             )
         except Exception as e:
@@ -206,7 +209,7 @@ async def chat_endpoint(
     try:
         emotion = await main_app.emotion_service.detect_emotion(request.message)
         await main_app.emotion_service.log_emotion(
-            db=db, user_id=request.user_id, conversation_id=conversation_id,
+            db=db, user_id=current_user.id, conversation_id=conversation_id,
             message_id=user_message_id, label=emotion["label"],
             confidence=emotion["confidence"]
         )
@@ -216,7 +219,7 @@ async def chat_endpoint(
     # CRITICAL PATH: Build memory bundle and generate response
     memory_bundle = await memory_service.build_memory_bundle(
         db=db,
-        user_id=request.user_id,
+        user_id=current_user.id,
         conversation_id=conversation_id,
         history=history,
         user_message=request.message,
@@ -231,7 +234,7 @@ async def chat_endpoint(
     insight = None
     try:
         insight = await emotion_analytics_service.generate_user_insights(
-            db=db, user_id=request.user_id, days=7
+            db=db, user_id=current_user.id, days=7
         )
     except Exception as e:
         logger.warning(f"Analytics query failed: {str(e)}")
@@ -248,7 +251,7 @@ async def chat_endpoint(
     )
     
     logger.info(
-        f"[CHAT] user={request.user_id} | "
+        f"[CHAT] user={current_user.id} | "
         f"emotion={insight.dominant_emotion if insight else 'unknown'} | "
         f"response_len={len(reply)}"
     )
@@ -262,7 +265,7 @@ async def chat_endpoint(
     # NON-CRITICAL: Schedule background processing (runs after response sent)
     background_tasks.add_task(
         post_process_chat_async,
-        user_id=request.user_id,
+        user_id=current_user.id,
         conversation_id=conversation_id,
         message_id=user_message_id,
         history=history,
@@ -281,14 +284,15 @@ async def chat_endpoint(
 async def chat_stream_endpoint(
     request: ChatRequest,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         if request.conversation_id is None:
-            conversation_id = await conversation_service.create_conversation(db, request.user_id)
+            conversation_id = await conversation_service.create_conversation(db, current_user.id)
         else:
             owns_conversation = await conversation_service.validate_conversation_ownership(
-                db, request.user_id, request.conversation_id
+                db, current_user.id, request.conversation_id
             )
             if not owns_conversation:
                 raise HTTPException(status_code=403, detail=f"User does not own conversation {request.conversation_id}")
@@ -302,7 +306,7 @@ async def chat_stream_endpoint(
         message=request.message,
         emotion_label=None,
         conversation_history=None,
-        user_id=request.user_id
+        user_id=current_user.id
     )
     
     if crisis_assessment["requires_escalation"]:
@@ -312,7 +316,7 @@ async def chat_stream_endpoint(
         try:
             emotion = await main_app.emotion_service.detect_emotion(request.message)
             await main_app.emotion_service.log_emotion(
-                db=db, user_id=request.user_id, conversation_id=conversation_id,
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, label=emotion["label"],
                 confidence=emotion["confidence"]
             )
@@ -320,7 +324,7 @@ async def chat_stream_endpoint(
             logger.warning(f"Failed to log emotion in crisis response: {str(e)}")
         try:
             await main_app.crisis_service.log_crisis_event(
-                db=db, user_id=request.user_id, conversation_id=conversation_id,
+                db=db, user_id=current_user.id, conversation_id=conversation_id,
                 message_id=user_message_id, assessment=crisis_assessment
             )
         except Exception as e:
@@ -357,7 +361,7 @@ async def chat_stream_endpoint(
     try:
         emotion = await main_app.emotion_service.detect_emotion(request.message)
         await main_app.emotion_service.log_emotion(
-            db=db, user_id=request.user_id, conversation_id=conversation_id,
+            db=db, user_id=current_user.id, conversation_id=conversation_id,
             message_id=user_message_id, label=emotion["label"],
             confidence=emotion["confidence"]
         )
@@ -368,14 +372,14 @@ async def chat_stream_endpoint(
     insight = None
     try:
         insight = await emotion_analytics_service.generate_user_insights(
-            db=db, user_id=request.user_id, days=7
+            db=db, user_id=current_user.id, days=7
         )
     except Exception as e:
         logger.warning(f"Analytics query failed: {str(e)}")
     
     memory_bundle = await memory_service.build_memory_bundle(
         db=db,
-        user_id=request.user_id,
+        user_id=current_user.id,
         conversation_id=conversation_id,
         history=history,
         user_message=request.message,
@@ -399,7 +403,7 @@ async def chat_stream_endpoint(
     # Schedule background processing
     background_tasks.add_task(
         post_process_chat_async,
-        user_id=request.user_id,
+        user_id=current_user.id,
         conversation_id=conversation_id,
         message_id=user_message_id,
         history=history,

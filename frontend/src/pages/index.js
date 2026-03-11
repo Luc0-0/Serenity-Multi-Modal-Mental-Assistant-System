@@ -1,4 +1,5 @@
 export { Landing } from "./Landing";
+export { Onboarding } from "./Onboarding";
 export { default as CheckIn } from "./CheckIn";
 export { Journal } from "./Journal";
 export { Login } from "./Login";

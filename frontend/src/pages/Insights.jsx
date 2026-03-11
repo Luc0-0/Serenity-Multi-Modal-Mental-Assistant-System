@@ -18,6 +18,35 @@ const EMOTION_LABELS = {
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Sentiment polarity for the area chart line (-1 negative → +1 positive)
+const SENTIMENT_SCORE = {
+  joy: 1.0,
+  surprise: 0.55,
+  neutral: 0.0,
+  disgust: -0.5,
+  fear: -0.6,
+  sadness: -0.75,
+  anger: -0.9,
+};
+
+// Catmull-Rom → cubic bezier smooth path
+function buildSmoothPath(pts) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i - 1, 0)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(i + 2, pts.length - 1)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
 function buildMoodTrends(dailyBreakdown, days) {
   const trends = [];
   const now = new Date();
@@ -266,9 +295,9 @@ export function Insights() {
 
               {/* Mood Timeline */}
               <div className={styles.glassCard} style={{ minHeight: "400px", display: "flex", flexDirection: "column" }}>
-                <CardHeader title="Mood Timeline" sub={`Daily dominant emotion · ${period}d`} />
+                <CardHeader title="Mood Timeline" sub={`Emotional arc · ${period}d`} />
                 <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <MoodTimeline moodTrends={moodTrendsForPeriod} period={period} />
+                  <MoodAreaChart moodTrends={moodTrendsForPeriod} period={period} />
                 </div>
               </div>
 
@@ -317,6 +346,10 @@ export function Insights() {
 
             </div>
           </div>
+
+          {/* Mood Calendar heatmap — always 30 days regardless of period */}
+          <MoodCalendar moodTrends={insightsData.moodTrends} />
+
         </main>
       </div>
     </div>
@@ -381,8 +414,20 @@ function DonutChart({ distribution }) {
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} style={{ width: "100%", maxWidth: "160px" }}>
-      {slices.map((s) => (
-        <path key={s.emotion} d={s.path} fill={s.color} opacity="0.88" />
+      <style>{`
+        @keyframes donutFadeIn {
+          from { opacity: 0; transform: scale(0.88) rotate(-20deg); transform-origin: ${cx}px ${cy}px; }
+          to   { opacity: 0.88; transform: scale(1) rotate(0deg); transform-origin: ${cx}px ${cy}px; }
+        }
+      `}</style>
+      {slices.map((s, i) => (
+        <path
+          key={s.emotion}
+          d={s.path}
+          fill={s.color}
+          opacity="0"
+          style={{ animation: `donutFadeIn 0.5s ease forwards ${i * 0.06}s` }}
+        />
       ))}
       {top && (
         <>
@@ -425,81 +470,186 @@ function EmotionLegend({ distribution }) {
   );
 }
 
-function MoodTimeline({ moodTrends, period }) {
-  // For 30-day view, show month/day labels only every 5 days to avoid crowding
-  const showLabel = (i) => {
-    if (period <= 7) return true;
-    return i % 5 === 0 || i === moodTrends.length - 1;
-  };
+function MoodAreaChart({ moodTrends, period }) {
+  const W = 500;
+  const H = 200;
+  const PAD = { top: 28, right: 20, bottom: 38, left: 24 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+  const baselineY = PAD.top + chartH / 2;
+
+  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+
+  const pts = moodTrends.map((day, i) => {
+    const entries = Object.entries(day.emotions);
+    const dominant = entries.length ? entries.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+    const score = dominant ? (SENTIMENT_SCORE[dominant[0]] ?? 0) : null;
+    const x = PAD.left + (moodTrends.length === 1 ? chartW / 2 : (i / (moodTrends.length - 1)) * chartW);
+    const y = score !== null ? PAD.top + ((1 - (score + 1) / 2) * chartH) : null;
+    return { x, y, day, dominant, score };
+  });
+
+  const activePts = pts.filter(p => p.y !== null);
+  const linePath = activePts.length >= 2 ? buildSmoothPath(activePts) : "";
+  const areaPath = linePath
+    ? `${linePath} L ${activePts[activePts.length - 1].x},${PAD.top + chartH} L ${activePts[0].x},${PAD.top + chartH} Z`
+    : "";
+
+  const lastActive = [...activePts].reverse().find(p => p.dominant);
+  const gradColor = lastActive ? (EMOTION_COLORS[lastActive.dominant[0]] || "#d4a574") : "#d4a574";
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingTop: "0.5rem" }}>
-      <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: "4px", minHeight: "200px" }}>
-        {moodTrends.map((day, i) => {
-          const entries = Object.entries(day.emotions);
-          const total = entries.reduce((sum, [, c]) => sum + c, 0);
-          const dominant = entries.length ? entries.reduce((a, b) => (b[1] > a[1] ? b : a)) : null;
-          const hasData = dominant && dominant[1] > 0;
-          const color = hasData ? (EMOTION_COLORS[dominant[0]] || "#8a8a7e") : "rgba(255,255,255,0.04)";
-          const heightPct = hasData ? Math.max(15, Math.min(100, total * 14)) : 6;
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", flex: 1, overflow: "visible" }}>
+        <defs>
+          <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={gradColor} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={gradColor} stopOpacity="0" />
+          </linearGradient>
+          <filter id="lineGlow">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-          return (
-            <div
-              key={day.date}
-              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}
-              title={hasData ? `${day.date}: ${dominant[0]} (${dominant[1]})` : day.date}
-            >
-              <div style={{
-                width: "100%",
-                height: `${heightPct}%`,
-                minHeight: hasData ? "12px" : "4px",
-                borderRadius: "4px 4px 2px 2px",
-                background: color,
-                opacity: hasData ? 0.85 : 1,
-              }} />
-            </div>
-          );
-        })}
-      </div>
+        {/* + / − axis labels */}
+        <text x={PAD.left - 6} y={PAD.top + 5} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">+</text>
+        <text x={PAD.left - 6} y={PAD.top + chartH + 4} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">−</text>
 
-      {/* Day labels */}
-      <div style={{ display: "flex", gap: "4px", marginTop: "6px" }}>
-        {moodTrends.map((day, i) => (
-          <div
-            key={day.date}
-            style={{
-              flex: 1,
-              textAlign: "center",
-              fontSize: period <= 7 ? "0.65rem" : "0.55rem",
-              color: "#6b6b6b",
-              visibility: showLabel(i) ? "visible" : "hidden",
-            }}
+        {/* Zero baseline */}
+        <line
+          x1={PAD.left} y1={baselineY}
+          x2={PAD.left + chartW} y2={baselineY}
+          stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 6"
+        />
+
+        {areaPath && <path d={areaPath} fill="url(#areaFill)" />}
+        {linePath && (
+          <path
+            d={linePath}
+            fill="none"
+            stroke={gradColor}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.88"
+            filter="url(#lineGlow)"
+          />
+        )}
+
+        {activePts.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x} cy={p.y} r="3.5"
+            fill={EMOTION_COLORS[p.dominant[0]] || gradColor}
+            stroke="rgba(10,10,11,0.85)"
+            strokeWidth="1.2"
           >
-            {period <= 7 ? day.day : day.date.slice(5)}
-          </div>
+            <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
+          </circle>
         ))}
-      </div>
 
-      {/* Emotion color legend for timeline */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "1rem" }}>
+        {pts.map((p, i) =>
+          showLabel(i) ? (
+            <text
+              key={i}
+              x={p.x} y={H - 4}
+              textAnchor="middle"
+              fontSize={period <= 7 ? "10" : "8"}
+              fill="#4a4a4a"
+            >
+              {period <= 7 ? p.day.day : p.day.date.slice(5)}
+            </text>
+          ) : null
+        )}
+
+        {activePts.length < 2 && (
+          <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill="#3a3a3a">
+            Not enough data yet
+          </text>
+        )}
+      </svg>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.75rem" }}>
         {Object.entries(EMOTION_COLORS)
-          .filter(([emotion]) => moodTrends.some((d) => d.emotions[emotion] > 0))
+          .filter(([e]) => moodTrends.some(d => d.emotions[e] > 0))
           .slice(0, 6)
           .map(([emotion, color]) => (
-            <div
-              key={emotion}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.3rem",
-                fontSize: "0.68rem",
-                color: "#6b6b6b",
-              }}
-            >
-              <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: color, flexShrink: 0 }} />
+            <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "#6b6b6b" }}>
+              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, flexShrink: 0 }} />
               {EMOTION_LABELS[emotion] || emotion}
             </div>
           ))}
+      </div>
+    </div>
+  );
+}
+
+function MoodCalendar({ moodTrends }) {
+  if (!moodTrends || moodTrends.length === 0) return null;
+
+  const firstDate = new Date(moodTrends[0].date + "T00:00:00");
+  const startDow = firstDate.getDay();
+
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (const day of moodTrends) {
+    const entries = Object.entries(day.emotions);
+    const dominant = entries.length ? entries.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+    cells.push({ date: day.date, dominant, hasData: !!(dominant && dominant[1] > 0) });
+  }
+
+  return (
+    <div className={styles.glassCard} style={{ marginBottom: "2rem" }}>
+      <CardHeader title="Mood Calendar" sub="Last 30 days — each square is one day" />
+      <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+        {/* Day-of-week labels */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          {DAY_NAMES.map(d => (
+            <div key={d} style={{ height: "22px", display: "flex", alignItems: "center", fontSize: "0.6rem", color: "#3a3a3a", width: "22px", justifyContent: "center" }}>
+              {d[0]}
+            </div>
+          ))}
+        </div>
+
+        {/* Week columns grid */}
+        <div style={{ display: "grid", gridTemplateRows: "repeat(7, 22px)", gridAutoFlow: "column", gridAutoColumns: "22px", gap: "4px" }}>
+          {cells.map((cell, i) => {
+            if (!cell) return <div key={`pad-${i}`} />;
+            const color = cell.hasData
+              ? (EMOTION_COLORS[cell.dominant[0]] || "#8a8a8e")
+              : "rgba(255,255,255,0.04)";
+            return (
+              <div
+                key={cell.date}
+                title={cell.hasData ? `${cell.date}: ${cell.dominant[0]}` : cell.date}
+                style={{
+                  borderRadius: "4px",
+                  background: color,
+                  opacity: cell.hasData ? 0.72 : 1,
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  cursor: cell.hasData ? "default" : "default",
+                  transition: "opacity 0.15s",
+                }}
+                onMouseEnter={e => { if (cell.hasData) e.currentTarget.style.opacity = "1"; }}
+                onMouseLeave={e => { if (cell.hasData) e.currentTarget.style.opacity = "0.72"; }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", marginTop: "1rem" }}>
+        {Object.entries(EMOTION_COLORS).map(([emotion, color]) => (
+          <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.65rem", color: "#555" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: color, opacity: 0.72 }} />
+            {EMOTION_LABELS[emotion] || emotion}
+          </div>
+        ))}
       </div>
     </div>
   );

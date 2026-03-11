@@ -180,6 +180,57 @@ async def get_daily_summary(
         raise HTTPException(status_code=500, detail="Failed to fetch daily summary")
 
 
+@router.get("/weekly-summary/")
+async def get_weekly_summary(
+    days: int = 7,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Generate an LLM-written personalised reflection on the user's emotional period."""
+    import app.main as main_app
+
+    try:
+        since_date = datetime.utcnow() - timedelta(days=days)
+        stmt = select(EmotionLog).where(
+            (EmotionLog.user_id == current_user.id) &
+            (EmotionLog.created_at >= since_date)
+        ).order_by(EmotionLog.created_at.asc())
+
+        result = await db.execute(stmt)
+        logs = result.scalars().all()
+
+        if not logs or len(logs) < 3:
+            return {"summary": "", "generated": False}
+
+        emotion_counts = {}
+        daily_breakdown = {}
+
+        for log in logs:
+            label = log.primary_emotion or "unknown"
+            emotion_counts[label] = emotion_counts.get(label, 0) + 1
+            day_key = log.created_at.date().isoformat() if log.created_at else "unknown"
+            if day_key not in daily_breakdown:
+                daily_breakdown[day_key] = {}
+            daily_breakdown[day_key][label] = daily_breakdown[day_key].get(label, 0) + 1
+
+        total = len(logs)
+        dominant = max(emotion_counts, key=emotion_counts.get)
+        dominance_pct = emotion_counts[dominant] / total
+
+        summary = await main_app.llm_service.generate_weekly_summary(
+            dominant_emotion=dominant,
+            dominance_pct=dominance_pct,
+            total_logs=total,
+            daily_breakdown=daily_breakdown,
+            days=days,
+        )
+
+        return {"summary": summary, "generated": bool(summary)}
+    except Exception as e:
+        logger.error(f"Failed to generate weekly summary: {str(e)}")
+        return {"summary": "", "generated": False}
+
+
 def calculate_volatility(confidences: list) -> float:
     """Calculate volatility."""
     if not confidences or len(confidences) < 2:

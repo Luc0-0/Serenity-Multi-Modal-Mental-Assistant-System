@@ -392,6 +392,38 @@ Show you've been paying attention."""
             logger.warning(f"Summary generation failed: {e}")
             return "Conversation summary"
     
+    async def generate_weekly_summary(
+        self,
+        dominant_emotion: str,
+        dominance_pct: float,
+        total_logs: int,
+        daily_breakdown: dict,
+        days: int = 7,
+    ) -> str:
+        """Generate a short personalised reflection on the user's emotional patterns."""
+        day_lines = []
+        for date in sorted(daily_breakdown.keys())[-days:]:
+            emotions = daily_breakdown[date]
+            if emotions:
+                top = max(emotions, key=emotions.get)
+                day_lines.append(f"{date}: {top}")
+
+        pattern_text = " → ".join(day_lines) if day_lines else "sporadic check-ins"
+
+        prompt = f"""You are Serenity, a caring AI companion. Write a personal 2-3 sentence reflection on this user's emotional patterns over the past {days} days.
+
+Dominant emotion: {dominant_emotion} ({dominance_pct:.0%} of {total_logs} check-ins)
+Daily pattern: {pattern_text}
+
+Write like a friend who has been paying attention — notice shifts, acknowledge what you see, end with something grounded. No headers, no bullets. Don't start with "This week" or "Over the past". Write only the reflection."""
+
+        try:
+            response = await self.engine.generate(prompt, [])
+            return response.strip()
+        except Exception as e:
+            logger.warning(f"Weekly summary generation failed: {e}")
+            return ""
+
     async def generate_serenity_thought(self, summary: str, emotion_label: str = "neutral") -> str:
         """Generate professional insight/reflection as Serenity Thought."""
         prompt = f"""Based on this conversation summary and emotional context, generate a brief, professional insight.

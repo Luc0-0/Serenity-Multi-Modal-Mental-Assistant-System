@@ -45,6 +45,7 @@ class OllamaEmotionEngine(EmotionEngine):
                 {"role": "user", "content": text[:500]},
             ],
             "temperature": 0.1,
+            "max_tokens": 10,
         }
 
         try:

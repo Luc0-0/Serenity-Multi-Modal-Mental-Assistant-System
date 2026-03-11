@@ -134,7 +134,7 @@ async def init_engines():
     
     logger.info("Initializing AI engines...")
     
-    emotion_provider = os.getenv('EMOTION_PROVIDER', 'keywords')
+    emotion_provider = os.getenv('EMOTION_PROVIDER', 'ollama')
     emotion_engine = await EngineFactory.get_emotion_engine_with_fallback(emotion_provider)
     
     llm_provider = os.getenv('LLM_PROVIDER', 'ollama')

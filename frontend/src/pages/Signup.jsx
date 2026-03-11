@@ -264,7 +264,7 @@ export function Signup() {
     }
     try {
       await signup(formData.email, formData.password, formData.name);
-      navigate("/check-in");
+      navigate("/onboarding");
     } catch (err) {
       showError("Signup failed. Please try again.");
     }

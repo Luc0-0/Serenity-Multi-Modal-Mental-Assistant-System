@@ -21,6 +21,7 @@ import {
   Profile,
   Insights,
   Meditate,
+  Onboarding,
 } from "./pages";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ChatProvider } from "./contexts/ChatContext";
@@ -45,7 +46,6 @@ function ProtectedRoute({ children }) {
   const isAuthed = isAuthenticated || !!token;
 
   const handleToggleSidebar = () => {
-    // Dispatch custom event that CheckIn/page components can listen to
     window.dispatchEvent(new CustomEvent("toggleSidebar"));
   };
 
@@ -59,6 +59,17 @@ function ProtectedRoute({ children }) {
   );
 }
 
+// Onboarding uses this — no Navbar, full screen takeover
+function ProtectedRouteNaked({ children }) {
+  const { isAuthenticated, isLoading, token } = useAuth();
+
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  return isAuthenticated || !!token ? children : <Navigate to="/login" replace />;
+}
+
 function AppRoutes() {
   const location = useLocation();
 
@@ -69,6 +80,14 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRouteNaked>
+              <Onboarding />
+            </ProtectedRouteNaked>
+          }
+        />
 
         <Route
           path="/check-in"

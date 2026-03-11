@@ -385,9 +385,9 @@ function CardHeader({ title, sub, noMargin }) {
 }
 
 const CHART_TYPES = [
-  { id: "line", label: "Line", icon: "〜" },
-  { id: "bar",  label: "Bar",  icon: "▌▌" },
-  { id: "dot",  label: "Dot",  icon: "●●" },
+  { id: "line", label: "Gradient", icon: "〜" },
+  { id: "bar",  label: "Bars",     icon: "▌▌" },
+  { id: "dot",  label: "Orbs",     icon: "◎" },
 ];
 
 function ChartToggle({ type, onChange }) {
@@ -542,19 +542,28 @@ function MoodAreaChart({ moodTrends, period }) {
     ? `${linePath} L ${activePts[activePts.length - 1].x},${PAD.top + chartH} L ${activePts[0].x},${PAD.top + chartH} Z`
     : "";
 
-  const lastActive = [...activePts].reverse().find(p => p.dominant);
-  const gradColor = lastActive ? (EMOTION_COLORS[lastActive.dominant[0]] || "#d4a574") : "#d4a574";
+  // Gradient stops shift color at each active data point
+  const gradStops = activePts.map(p => ({
+    offset: `${((p.x - PAD.left) / chartW * 100).toFixed(1)}%`,
+    color: EMOTION_COLORS[p.dominant[0]] || "#d4a574",
+  }));
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", flex: 1, overflow: "visible" }}>
         <defs>
-          <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={gradColor} stopOpacity="0.22" />
-            <stop offset="100%" stopColor={gradColor} stopOpacity="0" />
+          <linearGradient id="colorLine" x1={PAD.left} y1="0" x2={PAD.left + chartW} y2="0" gradientUnits="userSpaceOnUse">
+            {gradStops.length > 0
+              ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="0.95" />)
+              : <stop offset="0%" stopColor="#d4a574" stopOpacity="0.95" />}
+          </linearGradient>
+          <linearGradient id="colorArea" x1={PAD.left} y1="0" x2={PAD.left + chartW} y2="0" gradientUnits="userSpaceOnUse">
+            {gradStops.length > 0
+              ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="0.16" />)
+              : <stop offset="0%" stopColor="#d4a574" stopOpacity="0.16" />}
           </linearGradient>
           <filter id="lineGlow">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -562,52 +571,43 @@ function MoodAreaChart({ moodTrends, period }) {
           </filter>
         </defs>
 
-        {/* + / − axis labels */}
         <text x={PAD.left - 6} y={PAD.top + 5} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">+</text>
         <text x={PAD.left - 6} y={PAD.top + chartH + 4} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">−</text>
 
-        {/* Zero baseline */}
         <line
           x1={PAD.left} y1={baselineY}
           x2={PAD.left + chartW} y2={baselineY}
           stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 6"
         />
 
-        {areaPath && <path d={areaPath} fill="url(#areaFill)" />}
+        {areaPath && <path d={areaPath} fill="url(#colorArea)" />}
         {linePath && (
           <path
             d={linePath}
             fill="none"
-            stroke={gradColor}
-            strokeWidth="1.8"
+            stroke="url(#colorLine)"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity="0.88"
             filter="url(#lineGlow)"
           />
         )}
 
-        {activePts.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x} cy={p.y} r="3.5"
-            fill={EMOTION_COLORS[p.dominant[0]] || gradColor}
-            stroke="rgba(10,10,11,0.85)"
-            strokeWidth="1.2"
-          >
-            <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
-          </circle>
-        ))}
+        {activePts.map((p, i) => {
+          const color = EMOTION_COLORS[p.dominant[0]] || "#d4a574";
+          return (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r="9" fill={color} opacity="0.12" />
+              <circle cx={p.x} cy={p.y} r="4" fill={color} opacity="0.95" stroke="rgba(10,10,11,0.8)" strokeWidth="1.2">
+                <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
+              </circle>
+            </g>
+          );
+        })}
 
         {pts.map((p, i) =>
           showLabel(i) ? (
-            <text
-              key={i}
-              x={p.x} y={H - 4}
-              textAnchor="middle"
-              fontSize={period <= 7 ? "10" : "8"}
-              fill="#4a4a4a"
-            >
+            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize={period <= 7 ? "10" : "8"} fill="#4a4a4a">
               {period <= 7 ? p.day.day : p.day.date.slice(5)}
             </text>
           ) : null
@@ -701,8 +701,8 @@ function MoodBarChart({ moodTrends, period }) {
 
 function MoodDotChart({ moodTrends, period }) {
   const W = 500;
-  const H = 200;
-  const PAD = { top: 24, right: 20, bottom: 38, left: 24 };
+  const H = 230;
+  const PAD = { top: 48, right: 28, bottom: 42, left: 28 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
 
@@ -715,61 +715,79 @@ function MoodDotChart({ moodTrends, period }) {
     const total = entries.reduce((s, [, c]) => s + c, 0);
     const score = dominant ? (SENTIMENT_SCORE[dominant[0]] ?? 0) : null;
     const x = PAD.left + (moodTrends.length === 1 ? chartW / 2 : (i / (moodTrends.length - 1)) * chartW);
-    const y = score !== null ? PAD.top + ((1 - (score + 1) / 2) * chartH) : null;
-    const r = score !== null ? 4 + (total / maxTotal) * 8 : null;
-    return { x, y, r, day, dominant, score };
+    const y = score !== null ? PAD.top + ((1 - (score + 1) / 2) * chartH) : PAD.top + chartH / 2;
+    const orbR = score !== null ? 18 + (total / maxTotal) * 12 : 0;
+    const coreR = score !== null ? Math.max(3, orbR * 0.22) : 0;
+    const color = dominant ? (EMOTION_COLORS[dominant[0]] || "#8a8a8e") : null;
+    return { x, y, orbR, coreR, day, dominant, score, hasData: !!dominant, color };
   });
+
+  const activePts = pts.filter(p => p.hasData);
+  const threadPath = activePts.length >= 2 ? buildSmoothPath(activePts) : "";
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", flex: 1, overflow: "visible" }}>
         <defs>
-          <filter id="dotGlow">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          {activePts.map((p, i) => (
+            <radialGradient key={`orbg${i}`} id={`orbg${i}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor={p.color} stopOpacity="0.75" />
+              <stop offset="50%"  stopColor={p.color} stopOpacity="0.28" />
+              <stop offset="100%" stopColor={p.color} stopOpacity="0" />
+            </radialGradient>
+          ))}
+          <filter id="orbGlow">
+            <feGaussianBlur stdDeviation="7" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
         </defs>
 
-        <text x={PAD.left - 6} y={PAD.top + 5} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">+</text>
-        <text x={PAD.left - 6} y={PAD.top + chartH + 4} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">−</text>
+        {/* Thread connecting active orbs */}
+        {threadPath && (
+          <path
+            d={threadPath}
+            fill="none"
+            stroke="rgba(255,255,255,0.07)"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeDasharray="3 5"
+          />
+        )}
 
-        <line
-          x1={PAD.left} y1={PAD.top + chartH / 2}
-          x2={PAD.left + chartW} y2={PAD.top + chartH / 2}
-          stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 6"
-        />
+        {/* Ghost dots for empty days */}
+        {pts.filter(p => !p.hasData).map((p, i) => (
+          <circle key={`ghost${i}`} cx={p.x} cy={p.y} r="2.5" fill="rgba(255,255,255,0.05)" />
+        ))}
 
-        {pts.map((p, i) => {
-          if (p.y === null) return null;
-          const color = EMOTION_COLORS[p.dominant[0]] || "#8a8a8e";
-          return (
-            <circle
-              key={i}
-              cx={p.x} cy={p.y} r={p.r}
-              fill={color}
-              opacity="0.75"
-              filter="url(#dotGlow)"
-            >
+        {/* Orbs */}
+        {activePts.map((p, i) => (
+          <g key={`orb${i}`}>
+            <circle cx={p.x} cy={p.y} r={p.orbR} fill={`url(#orbg${i})`} filter="url(#orbGlow)">
               <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
             </circle>
-          );
-        })}
+            <circle cx={p.x} cy={p.y} r={p.coreR} fill={p.color} opacity="0.95" />
+          </g>
+        ))}
 
+        {/* Day labels */}
         {pts.map((p, i) =>
           showLabel(i) ? (
-            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize={period <= 7 ? "10" : "8"} fill="#4a4a4a">
+            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize={period <= 7 ? "10" : "8"} fill={p.hasData ? "#5a5a5a" : "#2a2a2a"}>
               {period <= 7 ? p.day.day : p.day.date.slice(5)}
             </text>
           ) : null
         )}
 
-        {pts.filter(p => p.y !== null).length === 0 && (
+        {activePts.length === 0 && (
           <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill="#3a3a3a">Not enough data yet</text>
         )}
       </svg>
 
-      <div style={{ fontSize: "0.65rem", color: "#4a4a4a", marginTop: "0.5rem" }}>
-        Dot size = number of check-ins · position = emotional tone
+      <div style={{ fontSize: "0.65rem", color: "#4a4a4a", marginTop: "0.25rem" }}>
+        Orb size = check-in count · vertical position = emotional tone
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.5rem" }}>

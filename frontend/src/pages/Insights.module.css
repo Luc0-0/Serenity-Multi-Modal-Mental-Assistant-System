@@ -112,6 +112,186 @@
   );
 }
 
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  padding: 3rem 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.75rem;
+  font-weight: 300;
+  background: linear-gradient(180deg, #fff 0%, #e8c9a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #a0a0a0;
+  font-weight: 300;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+}
+
+.periodToggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.periodBtn {
+  background: none;
+  border: none;
+  color: #6b6b6b;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+}
+
+.periodBtn:hover {
+  color: #a0a0a0;
+}
+
+.periodBtnActive {
+  background: rgba(212, 165, 116, 0.15);
+  color: #d4a574;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+}
+
+/* ── MAIN ── */
+.main {
+  position: relative;
+  z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem 3rem;
+}
+
+/* ── STAT BAR ── */
+.statBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 1.25rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #f0f0f0;
+  font-family: "Cormorant Garamond", serif;
+}
+
+.statLabel {
+  font-size: 0.68rem;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.statDivider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ── SHIMMER LOADING ── */
+.shimmer {
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  will-change: transform;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(200%); }
+}
+
+/* ── EMPTY STATE ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  gap: 1rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  color: rgba(212, 165, 116, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.emptyTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #f0f0f0;
+}
+
+.emptyText {
+  font-size: 0.9rem;
+  color: #6b6b6b;
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+.emptyButton {
+  margin-top: 0.5rem;
+  padding: 0.7rem 1.75rem;
+  background: rgba(212, 165, 116, 0.12);
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 10px;
+  color: #d4a574;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emptyButton:hover {
+  background: rgba(212, 165, 116, 0.2);
+  border-color: rgba(212, 165, 116, 0.5);
+}
+
 /* ── INSIGHTS CAROUSEL (MOBILE) ── */
 .insightsCarouselWrapper {
   position: relative;

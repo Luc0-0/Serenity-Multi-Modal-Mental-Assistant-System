@@ -112,6 +112,7 @@ export function Insights() {
   const gridRef = useRef(null);
 
   const [period, setPeriod] = useState(7);
+  const [chartType, setChartType] = useState("line");
   const [insightsData, setInsightsData] = useState(null);
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -295,9 +296,14 @@ export function Insights() {
 
               {/* Mood Timeline */}
               <div className={styles.glassCard} style={{ minHeight: "400px", display: "flex", flexDirection: "column" }}>
-                <CardHeader title="Mood Timeline" sub={`Emotional arc · ${period}d`} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
+                  <CardHeader title="Mood Timeline" sub={`Emotional arc · ${period}d`} noMargin />
+                  <ChartToggle type={chartType} onChange={setChartType} />
+                </div>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <MoodAreaChart moodTrends={moodTrendsForPeriod} period={period} />
+                  {chartType === "line" && <MoodAreaChart moodTrends={moodTrendsForPeriod} period={period} />}
+                  {chartType === "bar"  && <MoodBarChart  moodTrends={moodTrendsForPeriod} period={period} />}
+                  {chartType === "dot"  && <MoodDotChart  moodTrends={moodTrendsForPeriod} period={period} />}
                 </div>
               </div>
 
@@ -359,9 +365,9 @@ export function Insights() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function CardHeader({ title, sub }) {
+function CardHeader({ title, sub, noMargin }) {
   return (
-    <div style={{ marginBottom: "1.25rem" }}>
+    <div style={{ marginBottom: noMargin ? 0 : "1.25rem" }}>
       <h3 style={{
         fontFamily: '"Cormorant Garamond", serif',
         fontSize: "1.3rem",
@@ -374,6 +380,47 @@ function CardHeader({ title, sub }) {
       <div style={{ fontSize: "0.68rem", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.12em" }}>
         {sub}
       </div>
+    </div>
+  );
+}
+
+const CHART_TYPES = [
+  { id: "line", label: "Line", icon: "〜" },
+  { id: "bar",  label: "Bar",  icon: "▌▌" },
+  { id: "dot",  label: "Dot",  icon: "●●" },
+];
+
+function ChartToggle({ type, onChange }) {
+  return (
+    <div style={{
+      display: "flex",
+      gap: "2px",
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: "8px",
+      padding: "3px",
+      flexShrink: 0,
+    }}>
+      {CHART_TYPES.map(({ id, label, icon }) => (
+        <button
+          key={id}
+          title={label}
+          onClick={() => onChange(id)}
+          style={{
+            background: type === id ? "rgba(212,165,116,0.15)" : "none",
+            border: type === id ? "1px solid rgba(212,165,116,0.2)" : "1px solid transparent",
+            borderRadius: "5px",
+            color: type === id ? "#d4a574" : "#4a4a4a",
+            fontSize: "0.7rem",
+            padding: "0.2rem 0.5rem",
+            cursor: "pointer",
+            transition: "all 0.15s",
+            letterSpacing: "0.04em",
+          }}
+        >
+          {icon}
+        </button>
+      ))}
     </div>
   );
 }
@@ -574,6 +621,158 @@ function MoodAreaChart({ moodTrends, period }) {
       </svg>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.75rem" }}>
+        {Object.entries(EMOTION_COLORS)
+          .filter(([e]) => moodTrends.some(d => d.emotions[e] > 0))
+          .slice(0, 6)
+          .map(([emotion, color]) => (
+            <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "#6b6b6b" }}>
+              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+              {EMOTION_LABELS[emotion] || emotion}
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function MoodBarChart({ moodTrends, period }) {
+  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+
+  const maxTotal = Math.max(1, ...moodTrends.map(d => Object.values(d.emotions).reduce((s, c) => s + c, 0)));
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingTop: "0.5rem" }}>
+      <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: "5px", minHeight: "180px" }}>
+        {moodTrends.map((day, i) => {
+          const entries = Object.entries(day.emotions);
+          const total = entries.reduce((s, [, c]) => s + c, 0);
+          const dominant = entries.length ? entries.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+          const hasData = dominant && dominant[1] > 0;
+          const color = hasData ? (EMOTION_COLORS[dominant[0]] || "#8a8a7e") : "rgba(255,255,255,0.05)";
+          const heightPct = hasData ? Math.max(8, (total / maxTotal) * 100) : 4;
+
+          return (
+            <div
+              key={day.date}
+              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}
+              title={hasData ? `${day.date}: ${dominant[0]} (${dominant[1]})` : day.date}
+            >
+              <div style={{
+                width: "100%",
+                height: `${heightPct}%`,
+                minHeight: hasData ? "8px" : "3px",
+                borderRadius: "4px 4px 2px 2px",
+                background: color,
+                opacity: hasData ? 0.82 : 1,
+                transition: "height 0.3s ease",
+              }} />
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", gap: "5px", marginTop: "6px" }}>
+        {moodTrends.map((day, i) => (
+          <div key={day.date} style={{
+            flex: 1, textAlign: "center",
+            fontSize: period <= 7 ? "0.65rem" : "0.55rem",
+            color: "#4a4a4a",
+            visibility: showLabel(i) ? "visible" : "hidden",
+          }}>
+            {period <= 7 ? day.day : day.date.slice(5)}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.75rem" }}>
+        {Object.entries(EMOTION_COLORS)
+          .filter(([e]) => moodTrends.some(d => d.emotions[e] > 0))
+          .slice(0, 6)
+          .map(([emotion, color]) => (
+            <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "#6b6b6b" }}>
+              <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: color, flexShrink: 0 }} />
+              {EMOTION_LABELS[emotion] || emotion}
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function MoodDotChart({ moodTrends, period }) {
+  const W = 500;
+  const H = 200;
+  const PAD = { top: 24, right: 20, bottom: 38, left: 24 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+  const maxTotal = Math.max(1, ...moodTrends.map(d => Object.values(d.emotions).reduce((s, c) => s + c, 0)));
+
+  const pts = moodTrends.map((day, i) => {
+    const entries = Object.entries(day.emotions);
+    const dominant = entries.length ? entries.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+    const total = entries.reduce((s, [, c]) => s + c, 0);
+    const score = dominant ? (SENTIMENT_SCORE[dominant[0]] ?? 0) : null;
+    const x = PAD.left + (moodTrends.length === 1 ? chartW / 2 : (i / (moodTrends.length - 1)) * chartW);
+    const y = score !== null ? PAD.top + ((1 - (score + 1) / 2) * chartH) : null;
+    const r = score !== null ? 4 + (total / maxTotal) * 8 : null;
+    return { x, y, r, day, dominant, score };
+  });
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", flex: 1, overflow: "visible" }}>
+        <defs>
+          <filter id="dotGlow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        <text x={PAD.left - 6} y={PAD.top + 5} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">+</text>
+        <text x={PAD.left - 6} y={PAD.top + chartH + 4} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">−</text>
+
+        <line
+          x1={PAD.left} y1={PAD.top + chartH / 2}
+          x2={PAD.left + chartW} y2={PAD.top + chartH / 2}
+          stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 6"
+        />
+
+        {pts.map((p, i) => {
+          if (p.y === null) return null;
+          const color = EMOTION_COLORS[p.dominant[0]] || "#8a8a8e";
+          return (
+            <circle
+              key={i}
+              cx={p.x} cy={p.y} r={p.r}
+              fill={color}
+              opacity="0.75"
+              filter="url(#dotGlow)"
+            >
+              <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
+            </circle>
+          );
+        })}
+
+        {pts.map((p, i) =>
+          showLabel(i) ? (
+            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize={period <= 7 ? "10" : "8"} fill="#4a4a4a">
+              {period <= 7 ? p.day.day : p.day.date.slice(5)}
+            </text>
+          ) : null
+        )}
+
+        {pts.filter(p => p.y !== null).length === 0 && (
+          <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill="#3a3a3a">Not enough data yet</text>
+        )}
+      </svg>
+
+      <div style={{ fontSize: "0.65rem", color: "#4a4a4a", marginTop: "0.5rem" }}>
+        Dot size = number of check-ins · position = emotional tone
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.5rem" }}>
         {Object.entries(EMOTION_COLORS)
           .filter(([e]) => moodTrends.some(d => d.emotions[e] > 0))
           .slice(0, 6)

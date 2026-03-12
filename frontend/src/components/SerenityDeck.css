@@ -262,6 +262,134 @@
   background: rgba(196, 168, 130, 0.2);
 }
 
+/* ─── SKELETON LOADING ─── */
+.deck-skeleton-item {
+  padding: 14px 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  margin-bottom: 4px;
+}
+
+.deck-skeleton-line {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.deck-skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.06), transparent);
+  transform: translateX(-100%);
+  animation: deckSkeletonShimmer 1.6s ease infinite;
+}
+
+@keyframes deckSkeletonShimmer {
+  100% { transform: translateX(220%); }
+}
+
+/* ─── EMPTY STATE ─── */
+.deck-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 16px;
+  gap: 0;
+}
+
+.deck-empty-orb {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(212, 165, 116, 0.12) 0%, transparent 70%);
+  border: 1px solid rgba(212, 165, 116, 0.1);
+  margin-bottom: 1.25rem;
+  animation: deckOrbBreath 5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes deckOrbBreath {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+.deck-empty-heading {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: rgba(232, 222, 206, 0.55);
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.01em;
+}
+
+.deck-empty-sub {
+  font-family: var(--font-meta);
+  font-size: 0.7rem;
+  color: rgba(232, 222, 206, 0.25);
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+  max-width: 200px;
+  margin: 0;
+}
+
+/* ─── ITEM META ROW (date + emotion dot) ─── */
+.item-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.item-emotion-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* ─── ERROR STATE ─── */
+.deck-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.deck-error-text {
+  font-family: var(--font-meta);
+  font-size: 0.75rem;
+  color: rgba(200, 130, 130, 0.65);
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.deck-error-retry {
+  background: none;
+  border: 1px solid rgba(200, 130, 130, 0.25);
+  border-radius: 4px;
+  color: rgba(200, 130, 130, 0.55);
+  font-family: var(--font-meta);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.deck-error-retry:hover {
+  color: rgba(220, 150, 150, 0.85);
+  border-color: rgba(200, 130, 130, 0.45);
+}
+
+/* ─── STATUS (legacy) ─── */
 .deck-status {
   text-align: center;
   padding: 40px 0;
@@ -344,4 +472,31 @@
 .item-delete:hover {
   color: #ff9999;
   transform: scale(1.1);
+}
+
+/* ─── MOBILE ─── */
+@media (max-width: 768px) {
+  :root {
+    --deck-width: 280px;
+  }
+
+  /* On mobile, delete button is always visible (no hover) */
+  .item-delete {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+
+  .deck-inner {
+    padding: 32px 18px;
+  }
+
+  .deck-new-btn {
+    padding: 14px;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .item-title {
+    font-size: 1.05rem;
+  }
 }

@@ -17,6 +17,7 @@ export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [emotionData, setEmotionData] = useState(null);
+  const [monthEmotion, setMonthEmotion] = useState("neutral");
   const [stats, setStats] = useState({
     conversationCount: 0,
     journalCount: 0,
@@ -85,16 +86,39 @@ export function Profile() {
       try {
         const journalRes = await apiClient.get("/api/journal/entries/?limit=100");
         let totalWords = 0;
-        if (journalRes.entries && Array.isArray(journalRes.entries)) {
-          journalRes.entries.forEach((entry) => {
+        let streak = 0;
+        const entries = journalRes.entries || [];
+        if (entries.length > 0) {
+          entries.forEach((entry) => {
             totalWords += (entry.content || "")
               .split(/\s+/)
               .filter((w) => w.length > 0).length;
           });
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const entryDays = new Set(
+            entries.map((e) => new Date(e.created_at).toDateString()),
+          );
+          for (let i = 0; i < 365; i++) {
+            const day = new Date(today);
+            day.setDate(today.getDate() - i);
+            if (entryDays.has(day.toDateString())) {
+              streak++;
+            } else {
+              break;
+            }
+          }
         }
-        setStats((prev) => ({ ...prev, journalWords: totalWords }));
+        setStats((prev) => ({ ...prev, journalWords: totalWords, streak }));
       } catch (journalErr) {
         console.warn("Journal word count unavailable", journalErr);
+      }
+
+      try {
+        const monthRes = await apiClient.get("/api/emotions/insights/?days=30");
+        setMonthEmotion(monthRes.dominant_emotion || "neutral");
+      } catch {
+        // non-critical
       }
     } catch (err) {
       console.error("Failed to load profile", err);
@@ -304,6 +328,26 @@ export function Profile() {
               {stats.conversationCount}
             </div>
             <div className={styles.heroStatLabel}>Conversations</div>
+          </div>
+        </div>
+
+        {/* ── Stats Row ── */}
+        <div className={styles.statsRow}>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{stats.conversationCount}</span>
+            <span className={styles.statLabel}>Total Check-ins</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{stats.streak}</span>
+            <span className={styles.statLabel}>Day Journal Streak</span>
+          </div>
+          <div className={styles.statCard}>
+            <EmotionIcon
+              emotion={monthEmotion}
+              color={getEmotionColor(monthEmotion)}
+            />
+            <span className={styles.statEmotionName}>{monthEmotion}</span>
+            <span className={styles.statLabel}>Most felt this month</span>
           </div>
         </div>
 

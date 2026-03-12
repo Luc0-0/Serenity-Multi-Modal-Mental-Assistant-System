@@ -256,9 +256,17 @@
 }
 
 .emptyIcon {
-  font-size: 2.5rem;
-  color: rgba(212, 165, 116, 0.4);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: insightsOrbBreath 5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes insightsOrbBreath {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
 }
 
 .emptyTitle {
@@ -429,10 +437,23 @@
     opacity: 0.9;
   }
 
-  /* Stat cards stacking */
-  [class*="stat"] {
-    flex: 1;
-    min-width: 100%;
+  /* Stat bar — compact on mobile */
+  .statBar {
+    padding: 0.9rem 1rem;
+    gap: 0;
+  }
+
+  .statValue {
+    font-size: 1.2rem;
+  }
+
+  .statLabel {
+    font-size: 0.6rem;
+  }
+
+  .statDivider {
+    margin: 0 0.75rem;
+    height: 32px;
   }
 
   /* Legend adjustments */

@@ -535,6 +535,11 @@
   opacity: 1;
 }
 
+@keyframes emotionRipple {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
 .emotionBtn.selected {
   transform: translateY(-2px);
   border-color: rgba(200, 164, 106, 0.5);
@@ -543,6 +548,16 @@
     0 0 0 1px rgba(200, 164, 106, 0.15),
     0 8px 24px rgba(200, 164, 106, 0.15);
   color: var(--cream);
+}
+
+.emotionBtn.selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(200, 164, 106, 0.5);
+  animation: emotionRipple 0.5s ease-out forwards;
+  pointer-events: none;
 }
 
 .emotionBtn.selected::after {

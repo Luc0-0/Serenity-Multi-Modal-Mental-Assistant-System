@@ -66,6 +66,8 @@ export function Landing() {
   const scrollLineRef = useRef(null);
   const svgOrbRef = useRef(null);
   const filmGrainRef = useRef(null);
+  const socialProofSectionRef = useRef(null);
+  const comparisonSectionRef = useRef(null);
 
   // Smooth scroll with Lenis
   useEffect(() => {
@@ -231,24 +233,28 @@ export function Landing() {
         ease: "power3.out",
       });
 
-      tl.fromTo(
-        heroSubtitleRef.current,
-        { opacity: 0, y: 25, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          duration: 1.2,
-          ease: "power2.out",
-        },
-        "-=0.5",
-      );
-      tl.fromTo(
-        heroCtasRef.current,
-        { opacity: 0, y: 25 },
-        { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" },
-        "-=0.6",
-      );
+      if (heroSubtitleRef.current) {
+        tl.fromTo(
+          heroSubtitleRef.current,
+          { opacity: 0, y: 25, filter: "blur(4px)" },
+          {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          "-=0.5",
+        );
+      }
+      if (heroCtasRef.current) {
+        tl.fromTo(
+          heroCtasRef.current,
+          { opacity: 0, y: 25 },
+          { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" },
+          "-=0.6",
+        );
+      }
     }
 
     // Scroll indicator — line draws down, fades, repeats
@@ -686,12 +692,99 @@ export function Landing() {
     );
 
     // CTA container slides up after the quote lands
-    tl.fromTo(
-      closingCtasRef.current,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-      "-=0.2",
+    if (closingCtasRef.current) {
+      tl.fromTo(
+        closingCtasRef.current,
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+        "-=0.2",
+      );
+    }
+  }, []);
+
+  // ── Social proof strip — staggered stat fade-in ──────────────────
+  useEffect(() => {
+    const statItems = document.querySelectorAll(`.${styles.socialStatItem}`);
+    if (!statItems.length) return;
+    gsap.fromTo(
+      statItems,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: socialProofSectionRef.current,
+          start: "top 75%",
+          once: true,
+        },
+      },
     );
+    const headline = socialProofSectionRef.current?.querySelector(
+      `.${styles.socialProofHeadline}`,
+    );
+    if (headline) {
+      gsap.fromTo(
+        headline,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: socialProofSectionRef.current,
+            start: "top 80%",
+            once: true,
+          },
+        },
+      );
+    }
+  }, []);
+
+  // ── Comparison rows — clip-path wipe ────────────────────────────
+  useEffect(() => {
+    const rows = document.querySelectorAll(`.${styles.comparisonRow}`);
+    if (!rows.length) return;
+    rows.forEach((row, i) => {
+      gsap.fromTo(
+        row,
+        { clipPath: "inset(100% 0 0 0)", opacity: 1 },
+        {
+          clipPath: "inset(0% 0 0 0)",
+          duration: 0.7,
+          delay: i * 0.08,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: comparisonSectionRef.current,
+            start: "top 70%",
+            once: true,
+          },
+        },
+      );
+    });
+    const compHeading = comparisonSectionRef.current?.querySelector(
+      `.${styles.comparisonHeading}`,
+    );
+    if (compHeading) {
+      gsap.fromTo(
+        compHeading,
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: comparisonSectionRef.current,
+            start: "top 78%",
+            once: true,
+          },
+        },
+      );
+    }
   }, []);
 
   // ── CTA breathing pulse (hero + closing synced) ─────────────────
@@ -769,6 +862,7 @@ export function Landing() {
           loop
           muted
           playsInline
+          poster="/images/hero-poster.jpg"
           src="/videos/hero-water-background.mp4"
         />
         <img
@@ -865,6 +959,71 @@ export function Landing() {
           alt=""
         />
       </div>
+
+      {/* ─── Social Proof Strip ───────────────────────────────── */}
+      <section ref={socialProofSectionRef} className={styles.socialProofSection}>
+        <p className={styles.socialProofHeadline}>
+          Built for the 1 in 4 people who carry things quietly.
+        </p>
+        <div className={styles.socialStats}>
+          <div className={styles.socialStatItem}>
+            <span className={styles.socialStatNumber}>1 in 4</span>
+            <span className={styles.socialStatLabel}>
+              adults experience a mental health condition each year
+            </span>
+            <span className={styles.socialStatSource}>WHO, 2022</span>
+          </div>
+          <div className={styles.socialStatDivider} />
+          <div className={styles.socialStatItem}>
+            <span className={styles.socialStatNumber}>75%</span>
+            <span className={styles.socialStatLabel}>
+              with mental health challenges never speak to anyone about it
+            </span>
+          </div>
+          <div className={styles.socialStatDivider} />
+          <div className={styles.socialStatItem}>
+            <span className={styles.socialStatNumber}>60%</span>
+            <span className={styles.socialStatLabel}>
+              have never accessed any form of professional support
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Comparison Strip ────────────────────────────────── */}
+      <section ref={comparisonSectionRef} className={styles.comparisonSection}>
+        <p className={styles.sectionEyebrow}>why Serenity</p>
+        <h2 className={styles.comparisonHeading}>
+          Serenity vs. a text thread with a friend.
+        </h2>
+        <div className={styles.comparisonCard}>
+          <div className={styles.comparisonHeader}>
+            <div className={styles.comparisonFeatureCol}>Feature</div>
+            <div className={styles.comparisonBrandCol}>Serenity</div>
+            <div className={styles.comparisonOtherCol}>Friend text</div>
+          </div>
+          {[
+            { feature: "Available at 3am", serenity: true, other: false },
+            { feature: "No judgment, no unsolicited advice", serenity: true, other: false },
+            { feature: "Tracks emotional patterns over time", serenity: true, other: false },
+            { feature: "Remembers what you've shared", serenity: true, other: false },
+            { feature: "Completely private", serenity: true, other: false },
+            { feature: "Never gets tired of listening", serenity: true, other: false },
+          ].map(({ feature, serenity, other }) => (
+            <div key={feature} className={styles.comparisonRow}>
+              <div className={styles.comparisonFeatureCol}>{feature}</div>
+              <div className={styles.comparisonBrandCol}>
+                <span className={styles.checkYes}>✓</span>
+              </div>
+              <div className={styles.comparisonOtherCol}>
+                <span className={other ? styles.checkYes : styles.checkNo}>
+                  {other ? "✓" : "✗"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Insight section */}
       <section ref={insightSectionRef} className={styles.insightSection}>
@@ -1039,6 +1198,7 @@ export function Landing() {
           loop
           muted
           playsInline
+          poster="/images/closing-poster.jpg"
           src="/videos/closing.mp4"
         />
         <div className={styles.closingOverlay} />

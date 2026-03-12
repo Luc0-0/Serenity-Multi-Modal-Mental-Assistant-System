@@ -8,6 +8,7 @@ import { SerenityDeck } from "../components/SerenityDeck";
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { CopyButton } from "../components/CopyButton";
 import { AnimatedTooltip } from "../components/AnimatedTooltip";
+import { exportConversationAsMarkdown } from "../services/exportService";
 import { sendChatMessage, getErrorDisplay } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
 import styles from "./CheckIn.module.css";
@@ -685,6 +686,25 @@ export function CheckIn() {
                   aria-label="Send message"
                   disabled={isLoading && !isStreaming}
                 />
+                {messages.length > 1 && (
+                  <AnimatedTooltip content="Export conversation" placement="top">
+                    <button
+                      className={styles.homeBtn}
+                      onClick={() => exportConversationAsMarkdown(
+                        messages.map((m) => ({ role: m.sender, content: m.content || m.text, created_at: m.timestamp })),
+                        null
+                      )}
+                      title="Export conversation"
+                      aria-label="Export conversation as Markdown"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </button>
+                  </AnimatedTooltip>
+                )}
                 <AnimatedTooltip content="Back to home" placement="top">
                   <button
                     className={styles.homeBtn}

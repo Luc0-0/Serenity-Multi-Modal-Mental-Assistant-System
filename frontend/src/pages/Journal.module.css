@@ -1065,50 +1065,154 @@
   letter-spacing: 0.06em;
 }
 
-/* ==================== LOADING & EMPTY ==================== */
+/* ==================== LOADING SKELETON ==================== */
 
-.loading {
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin-top: 2rem;
+}
+
+.skeletonItem {
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(200, 164, 106, 0.06);
+  background: var(--glass-dark);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.skeletonRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.skeletonLine {
+  height: 11px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.045);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.skeletonLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(200, 164, 106, 0.07), transparent);
+  transform: translateX(-100%);
+  animation: skeletonShimmer 1.7s ease infinite;
+}
+
+@keyframes skeletonShimmer {
+  100% { transform: translateX(220%); }
+}
+
+/* ==================== EMPTY STATE ==================== */
+
+.emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: 16px;
-}
-
-.loadingSpinner {
-  width: 36px;
-  height: 36px;
-  border: 1.5px solid rgba(200, 164, 106, 0.15);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.emptyState {
   text-align: center;
-  padding: 60px 24px;
+  padding: 72px 24px;
+  gap: 0;
 }
 
-.emptyState > p {
+.emptyOrb {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(200, 164, 106, 0.14) 0%, transparent 68%);
+  border: 1px solid rgba(200, 164, 106, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: emptyOrbBreath 5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes emptyOrbBreath {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1; }
+}
+
+.emptyGlyph {
+  font-size: 1.5rem;
+  color: rgba(200, 164, 106, 0.35);
+  line-height: 1;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.emptyHeading {
   font-family: "Cormorant Garamond", serif;
-  font-size: 1.1rem;
-  color: var(--cream-dim);
-  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
   font-weight: 300;
+  font-style: italic;
+  color: rgba(240, 230, 208, 0.65);
+  margin: 0 0 1rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
 }
 
+.emptyRule {
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 164, 106, 0.35), transparent);
+  margin: 0 auto 0.85rem;
+}
+
+.emptyDesc {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.78rem;
+  color: rgba(200, 191, 173, 0.32);
+  letter-spacing: 0.04em;
+  max-width: 260px;
+  line-height: 1.75;
+}
+
+/* Legacy aliases kept for safety */
+.loading { display: none; }
+.loadingSpinner { display: none; }
 .emptySubtext {
   font-family: "DM Sans", sans-serif;
-  font-size: 0.8rem !important;
-  color: rgba(200, 191, 173, 0.35) !important;
+  font-size: 0.8rem;
+  color: rgba(200, 191, 173, 0.35);
   letter-spacing: 0.04em;
+}
+
+/* ==================== EXPORT BUTTON ==================== */
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  background: none;
+  border: 1px solid rgba(200, 164, 106, 0.18);
+  border-radius: var(--radius-sm);
+  color: rgba(200, 164, 106, 0.5);
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
+  flex-shrink: 0;
+}
+
+.exportBtn:hover {
+  color: rgba(200, 164, 106, 0.85);
+  border-color: rgba(200, 164, 106, 0.38);
+  background: rgba(200, 164, 106, 0.04);
 }
 
 /* ==================== ERROR ==================== */
@@ -1964,25 +2068,32 @@
   }
 
   /* Loading and empty states */
-  .loading {
-    padding: 40px 20px;
-  }
+  .loading { padding: 40px 20px; }
+  .loadingSpinner { width: 32px; height: 32px; }
 
-  .loadingSpinner {
-    width: 32px;
-    height: 32px;
+  .skeletonItem {
+    padding: 18px 16px;
+    gap: 10px;
   }
 
   .emptyState {
-    padding: 40px 20px;
+    padding: 48px 20px;
   }
 
-  .emptyState p {
-    font-size: 0.95rem;
+  .emptyOrb {
+    width: 60px;
+    height: 60px;
   }
 
-  .emptySubtext {
-    font-size: 0.85rem;
+  .emptyHeading {
+    font-size: 1.25rem;
+  }
+
+  .emptySubtext { font-size: 0.85rem; }
+
+  /* Export button — hide text on very small screens */
+  .exportBtn span {
+    display: none;
   }
 
   /* Touch-friendly interactive states */

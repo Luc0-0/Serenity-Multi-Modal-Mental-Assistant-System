@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { journalService } from "../services/journalService";
+import { exportJournalAsMarkdown } from "../services/exportService";
 import { Button } from "../components/Button";
 import EntryDetailModal from "../components/EntryDetailModal";
 import { ScrollMist } from "../components/ScrollMist";
@@ -527,8 +528,24 @@ export function Journal() {
 
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.pageTitle}>Journal</h1>
-          <p className={styles.pageSubtitle}>Your thoughts, your story</p>
+          <div>
+            <h1 className={styles.pageTitle}>Journal</h1>
+            <p className={styles.pageSubtitle}>Your thoughts, your story</p>
+          </div>
+          {entries.length > 0 && (
+            <button
+              className={styles.exportBtn}
+              onClick={() => exportJournalAsMarkdown(entries)}
+              title="Export journal as Markdown"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Export</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -711,29 +728,38 @@ export function Journal() {
           </div>
         </section>
 
-        {/* ── Loading ── */}
+        {/* ── Loading skeleton ── */}
         {isLoading && (
-          <div className={styles.loading}>
-            <div className={styles.loadingSpinner} />
-            <p
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.8rem",
-                color: "rgba(200,191,173,0.4)",
-                letterSpacing: "0.1em",
-              }}
-            >
-              Loading entries…
-            </p>
+          <div className={styles.skeletonList}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={styles.skeletonItem}>
+                <div className={styles.skeletonRow}>
+                  <div className={styles.skeletonLine} style={{ width: "64px", height: "9px", borderRadius: "50px" }} />
+                  <div className={styles.skeletonLine} style={{ width: "110px", height: "9px" }} />
+                </div>
+                <div className={styles.skeletonLine} style={{ width: "72%", height: "18px" }} />
+                <div className={styles.skeletonLine} style={{ width: "88%" }} />
+                <div className={styles.skeletonLine} style={{ width: "60%" }} />
+                <div className={styles.skeletonRow} style={{ marginTop: "4px" }}>
+                  <div className={styles.skeletonLine} style={{ width: "56px", height: "24px", borderRadius: "50px" }} />
+                  <div className={styles.skeletonLine} style={{ width: "70px", height: "24px", borderRadius: "50px" }} />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* ── Empty ── */}
         {!isLoading && entries.length === 0 && (
           <div className={styles.emptyState}>
-            <p>No journal entries yet.</p>
-            <p className={styles.emptySubtext}>
-              Create your first entry above to begin your journey.
+            <div className={styles.emptyOrb}>
+              <span className={styles.emptyGlyph}>✦</span>
+            </div>
+            <h3 className={styles.emptyHeading}>Your story begins here.</h3>
+            <div className={styles.emptyRule} />
+            <p className={styles.emptyDesc}>
+              Every journey starts with a single word.
+              <br />Write your first entry above.
             </p>
           </div>
         )}

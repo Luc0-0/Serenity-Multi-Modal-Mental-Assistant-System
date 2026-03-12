@@ -91,6 +91,7 @@ export function SerenityDeck({
   const [isOpen, setIsOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const drawerRef = useRef(null);
 
   useEffect(() => {
@@ -116,6 +117,7 @@ export function SerenityDeck({
 
   const fetchConversations = async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const token = localStorage.getItem("auth_token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -130,9 +132,11 @@ export function SerenityDeck({
             new Date(a.updated_at || a.created_at),
         );
         setConversations(sorted);
+      } else {
+        setFetchError(true);
       }
-    } catch (err) {
-      console.error("Deck load failed", err);
+    } catch {
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -169,16 +173,31 @@ export function SerenityDeck({
   };
 
   const getTitle = (c) =>
-    c.title || c.first_message?.substring(0, 30) || "Untitled Reflection";
+    c.title || c.first_message?.substring(0, 36) || "Untitled Reflection";
+
   const getDate = (d) => {
     try {
-      return new Date(d).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
+      const date = new Date(d);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays === 0) return "Today";
+      if (diffDays === 1) return "Yesterday";
+      if (diffDays < 7) return date.toLocaleDateString("en-US", { weekday: "long" });
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     } catch {
       return "";
     }
+  };
+
+  const EMOTION_COLORS = {
+    joy: "#a0b890",
+    neutral: "#8a8a7e",
+    sadness: "#8b7070",
+    anger: "#a08080",
+    fear: "#8b8070",
+    surprise: "#8890a8",
+    disgust: "#8a8270",
   };
 
   return (
@@ -237,33 +256,67 @@ export function SerenityDeck({
 
           {/* List */}
           <div className="deck-list">
-            {loading && conversations.length === 0 && (
-              <div className="deck-status">Loading reflections...</div>
-            )}
-            {!loading && conversations.length === 0 && (
-              <div className="deck-status">Your journal is empty.</div>
-            )}
-
-            {conversations.map((c) => (
-              <div
-                key={c.id}
-                className={`deck-item ${currentConversationId === c.id ? "active" : ""}`}
-                onClick={() => onSelectConversation(c.id)}
-              >
-                <div className="item-content">
-                  <span className="item-title">{getTitle(c)}</span>
-                  <span className="item-date">
-                    {getDate(c.updated_at || c.created_at)}
-                  </span>
-                </div>
-                <button
-                  className="item-delete"
-                  onClick={(e) => handleDelete(e, c.id)}
-                >
-                  <TrashIcon />
+            {fetchError && !loading && (
+              <div className="deck-error">
+                <p className="deck-error-text">Couldn't load conversations.</p>
+                <button className="deck-error-retry" onClick={fetchConversations}>
+                  Retry
                 </button>
               </div>
-            ))}
+            )}
+            {!fetchError && loading && conversations.length === 0 && (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="deck-skeleton-item" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div className="deck-skeleton-line" style={{ width: "75%", height: "14px", marginBottom: "8px" }} />
+                    <div className="deck-skeleton-line" style={{ width: "45%", height: "9px" }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {!fetchError && !loading && conversations.length === 0 && (
+              <div className="deck-empty">
+                <div className="deck-empty-orb" />
+                <p className="deck-empty-heading">No reflections yet.</p>
+                <p className="deck-empty-sub">Begin your first check-in and it will appear here.</p>
+              </div>
+            )}
+
+            {conversations.map((c) => {
+              const emotionColor = c.dominant_emotion
+                ? EMOTION_COLORS[c.dominant_emotion] || "#8a8a7e"
+                : null;
+              return (
+                <div
+                  key={c.id}
+                  className={`deck-item ${currentConversationId === c.id ? "active" : ""}`}
+                  onClick={() => onSelectConversation(c.id)}
+                >
+                  <div className="item-content">
+                    <div className="item-meta-row">
+                      <span className="item-date">
+                        {getDate(c.updated_at || c.created_at)}
+                      </span>
+                      {emotionColor && (
+                        <span
+                          className="item-emotion-dot"
+                          style={{ background: emotionColor }}
+                          title={c.dominant_emotion}
+                        />
+                      )}
+                    </div>
+                    <span className="item-title">{getTitle(c)}</span>
+                  </div>
+                  <button
+                    className="item-delete"
+                    onClick={(e) => handleDelete(e, c.id)}
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

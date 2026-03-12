@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -8,7 +8,6 @@ import styles from "./Landing.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Split text into word spans with proper spacing
 function splitIntoWords(el, options = {}) {
   if (!el) return [];
   const text = el.textContent.trim();
@@ -29,8 +28,6 @@ function splitIntoWords(el, options = {}) {
     }
     el.appendChild(wordSpan);
     spans.push(wordSpan);
-
-    // Add a real space text node between words
     if (i < words.length - 1) {
       el.appendChild(document.createTextNode("\u00A0"));
     }
@@ -39,8 +36,43 @@ function splitIntoWords(el, options = {}) {
   return spans;
 }
 
+const PILLARS = [
+  {
+    num: "01",
+    title: "Talk",
+    text: "Say what you can't say anywhere else. No judgment. No agenda. Just a space that listens, without keeping score.",
+    pills: ["Emotion-aware", "Private", "3am ready"],
+    supporting: "No script. No agenda. Just space.",
+    visual: "waveform",
+  },
+  {
+    num: "02",
+    title: "Reflect",
+    text: "Your journal captures what matters, quietly and without asking. Words become clarity over time — even the ones you couldn't finish.",
+    pills: ["Auto-journal", "Pattern capture", "No prompts"],
+    supporting: "Words become mirrors over time.",
+    visual: "lines",
+  },
+  {
+    num: "03",
+    title: "Understand",
+    text: "Your emotional patterns surface slowly. Not as data — as understanding. Your landscape, finally readable on your own terms.",
+    pills: ["30-day arc", "Emotion map", "Quiet insights"],
+    supporting: "Not data. Recognition.",
+    visual: "constellation",
+  },
+];
+
+const TESTIMONIALS = [
+  "I've never been able to say this out loud to anyone.",
+  "It didn't tell me what to feel. It just stayed.",
+  "Three weeks in, I noticed I was sleeping better. I don't know when that changed.",
+  "I thought I was fine. The journal showed me I was lying to myself.",
+];
+
 export function Landing() {
   const navigate = useNavigate();
+  const [activePillar, setActivePillar] = useState(0);
 
   const heroRef = useRef(null);
   const videoBgRef = useRef(null);
@@ -50,7 +82,9 @@ export function Landing() {
   const heroTitleRef = useRef(null);
   const heroSubtitleRef = useRef(null);
   const heroCtasRef = useRef(null);
+  const breathOrbRef = useRef(null);
   const pillarsSectionRef = useRef(null);
+  const pillarsTrackRef = useRef(null);
   const insightSectionRef = useRef(null);
   const stepsSectionRef = useRef(null);
   const quietSectionRef = useRef(null);
@@ -67,12 +101,13 @@ export function Landing() {
   const svgOrbRef = useRef(null);
   const filmGrainRef = useRef(null);
   const socialProofSectionRef = useRef(null);
-  const comparisonSectionRef = useRef(null);
+  const testimonialsSectionRef = useRef(null);
   const stat1Ref = useRef(null);
   const stat2Ref = useRef(null);
   const stat3Ref = useRef(null);
+  const branchOverlayRef = useRef(null);
 
-  // Smooth scroll with Lenis
+  // Smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.4,
@@ -86,26 +121,21 @@ export function Landing() {
     }
     requestAnimationFrame(raf);
 
-    // Sync GSAP ScrollTrigger with Lenis
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
     });
     gsap.ticker.lagSmoothing(0);
 
-    return () => {
-      lenis.destroy();
-    };
+    return () => lenis.destroy();
   }, []);
 
-  // Torch cursor following mouse
+  // Torch cursor
   useEffect(() => {
     const torch = torchRef.current;
     if (!torch) return;
-    let mouseX = 0,
-      mouseY = 0;
-    let currentX = 0,
-      currentY = 0;
+    let mouseX = 0, mouseY = 0;
+    let currentX = 0, currentY = 0;
 
     const handleMouseMove = (e) => {
       mouseX = e.clientX;
@@ -113,8 +143,8 @@ export function Landing() {
     };
 
     function animateTorch() {
-      currentX += (mouseX - currentX) * 0.12;
-      currentY += (mouseY - currentY) * 0.12;
+      currentX += (mouseX - currentX) * 0.07;
+      currentY += (mouseY - currentY) * 0.07;
       torch.style.left = `${currentX}px`;
       torch.style.top = `${currentY}px`;
       requestAnimationFrame(animateTorch);
@@ -125,7 +155,7 @@ export function Landing() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Film grain opacity from scroll velocity
+  // Film grain opacity
   useEffect(() => {
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
@@ -166,31 +196,34 @@ export function Landing() {
       }
 
       if (treeOverlayRef.current) {
-        const startX = 90;
-        const endX = 5;
-        const currentX = startX + scrollProgress * (endX - startX);
+        const currentX = 90 + scrollProgress * (5 - 90);
         const treeScale = 1.1 + scrollProgress * 0.9;
-        const treeOpacity = Math.min(scrollProgress * 1.4, 0.85);
+        // Fade in during hero, then fade out
+        let treeOpacity;
+        if (scrollY <= heroHeight) {
+          treeOpacity = Math.min(scrollProgress * 1.4, 0.85);
+        } else {
+          const fadeOut = (scrollY - heroHeight) / (heroHeight * 0.4);
+          treeOpacity = Math.max(0, 0.85 * (1 - fadeOut));
+        }
         treeOverlayRef.current.style.left = `${currentX}vw`;
         treeOverlayRef.current.style.transform = `translateY(-50%) scale(${treeScale}) scaleX(-1)`;
         treeOverlayRef.current.style.opacity = treeOpacity;
       }
 
       if (fogLayerRef.current) {
-        const fogOpacity = Math.min(scrollProgress * 1.2, 0.4);
-        fogLayerRef.current.style.opacity = fogOpacity;
+        fogLayerRef.current.style.opacity = Math.min(scrollProgress * 1.2, 0.4);
       }
 
       if (heroContentRef.current) {
-        const contentOpacity = Math.max(0, 1 - scrollProgress * 1.3);
-        heroContentRef.current.style.opacity = contentOpacity;
+        heroContentRef.current.style.opacity = Math.max(0, 1 - scrollProgress * 1.3);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Quiet section background parallax
+  // Quiet section background
   useEffect(() => {
     const quietBg = quietBgRef.current;
     const quietSection = quietSectionRef.current;
@@ -201,8 +234,7 @@ export function Landing() {
       const viewportH = window.innerHeight;
       if (rect.bottom < 0 || rect.top > viewportH) return;
       const progress = (viewportH - rect.top) / (viewportH + rect.height);
-      const shift = (progress - 0.5) * rect.height * 0.18;
-      quietBg.style.transform = `translateY(${shift}px) scale(${1 + progress * 0.04})`;
+      quietBg.style.transform = `translateY(${(progress - 0.5) * rect.height * 0.18}px) scale(${1 + progress * 0.04})`;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -210,7 +242,7 @@ export function Landing() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Hero title animation - character reveal
+  // Hero title reveal, breathing orb, and scroll line
   useEffect(() => {
     const titleEl = heroTitleRef.current;
     if (titleEl) {
@@ -225,10 +257,8 @@ export function Landing() {
         titleEl.appendChild(span);
       });
 
-      const chars = titleEl.querySelectorAll("span");
       const tl = gsap.timeline({ delay: 0.5 });
-
-      tl.to(chars, {
+      tl.to(titleEl.querySelectorAll("span"), {
         clipPath: "circle(100% at 50% 50%)",
         opacity: 1,
         duration: 1.2,
@@ -240,13 +270,7 @@ export function Landing() {
         tl.fromTo(
           heroSubtitleRef.current,
           { opacity: 0, y: 25, filter: "blur(4px)" },
-          {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 1.2,
-            ease: "power2.out",
-          },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power2.out" },
           "-=0.5",
         );
       }
@@ -260,341 +284,216 @@ export function Landing() {
       }
     }
 
-    // Scroll indicator — line draws down, fades, repeats
     if (scrollLineRef.current) {
       gsap.fromTo(
         scrollLineRef.current,
         { scaleY: 0, opacity: 0.7, transformOrigin: "top center" },
-        {
-          scaleY: 1,
-          opacity: 0,
-          duration: 2.2,
-          ease: "power1.inOut",
-          repeat: -1,
-          repeatDelay: 0.6,
-        },
+        { scaleY: 1, opacity: 0, duration: 2.2, ease: "power1.inOut", repeat: -1, repeatDelay: 0.6 },
       );
+    }
+
+    if (breathOrbRef.current) {
+      gsap.to(breathOrbRef.current, {
+        scale: 1.31,
+        duration: 12,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
     }
   }, []);
 
-  // ── Pillar cards — clip-path wipe + hover depth ──────────────────
+  // Horizontal scroll pillars
   useEffect(() => {
-    const cards = document.querySelectorAll(`.${styles.pillarCard}`);
-    if (!cards.length) return;
+    const section = pillarsSectionRef.current;
+    const track = pillarsTrackRef.current;
+    if (!section || !track) return;
 
-    // Staggered reveal from bottom
-    cards.forEach((card, i) => {
-      gsap.fromTo(
-        card,
-        { clipPath: "inset(100% 0 0 0)", opacity: 1 },
-        {
-          clipPath: "inset(0% 0 0 0)",
-          duration: 1.2,
-          delay: i * 0.2,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: pillarsSectionRef.current,
-            start: "top 72%",
-            once: true,
-          },
-        },
-      );
-    });
+    const mm = gsap.matchMedia();
 
-    // Luminous divider lines draw in after card reveals
-    const dividers = document.querySelectorAll(`.${styles.pillarDivider}`);
-    dividers.forEach((div, i) => {
-      gsap.fromTo(
-        div,
-        { scaleY: 0, transformOrigin: "top center" },
-        {
-          scaleY: 1,
-          duration: 1.4,
-          delay: 0.6 + i * 0.2,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: pillarsSectionRef.current,
-            start: "top 72%",
-            once: true,
-          },
-        },
-      );
-    });
+    mm.add("(min-width: 769px)", () => {
+      const panels = gsap.utils.toArray(`.${styles.pillarPanel}`, track);
+      const snapPoints = panels.map((_, i) => i / (panels.length - 1));
 
-    // Internal parallax on hover
-    cards.forEach((card) => {
-      const number = card.querySelector(`.${styles.pillarNumber}`);
-      const title = card.querySelector(`.${styles.pillarTitle}`);
-      const divider = card.querySelector(`.${styles.pillarDivider}`);
-
-      card.addEventListener("mouseenter", () => {
-        gsap.to(number, { y: -10, duration: 0.5, ease: "power2.out" });
-        gsap.to(title, { y: -5, duration: 0.5, ease: "power2.out" });
-        if (divider)
-          gsap.to(divider, { height: 36, duration: 0.5, ease: "power2.out" });
-      });
-      card.addEventListener("mouseleave", () => {
-        gsap.to(number, { y: 0, duration: 0.5, ease: "power2.out" });
-        gsap.to(title, { y: 0, duration: 0.5, ease: "power2.out" });
-        if (divider)
-          gsap.to(divider, { height: 28, duration: 0.5, ease: "power2.out" });
-      });
-    });
-
-    // Counter animation on pillar numbers
-    const pillarNumbers = document.querySelectorAll(`.${styles.pillarNumber}`);
-    pillarNumbers.forEach((element, index) => {
-      const targetNum = index + 1;
-      gsap.fromTo(
-        { value: 0 },
-        { value: targetNum },
-        {
-          duration: 1.4,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: pillarsSectionRef.current,
-            start: "top 80%",
-            once: true,
-          },
-          onUpdate: function () {
-            element.textContent = String(
-              Math.floor(this.targets()[0].value),
-            ).padStart(2, "0");
-          },
-        },
-      );
-    });
-
-    // Pillars quote — word-by-word fade with vertical drift (FIXED SPACING)
-    const quoteText = document.querySelector(`.${styles.pillarsQuoteText}`);
-    if (quoteText) {
-      const wordSpans = splitIntoWords(quoteText);
-      gsap.to(wordSpans, {
-        opacity: 1,
-        y: 0,
-        transform: "translateY(0)",
-        duration: 0.6,
-        stagger: 0.08,
-        ease: "power2.out",
+      const mainTween = gsap.to(track, {
+        x: () => -(track.scrollWidth - window.innerWidth),
+        ease: "none",
         scrollTrigger: {
-          trigger: quoteText,
-          start: "top 85%",
-          once: true,
+          trigger: section,
+          pin: true,
+          scrub: 1.5,
+          snap: {
+            snapTo: snapPoints,
+            duration: { min: 0.6, max: 1.2 },
+            delay: 0.7,
+            ease: "power2.inOut",
+          },
+          end: () => "+=" + (track.scrollWidth - window.innerWidth),
+          onUpdate: (self) => {
+            setActivePillar(Math.round(self.progress * (panels.length - 1)));
+          },
         },
       });
-    }
 
-    // Quote attribution fade
-    const quoteAuthor = document.querySelector(`.${styles.pillarsQuoteAuthor}`);
-    if (quoteAuthor) {
-      gsap.fromTo(
-        quoteAuthor,
-        { opacity: 0, y: 10 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: quoteAuthor,
-            start: "top 90%",
-            once: true,
-          },
-        },
-      );
-    }
+      // Content reveal
+      // Panel 0 text visibility
+      // Panels 1-2 animation
+      panels.forEach((panel, idx) => {
+        const number = panel.querySelector(`.${styles.pillarNumber}`);
+        const divider = panel.querySelector(`.${styles.pillarDivider}`);
+        const title = panel.querySelector(`.${styles.pillarTitle}`);
+        const body = panel.querySelector(`.${styles.pillarText}`);
+        const pills = panel.querySelectorAll(`.${styles.pillarPill}`);
+        const supporting = panel.querySelector(`.${styles.pillarSupportingLine}`);
+        const visual = panel.querySelector(`.${styles.pillarVisual}`);
 
-    // Quote line draws from center outward
-    const quoteLine = document.querySelector(`.${styles.pillarsQuoteLine}`);
-    if (quoteLine) {
-      gsap.fromTo(
-        quoteLine,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          duration: 1.2,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: quoteLine,
-            start: "top 90%",
-            once: true,
+        const stConfig = idx === 0
+          ? { trigger: section, start: "top 65%", once: true }
+          : { trigger: panel, containerAnimation: mainTween, start: "left 85%", toggleActions: "play none none reverse" };
+
+        const tl = gsap.timeline({ scrollTrigger: stConfig });
+
+        // Panel 0 depth
+        if (idx === 0) {
+          const inner = panel.querySelector(`.${styles.pillarPanelInner}`);
+          if (inner) {
+            tl.fromTo(inner,
+              { transformPerspective: 900, z: -50, scale: 0.97 },
+              { z: 0, scale: 1, duration: 1.2, ease: "power3.out" },
+              0
+            );
+          }
+        }
+
+        if (number) tl.fromTo(number, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, idx === 0 ? 0.1 : ">");
+        if (divider) tl.fromTo(divider, { scaleY: 0, transformOrigin: "top" }, { scaleY: 1, duration: 0.7, ease: "power2.out" }, "-=0.2");
+        if (title) tl.fromTo(title, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.3");
+        if (body) tl.fromTo(body, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, "-=0.4");
+        if (pills.length) tl.fromTo(pills, { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: "power2.out" }, "-=0.3");
+        if (supporting) tl.fromTo(supporting, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.2");
+        if (visual) tl.fromTo(visual, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 1.0, ease: "power2.out" }, "-=0.6");
+      });
+
+      // Horizontal parallax
+      track.querySelectorAll(`.${styles.pillarGhostBg}`).forEach((ghost) => {
+        gsap.fromTo(
+          ghost,
+          { x: -50 },
+          {
+            x: 50,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ghost.closest(`.${styles.pillarPanel}`),
+              containerAnimation: mainTween,
+              start: "left right",
+              end: "right left",
+              scrub: true,
+            },
           },
-        },
-      );
-    }
+        );
+      });
+
+      return () => mainTween.scrollTrigger?.kill();
+    });
+
+    // Mobile layout
+    mm.add("(max-width: 768px)", () => {
+      const panels = track.querySelectorAll(`.${styles.pillarPanel}`);
+      panels.forEach((panel) => {
+        const number = panel.querySelector(`.${styles.pillarNumber}`);
+        const divider = panel.querySelector(`.${styles.pillarDivider}`);
+        const title = panel.querySelector(`.${styles.pillarTitle}`);
+        const body = panel.querySelector(`.${styles.pillarText}`);
+        const pills = panel.querySelectorAll(`.${styles.pillarPill}`);
+        const supporting = panel.querySelector(`.${styles.pillarSupportingLine}`);
+
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: panel, start: "top 85%", once: true },
+        });
+
+        // Card unfold
+        tl.fromTo(panel,
+          { clipPath: "inset(0 0 100% 0)", opacity: 0 },
+          { clipPath: "inset(0 0 0% 0)", opacity: 1, duration: 0.7, ease: "power3.out" }
+        );
+
+        // Content reveal
+        if (number) tl.fromTo(number, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, "-=0.2");
+        if (divider) tl.fromTo(divider, { scaleY: 0, transformOrigin: "top" }, { scaleY: 1, duration: 0.4, ease: "power2.out" }, "-=0.2");
+        if (title) tl.fromTo(title, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.15");
+        if (body) tl.fromTo(body, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.25");
+        if (pills.length) tl.fromTo(pills, { opacity: 0, y: 6 }, { opacity: 1, y: 0, stagger: 0.06, duration: 0.35, ease: "power2.out" }, "-=0.2");
+        if (supporting) tl.fromTo(supporting, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, "-=0.15");
+      });
+    });
+
+    return () => mm.revert();
   }, []);
 
-  // ── Insight text — two-beat rhythm + mockup 3D reveal ────────────
+  // Insight text and mockup reveal
   useEffect(() => {
     if (insightTextRef.current) {
-      const heading = insightTextRef.current.querySelector(
-        `.${styles.insightHeading}`,
-      );
-      const subtext = insightTextRef.current.querySelector(
-        `.${styles.insightSubtext}`,
-      );
-      const body = insightTextRef.current.querySelector(
-        `.${styles.insightBody}`,
-      );
-      const eyebrow = insightTextRef.current.querySelector(
-        `.${styles.sectionEyebrow}`,
-      );
+      const heading = insightTextRef.current.querySelector(`.${styles.insightHeading}`);
+      const subtext = insightTextRef.current.querySelector(`.${styles.insightSubtext}`);
+      const body = insightTextRef.current.querySelector(`.${styles.insightBody}`);
+      const eyebrow = insightTextRef.current.querySelector(`.${styles.sectionEyebrow}`);
 
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: insightSectionRef.current,
-          start: "top 62%",
-          once: true,
-        },
+        scrollTrigger: { trigger: insightSectionRef.current, start: "top 55%", once: true },
       });
 
-      // Make container visible first
       tl.set(insightTextRef.current, { opacity: 1 });
-
-      // Eyebrow slides in
-      tl.fromTo(
-        eyebrow,
-        { opacity: 0, x: -30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power2.out" },
-      );
-
-      // Heading fades in with upward drift
-      tl.fromTo(
-        heading,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" },
-        "-=0.3",
-      );
-
-      // THE BEAT — a deliberate 0.7s pause
+      tl.fromTo(eyebrow, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.8, ease: "power2.out" });
+      tl.fromTo(heading, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }, "-=0.3");
       tl.to({}, { duration: 0.7 });
-
-      // Subtext wipes in from left via clip-path
-      tl.fromTo(
-        subtext,
-        { clipPath: "inset(0 100% 0 0)", opacity: 1 },
-        { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power2.out" },
-      );
-
-      // Body text fades in
-      if (body) {
-        tl.fromTo(
-          body,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
-          "-=0.3",
-        );
-      }
+      tl.fromTo(subtext, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power2.out" });
+      if (body) tl.fromTo(body, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.3");
     }
 
-    // Mockup — scroll-linked 3D tilt reveal
     if (mockupRef.current) {
-      gsap.set(mockupRef.current, {
-        opacity: 0,
-        rotateY: 12,
-        rotateX: 4,
-        scale: 0.92,
-        transformPerspective: 1200,
-      });
-
+      gsap.set(mockupRef.current, { opacity: 0, rotateY: 12, rotateX: 4, scale: 0.92, transformPerspective: 1200 });
       gsap.to(mockupRef.current, {
-        opacity: 1,
-        rotateY: 0,
-        rotateX: 0,
-        scale: 1,
-        duration: 1.6,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: insightSectionRef.current,
-          start: "top 55%",
-          once: true,
-        },
+        opacity: 1, rotateY: 0, rotateX: 0, scale: 1, duration: 1.6, ease: "power3.out",
+        scrollTrigger: { trigger: insightSectionRef.current, start: "top 55%", once: true },
       });
-
-      // Gentle float after reveal
       ScrollTrigger.create({
         trigger: insightSectionRef.current,
         start: "top 55%",
         once: true,
         onEnter: () => {
           gsap.delayedCall(1.6, () => {
-            gsap.to(mockupRef.current, {
-              y: -14,
-              duration: 4,
-              ease: "sine.inOut",
-              repeat: -1,
-              yoyo: true,
-            });
+            gsap.to(mockupRef.current, { y: -14, duration: 4, ease: "sine.inOut", repeat: -1, yoyo: true });
           });
         },
       });
     }
   }, []);
 
-  // ── Steps — ghost numbers + reveals ───────────────────────────────
+  // Steps numbers
   useEffect(() => {
-    const stepItems = document.querySelectorAll(`.${styles.stepItem}`);
+    document.querySelectorAll(`.${styles.stepItem}`).forEach((item) => {
+      gsap.timeline({
+        scrollTrigger: { trigger: item, start: "top 68%", once: true },
+      }).fromTo(item, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 1.0, ease: "power3.out" });
+    });
 
-    stepItems.forEach((item, i) => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: item,
-          start: "top 78%",
-          once: true,
-        },
+    document.querySelectorAll(`.${styles.stepNumberGhost}`).forEach((ghost) => {
+      gsap.fromTo(ghost, { y: 40 }, {
+        y: -80, ease: "none",
+        scrollTrigger: { trigger: ghost.parentElement, start: "top bottom", end: "bottom top", scrub: 1.2 },
       });
-
-      // Step slides in from left with fade
-      tl.fromTo(
-        item,
-        { opacity: 0, x: -60 },
-        { opacity: 1, x: 0, duration: 1.0, ease: "power3.out" },
-      );
     });
 
-    // Ghost numbers — scroll parallax upward
-    const stepGhosts = document.querySelectorAll(`.${styles.stepNumberGhost}`);
-    stepGhosts.forEach((ghost) => {
-      gsap.fromTo(
-        ghost,
-        { y: 40 },
-        {
-          y: -80,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ghost.parentElement,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
-        },
-      );
-    });
-
-    // Eyebrow for steps section
-    const stepsEyebrow = stepsSectionRef.current?.querySelector(
-      `.${styles.sectionEyebrow}`,
-    );
+    const stepsEyebrow = stepsSectionRef.current?.querySelector(`.${styles.sectionEyebrow}`);
     if (stepsEyebrow) {
-      gsap.fromTo(
-        stepsEyebrow,
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: stepsSectionRef.current,
-            start: "top 75%",
-            once: true,
-          },
-        },
-      );
+      gsap.fromTo(stepsEyebrow, { opacity: 0, y: 20 }, {
+        opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        scrollTrigger: { trigger: stepsSectionRef.current, start: "top 68%", once: true },
+      });
     }
   }, []);
 
-  // ── SVG connecting line + traveling orb ───────────────────────────
+  // SVG connecting line
   useEffect(() => {
     const svg = svgLineRef.current;
     if (!svg) return;
@@ -611,12 +510,8 @@ export function Landing() {
       if (!steps) return;
       const rect = steps.getBoundingClientRect();
       const viewportH = window.innerHeight;
-      // Calculate progress based on viewport intersection
-      const progress = (viewportH - rect.top) / (viewportH + rect.height);
-      const clampedProgress = Math.max(0, Math.min(1, progress));
+      const clampedProgress = Math.max(0, Math.min(1, (viewportH - rect.top) / (viewportH + rect.height)));
       path.style.strokeDashoffset = pathLength * (1 - clampedProgress);
-
-      // Move orb along the path
       if (orb && clampedProgress > 0.01) {
         const point = path.getPointAtLength(clampedProgress * pathLength);
         orb.setAttribute("cx", point.x);
@@ -630,232 +525,194 @@ export function Landing() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ── Quiet section — blur-to-sharp word reveal ─────────────────────
+  // Quiet section text blur
   useEffect(() => {
     const quoteEl = quietQuoteRef.current;
     if (!quoteEl) return;
-
     const wordSpans = splitIntoWords(quoteEl, { blur: true });
-
     gsap.to(wordSpans, {
-      opacity: 1,
-      filter: "blur(0px)",
-      duration: 0.8,
-      stagger: 0.14,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: quietSectionRef.current,
-        start: "top 55%",
-        once: true,
-      },
+      opacity: 1, filter: "blur(0px)", duration: 0.8, stagger: 0.14, ease: "power2.out",
+      scrollTrigger: { trigger: quietSectionRef.current, start: "top 55%", once: true },
     });
   }, []);
 
-  // ── Closing — deliberate two-beat text pause ─────────────────────
+  // Closing quote and CTA
   useEffect(() => {
     const line1 = document.querySelector(`.${styles.quoteLine1}`);
     const line2 = document.querySelector(`.${styles.quoteLine2}`);
     if (!line1 || !line2) return;
 
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: closingSectionRef.current,
-        start: "top 55%",
-        once: true,
-      },
+      scrollTrigger: { trigger: closingSectionRef.current, start: "top 55%", once: true },
     });
 
-    // Line 1 fades in with upward drift
-    tl.fromTo(
-      line1,
-      { opacity: 0, y: 30, filter: "blur(2px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 0.7,
-        ease: "power2.out",
-      },
-    );
-
-    // Brief pause between lines
+    tl.fromTo(line1, { opacity: 0, y: 30, filter: "blur(2px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" });
     tl.to({}, { duration: 0.6 });
+    tl.fromTo(line2, { opacity: 0, y: 25, filter: "blur(2px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" });
 
-    // Line 2 — the resolution
-    tl.fromTo(
-      line2,
-      { opacity: 0, y: 25, filter: "blur(2px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 0.7,
-        ease: "power2.out",
-      },
-    );
-
-    // CTA container slides up after the quote lands
     if (closingCtasRef.current) {
       tl.fromTo(
         closingCtasRef.current,
         { opacity: 0, y: 25 },
         { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-        "-=0.2",
+        "+=1.2",
       );
     }
   }, []);
 
-  // ── Social proof strip — headline + stat fade-in + number counters ──
+  // Social proof headline and counters
   useEffect(() => {
     const trigger = socialProofSectionRef.current;
     if (!trigger) return;
 
-    // Headline word-by-word reveal
     const headline = trigger.querySelector(`.${styles.socialProofHeadline}`);
     if (headline) {
       const wordSpans = splitIntoWords(headline);
       gsap.to(wordSpans, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.09,
-        ease: "power2.out",
-        scrollTrigger: { trigger, start: "top 80%", once: true },
+        opacity: 1, y: 0, duration: 0.6, stagger: 0.09, ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 70%", once: true },
       });
     }
 
-    // Stat items staggered rise
-    const statItems = trigger.querySelectorAll(`.${styles.socialStatItem}`);
     gsap.fromTo(
-      statItems,
+      trigger.querySelectorAll(`.${styles.socialStatItem}`),
       { opacity: 0, y: 32 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.85,
-        stagger: 0.18,
-        ease: "power3.out",
-        scrollTrigger: { trigger, start: "top 74%", once: true },
-      },
+      { opacity: 1, y: 0, duration: 0.85, stagger: 0.18, ease: "power3.out", scrollTrigger: { trigger, start: "top 65%", once: true } },
     );
 
-    // Counter: "1 in 4" — clip-path wipe left→right
     if (stat1Ref.current) {
-      gsap.fromTo(
-        stat1Ref.current,
-        { clipPath: "inset(0 100% 0 0)", opacity: 1 },
-        {
-          clipPath: "inset(0 0% 0 0)",
-          duration: 1.1,
-          ease: "power2.out",
-          scrollTrigger: { trigger, start: "top 74%", once: true },
-        },
-      );
-    }
-
-    // Counter: 75%
-    if (stat2Ref.current) {
-      const obj = { val: 0 };
-      gsap.to(obj, {
-        val: 75,
-        duration: 1.8,
-        ease: "power2.out",
-        scrollTrigger: { trigger, start: "top 74%", once: true },
-        onUpdate() {
-          if (stat2Ref.current)
-            stat2Ref.current.textContent = `${Math.round(obj.val)}%`;
-        },
+      gsap.fromTo(stat1Ref.current, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, {
+        clipPath: "inset(0 0% 0 0)", duration: 1.1, ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 65%", once: true },
       });
     }
 
-    // Counter: 60%
-    if (stat3Ref.current) {
-      const obj = { val: 0 };
+    [{ ref: stat2Ref, val: 75 }, { ref: stat3Ref, val: 60 }].forEach(({ ref, val }) => {
+      if (!ref.current) return;
+      const obj = { v: 0 };
       gsap.to(obj, {
-        val: 60,
-        duration: 1.6,
-        ease: "power2.out",
-        scrollTrigger: { trigger, start: "top 74%", once: true },
-        onUpdate() {
-          if (stat3Ref.current)
-            stat3Ref.current.textContent = `${Math.round(obj.val)}%`;
-        },
+        v: val, duration: val === 75 ? 1.8 : 1.6, ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 65%", once: true },
+        onUpdate() { if (ref.current) ref.current.textContent = `${Math.round(obj.v)}%`; },
       });
-    }
-  }, []);
-
-  // ── Comparison rows — clip-path wipe ────────────────────────────
-  useEffect(() => {
-    const rows = document.querySelectorAll(`.${styles.comparisonRow}`);
-    if (!rows.length) return;
-    rows.forEach((row, i) => {
-      gsap.fromTo(
-        row,
-        { clipPath: "inset(100% 0 0 0)", opacity: 1 },
-        {
-          clipPath: "inset(0% 0 0 0)",
-          duration: 0.7,
-          delay: i * 0.08,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: comparisonSectionRef.current,
-            start: "top 70%",
-            once: true,
-          },
-        },
-      );
     });
-    const compHeading = comparisonSectionRef.current?.querySelector(
-      `.${styles.comparisonHeading}`,
-    );
-    if (compHeading) {
-      gsap.fromTo(
-        compHeading,
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: comparisonSectionRef.current,
-            start: "top 78%",
-            once: true,
-          },
-        },
-      );
-    }
   }, []);
 
-  // ── CTA breathing pulse (hero + closing synced) ─────────────────
+  // Testimonials text blur
   useEffect(() => {
-    const allPrimary = document.querySelectorAll(
-      `.${styles.ctaPrimary}, .${styles.glassBtn}`,
-    );
-    allPrimary.forEach((btn) => {
-      gsap.to(btn, {
-        scale: 1.025,
-        duration: 3.5,
-        ease: "sine.inOut",
+    const trigger = testimonialsSectionRef.current;
+    if (!trigger) return;
+
+    const eyebrow = trigger.querySelector(`.${styles.sectionEyebrow}`);
+    if (eyebrow) {
+      gsap.fromTo(eyebrow, { opacity: 0, y: 20 }, {
+        opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 70%", once: true },
+      });
+    }
+
+    trigger.querySelectorAll(`.${styles.testimonialQuote}`).forEach((el) => {
+      const spans = splitIntoWords(el, { blur: true });
+      gsap.to(spans, {
+        opacity: 1, filter: "blur(0px)", duration: 0.7, stagger: 0.1, ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 70%", once: true },
+      });
+    });
+
+    trigger.querySelectorAll(`.${styles.testimonialRule}`).forEach((rule) => {
+      gsap.fromTo(rule, { scaleX: 0 }, {
+        scaleX: 1, duration: 0.8, ease: "power2.out",
+        scrollTrigger: { trigger: rule, start: "top 85%", once: true },
+      });
+    });
+  }, []);
+
+  // Branch overlay
+  useEffect(() => {
+    const branch = branchOverlayRef.current;
+    const pillarsSection = pillarsSectionRef.current;
+    const socialProof = socialProofSectionRef.current;
+    if (!branch) return;
+
+    gsap.set(branch, {
+      opacity: 0,
+      scale: 0.4,
+      rotate: 15,
+      transformOrigin: "top right",
+    });
+
+    // Initialization delay
+    const sproutTl = gsap.timeline({ delay: 3 });
+    sproutTl.to(branch, {
+      opacity: 1,
+      scale: 1,
+      rotate: 0,
+      duration: 1.8,
+      ease: "power3.out",
+    });
+
+    // Animation
+    sproutTl.add(() => {
+      gsap.to(branch, {
+        keyframes: [
+          { rotate: -1.2, scale: 1.008, y: 2, duration: 2, ease: "sine.inOut" },
+          { rotate: 1.5, scale: 0.995, y: -1, duration: 2, ease: "sine.inOut" },
+          { rotate: -0.8, scale: 1.005, y: 1.5, duration: 2, ease: "sine.inOut" },
+          { rotate: 0, scale: 1, y: 0, duration: 2, ease: "sine.inOut" },
+        ],
         repeat: -1,
-        yoyo: true,
       });
+    });
+
+    // Fade out
+    let fadeOutSt;
+    if (pillarsSection) {
+      fadeOutSt = ScrollTrigger.create({
+        trigger: pillarsSection,
+        start: "top 90%",
+        end: "top 30%",
+        scrub: 1,
+        onUpdate: (self) => {
+          gsap.set(branch, { opacity: 1 - self.progress });
+        },
+      });
+    }
+
+    // Re-appear on scroll
+    let fadeInSt;
+    if (socialProof) {
+      fadeInSt = ScrollTrigger.create({
+        trigger: socialProof,
+        start: "top 90%",
+        end: "top 40%",
+        scrub: 1,
+        onUpdate: (self) => {
+          gsap.set(branch, { opacity: self.progress });
+        },
+      });
+    }
+
+    return () => {
+      sproutTl.kill();
+      fadeOutSt?.kill();
+      fadeInSt?.kill();
+    };
+  }, []);
+
+  // CTA animation
+  useEffect(() => {
+    document.querySelectorAll(`.${styles.ctaPrimary}, .${styles.glassBtn}`).forEach((btn) => {
+      gsap.to(btn, { scale: 1.025, duration: 3.5, ease: "sine.inOut", repeat: -1, yoyo: true });
     });
   }, []);
 
-  // ── Moon orb color temperature shift (warm gold → cool silver) ───
+  // Moon orb temperature shift
   useEffect(() => {
-    const moonOrbs = document.querySelectorAll(`.${styles.moonOrb}`);
-    moonOrbs.forEach((orb) => {
+    document.querySelectorAll(`.${styles.moonOrb}`).forEach((orb) => {
       gsap.to(orb, {
         backgroundColor: "rgba(180, 200, 255, 0.35)",
         boxShadow: "0 0 40px 15px rgba(180, 200, 255, 0.12)",
-        scrollTrigger: {
-          trigger: orb,
-          start: "top 80%",
-          end: "bottom 20%",
-          scrub: 2,
-        },
+        scrollTrigger: { trigger: orb, start: "top 80%", end: "bottom 20%", scrub: 2 },
       });
     });
   }, []);
@@ -869,7 +726,6 @@ export function Landing() {
       <div ref={torchRef} className={styles.torch} />
       <div ref={filmGrainRef} className={styles.filmGrain} />
 
-      {/* Persistent firefly layer across dark sections */}
       <div className={styles.fireflyLayer}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div
@@ -885,47 +741,27 @@ export function Landing() {
         ))}
       </div>
 
-      <img
-        ref={treeOverlayRef}
-        className={styles.treeOverlay}
-        src="/images/tree.png"
-        alt=""
-      />
-      <img className={styles.rootsOverlay} src="/images/roots.png" alt="" />
+      <img ref={treeOverlayRef} className={styles.treeOverlay} src="/images/tree.png" alt="" />
+      <img ref={branchOverlayRef} className={styles.branchOverlay} src="/images/branch.png" alt="" />
 
-      {/* ─── Hero ─────────────────────────────────────────────── */}
+      {/* Hero */}
       <section ref={heroRef} className={styles.hero}>
         <video
           ref={videoBgRef}
           className={styles.heroBg}
-          autoPlay
-          loop
-          muted
-          playsInline
+          autoPlay loop muted playsInline
           poster="/images/hero-poster.jpg"
           src="/videos/hero-water-background.mp4"
         />
-        <img
-          ref={fogLayerRef}
-          className={styles.fogLayer}
-          src="/images/fog.png"
-          alt=""
-        />
+        <img ref={fogLayerRef} className={styles.fogLayer} src="/images/fog.png" alt="" />
         <div className={styles.heroMask} />
+        <div ref={breathOrbRef} className={styles.breathOrb} />
         <div ref={heroContentRef} className={styles.heroContent}>
-          <h1 ref={heroTitleRef} className={styles.heroTitle}>
-            Serenity
-          </h1>
-          <p ref={heroSubtitleRef} className={styles.heroSubtitle}>
-            a quieter place for your mind
-          </p>
+          <h1 ref={heroTitleRef} className={styles.heroTitle}>Serenity</h1>
+          <p ref={heroSubtitleRef} className={styles.heroSubtitle}>a quieter place for your mind</p>
           <div ref={heroCtasRef} className={styles.heroCtas}>
-            <button className={styles.ctaPrimary} onClick={handleBegin}>
-              Begin
-            </button>
-            <button className={styles.ctaSecondary} onClick={handleWelcomeBack}>
-              Welcome back
-            </button>
+            <button className={styles.ctaPrimary} onClick={handleBegin}>Begin</button>
+            <button className={styles.ctaSecondary} onClick={handleWelcomeBack}>Welcome back</button>
           </div>
         </div>
         <div className={styles.scrollIndicator}>
@@ -933,174 +769,189 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ─── Fog transition: Hero → Pillars ──────────────────── */}
+      {/* Fog transition: Hero → Pillars */}
       <div className={styles.transitionHeroToPillars}>
-        <img
-          className={styles.fogTransitionImg}
-          src="/images/fog-transition-top.jpg"
-          alt=""
-        />
+        <img className={styles.fogTransitionImg} src="/images/fog-transition-top.jpg" alt="" />
       </div>
 
-      {/* ─── Pillars ─────────────────────────────────────────── */}
-      <section ref={pillarsSectionRef} className={styles.pillarsSection}>
-        <div className={styles.textureOverlay} />
-        <img className={styles.treeBackground} src="/images/tree.png" alt="" />
+      {/* Pillars (full-viewport horizontal scroll) */}
+      <section ref={pillarsSectionRef} className={styles.pillarsHorizontal}>
+        <img className={styles.pillarTreeUnderlay} src="/images/tree.png" alt="" />
+        <div ref={pillarsTrackRef} className={styles.pillarsTrack}>
+          {PILLARS.map((pillar, idx) => (
+            <div key={pillar.num} className={styles.pillarPanel} data-index={idx}>
+              <div className={styles.textureOverlay} />
+              <div className={styles.pillarGhostBg}>{pillar.num}</div>
 
-        {/* Decorative moon orb — shifts from warm to cool */}
-        <div className={styles.moonOrb} />
+              <div className={styles.pillarPanelInner}>
+                {/* Left: text content */}
+                <div className={styles.pillarPanelLeft}>
+                  <span className={styles.pillarNumber}>{pillar.num}</span>
+                  <div className={styles.pillarDivider} />
+                  <h3 className={styles.pillarTitle}>{pillar.title}</h3>
+                  <p className={styles.pillarText}>{pillar.text}</p>
+                  <div className={styles.pillarFeaturePills}>
+                    {pillar.pills.map((pill) => (
+                      <span key={pill} className={styles.pillarPill}>{pill}</span>
+                    ))}
+                  </div>
+                  <p className={styles.pillarSupportingLine}>{pillar.supporting}</p>
+                </div>
 
-        <div className={styles.pillarsContent}>
-          <p className={styles.sectionEyebrow}>what lives inside</p>
-          <div className={styles.pillarsGrid}>
-            <div className={styles.pillarCard}>
-              <span className={styles.pillarNumber}>01</span>
-              <div className={styles.pillarDivider} />
-              <h3 className={styles.pillarTitle}>Talk</h3>
-              <p className={styles.pillarText}>
-                Say what you can't say anywhere else. No judgment. No agenda.
-                Just a space that listens.
-              </p>
+                {/* Right: visual */}
+                <div className={styles.pillarVisual}>
+                  {pillar.visual === "waveform" && (
+                    <div className={styles.pillarVisualWaveform}>
+                      {Array.from({ length: 14 }).map((_, i) => (
+                        <div key={i} className={styles.waveBar} style={{ animationDelay: `${i * 0.13}s` }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {pillar.visual === "lines" && (
+                    <svg className={styles.pillarVisualLines} viewBox="0 0 420 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <line
+                          key={i}
+                          x1={i % 2 === 0 ? "0" : "40"}
+                          y1={24 + i * 28}
+                          x2={i % 2 === 0 ? "380" : "420"}
+                          y2={24 + i * 28}
+                          stroke="rgba(180,200,255,0.22)"
+                          strokeWidth="1.5"
+                          className={styles.writingLine}
+                          style={{ animationDelay: `${i * 0.35}s` }}
+                        />
+                      ))}
+                    </svg>
+                  )}
+
+                  {pillar.visual === "constellation" && (
+                    <svg className={styles.pillarVisualConstellation} viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <line x1="80" y1="60" x2="220" y2="140" stroke="rgba(180,200,255,0.1)" strokeWidth="1" />
+                      <line x1="220" y1="140" x2="360" y2="80" stroke="rgba(180,200,255,0.1)" strokeWidth="1" />
+                      <line x1="220" y1="140" x2="300" y2="260" stroke="rgba(180,200,255,0.1)" strokeWidth="1" />
+                      <line x1="80" y1="60" x2="140" y2="200" stroke="rgba(180,200,255,0.07)" strokeWidth="1" />
+                      <line x1="360" y1="80" x2="420" y2="220" stroke="rgba(180,200,255,0.07)" strokeWidth="1" />
+                      <line x1="140" y1="200" x2="300" y2="260" stroke="rgba(180,200,255,0.07)" strokeWidth="1" />
+                      {[
+                        [80, 60, 4], [220, 140, 5], [360, 80, 3.5],
+                        [140, 200, 3], [300, 260, 4], [420, 220, 2.5],
+                        [50, 200, 2], [400, 300, 2], [160, 50, 2.5],
+                      ].map(([cx, cy, r], i) => (
+                        <circle
+                          key={i}
+                          cx={cx} cy={cy} r={r}
+                          fill="rgba(197,168,124,0.55)"
+                          className={styles.constellationDot}
+                          style={{ animationDelay: `${i * 0.4}s` }}
+                        />
+                      ))}
+                    </svg>
+                  )}
+                </div>
+              </div>
+
+              {/* Scroll hint on first panel only */}
+              {idx === 0 && (
+                <div className={styles.pillarsScrollHint}>
+                  <span>scroll to explore</span>
+                  <svg width="24" height="10" viewBox="0 0 24 10" fill="none">
+                    <path d="M0 5h22M18 1l4 4-4 4" stroke="currentColor" strokeWidth="1.2" />
+                  </svg>
+                </div>
+              )}
             </div>
-            <div className={styles.pillarCard}>
-              <span className={styles.pillarNumber}>02</span>
-              <div className={styles.pillarDivider} />
-              <h3 className={styles.pillarTitle}>Reflect</h3>
-              <p className={styles.pillarText}>
-                Your journal captures what matters, quietly and without asking.
-                Words become clarity over time.
-              </p>
-            </div>
-            <div className={styles.pillarCard}>
-              <span className={styles.pillarNumber}>03</span>
-              <div className={styles.pillarDivider} />
-              <h3 className={styles.pillarTitle}>Understand</h3>
-              <p className={styles.pillarText}>
-                Your emotional patterns surface slowly. Not as data — as
-                understanding. Your landscape, finally readable.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
-        <div className={styles.pillarsQuote}>
-          <div className={styles.pillarsQuoteLine} />
-          <p className={styles.pillarsQuoteText}>
-            "You are allowed to be both a masterpiece and a work in progress."
-          </p>
-          <span className={styles.pillarsQuoteAuthor}>— Sophia Bush</span>
+
+        {/* Progress dots */}
+        <div className={styles.pillarsDots}>
+          {PILLARS.map((_, i) => (
+            <div
+              key={i}
+              className={`${styles.pillarDot} ${activePillar === i ? styles.pillarDotActive : ""}`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Fog transition: Pillars → Insight */}
+      {/* Fog transition: Pillars → Social Proof */}
       <div className={styles.transitionPillarsToInsight}>
-        <img
-          className={styles.fogTransitionImg}
-          src="/images/fog-transition-bottom.jpg"
-          alt=""
-        />
+        <img className={styles.fogTransitionImg} src="/images/fog-transition-bottom.jpg" alt="" />
       </div>
 
-      {/* ─── Social Proof Strip ───────────────────────────────── */}
+      {/* Social Proof Strip */}
       <section ref={socialProofSectionRef} className={styles.socialProofSection}>
         <div className={styles.textureOverlay} />
-        <p className={styles.socialProofHeadline}>
-          Most of it goes unsaid.
-        </p>
+        <p className={styles.socialProofHeadline}>Most of it goes unsaid.</p>
         <div className={styles.socialStats}>
           <div className={styles.socialStatItem}>
             <span ref={stat1Ref} className={styles.socialStatNumber}>1 in 4</span>
-            <span className={styles.socialStatLabel}>
-              adults go through a mental health condition every year
-            </span>
+            <span className={styles.socialStatLabel}>adults go through a mental health condition every year</span>
             <span className={styles.socialStatSource}>WHO, 2022</span>
           </div>
           <div className={styles.socialStatDivider} />
           <div className={styles.socialStatItem}>
             <span ref={stat2Ref} className={styles.socialStatNumber}>0%</span>
-            <span className={styles.socialStatLabel}>
-              never say a word to anyone about what they're going through
-            </span>
+            <span className={styles.socialStatLabel}>never say a word to anyone about what they're going through</span>
           </div>
           <div className={styles.socialStatDivider} />
           <div className={styles.socialStatItem}>
             <span ref={stat3Ref} className={styles.socialStatNumber}>0%</span>
-            <span className={styles.socialStatLabel}>
-              have never reached out for any kind of help
-            </span>
+            <span className={styles.socialStatLabel}>have never reached out for any kind of help</span>
           </div>
         </div>
       </section>
 
-      {/* ─── Comparison Strip ────────────────────────────────── */}
-      <section ref={comparisonSectionRef} className={styles.comparisonSection}>
+      {/* Testimonials */}
+      <section ref={testimonialsSectionRef} className={styles.testimonialsSection}>
         <div className={styles.textureOverlay} />
-        <div className={styles.moonOrb} style={{ left: "6%", top: "12%", opacity: 0.4 }} />
-        <p className={styles.sectionEyebrow}>why Serenity</p>
-        <h2 className={styles.comparisonHeading}>
-          Some things are easier to say when you're not worried about being a burden.
-        </h2>
-        <p className={styles.comparisonSubtext}>Serenity vs. a text thread with a friend</p>
-        <div className={styles.comparisonCard}>
-          <div className={styles.comparisonHeader}>
-            <div className={styles.comparisonFeatureCol} />
-            <div className={styles.comparisonBrandCol}>Serenity</div>
-            <div className={styles.comparisonOtherCol}>Friend text</div>
-          </div>
-          {[
-            { feature: "There at 3am, every time", serenity: true, other: false },
-            { feature: "No judgment. No advice unless you ask.", serenity: true, other: false },
-            { feature: "Notices patterns you can't see yourself", serenity: true, other: false },
-            { feature: "Remembers everything you've shared", serenity: true, other: false },
-            { feature: "Completely private, always", serenity: true, other: false },
-            { feature: "Never gets tired, never pulls away", serenity: true, other: false },
-          ].map(({ feature, other }) => (
-            <div key={feature} className={styles.comparisonRow}>
-              <div className={styles.comparisonFeatureCol}>{feature}</div>
-              <div className={styles.comparisonBrandCol}>
-                <span className={styles.checkYes}>✓</span>
-              </div>
-              <div className={styles.comparisonOtherCol}>
-                <span className={other ? styles.checkYes : styles.checkNo}>
-                  {other ? "✓" : "✗"}
-                </span>
-              </div>
+        <p className={styles.sectionEyebrow}>what people carry</p>
+        <div className={styles.testimonialsTrack}>
+          {TESTIMONIALS.map((quote, i) => (
+            <div key={i} className={styles.testimonialBlock}>
+              <p className={styles.testimonialQuote}>&#8220;{quote}&#8221;</p>
+              {i < TESTIMONIALS.length - 1 && <div className={styles.testimonialRule} />}
             </div>
           ))}
         </div>
       </section>
 
-      {/* Insight section */}
+      {/* Insight */}
       <section ref={insightSectionRef} className={styles.insightSection}>
         <div className={styles.textureOverlay} />
-
-        {/* Decorative moon orb */}
         <div className={styles.moonOrb} style={{ right: "8%", top: "15%" }} />
-
+        <div className={styles.insightAccentLine} />
+        <div className={styles.insightFireflies}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={styles.fireflyGlobal}
+              style={{
+                left: `${20 + Math.random() * 60}%`,
+                top: `${15 + Math.random() * 70}%`,
+                animationDelay: `${Math.random() * 8}s`,
+                animationDuration: `${6 + Math.random() * 8}s`,
+              }}
+            />
+          ))}
+        </div>
         <div className={styles.insightInner}>
           <div ref={insightTextRef} className={styles.insightText}>
-            <p
-              className={styles.sectionEyebrow}
-              style={{ textAlign: "left", marginBottom: "2rem" }}
-            >
+            <p className={styles.sectionEyebrow} style={{ textAlign: "left", marginBottom: "2rem" }}>
               what you'll find
             </p>
             <h2 className={styles.insightHeading}>
               Your emotional patterns are closer to the surface than you think.
             </h2>
-            <p className={styles.insightSubtext}>
-              Serenity makes them visible.
-            </p>
+            <p className={styles.insightSubtext}>Serenity makes them visible.</p>
             <p className={styles.insightBody}>
-              Every conversation, every journal entry — quietly mapped. Not to
-              judge, but to show you what you already carry.
+              Every conversation, every journal entry — quietly mapped. Not to judge, but to show you what you already carry.
             </p>
           </div>
           <div ref={mockupRef} className={styles.mockupWrapper}>
-            <img
-              className={styles.mockupImg}
-              src="/images/mockup.png"
-              alt="Serenity app"
-            />
+            <img className={styles.mockupImg} src="/images/mockup.png" alt="Serenity app" />
             <div className={styles.mockupGlow} />
           </div>
         </div>
@@ -1108,68 +959,30 @@ export function Landing() {
 
       {/* Fog transition: Insight → Steps */}
       <div className={styles.transitionInsightToSteps}>
-        <img
-          className={styles.fogTransitionImg}
-          src="/images/fog-transition-top.jpg"
-          alt=""
-        />
+        <img className={styles.fogTransitionImg} src="/images/fog-transition-top.jpg" alt="" />
       </div>
 
-      {/* Steps section */}
+      {/* Steps */}
       <section ref={stepsSectionRef} className={styles.stepsSection}>
         <div className={styles.textureOverlay} />
         <img className={styles.stepsTree} src="/images/tree.png" alt="" />
-        <svg
-          ref={svgLineRef}
-          className={styles.connectingLine}
-          viewBox="0 0 2 400"
-          preserveAspectRatio="none"
-        >
+        <svg ref={svgLineRef} className={styles.connectingLine} viewBox="0 0 2 400" preserveAspectRatio="none">
           <defs>
             <filter id="lineGlow">
               <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
-          <path
-            d="M 1 0 L 1 400"
-            stroke="rgba(180,200,255,0.4)"
-            strokeWidth="1.5"
-            fill="none"
-            filter="url(#lineGlow)"
-          />
-          <circle
-            ref={svgOrbRef}
-            cx="1"
-            cy="0"
-            r="5"
-            fill="rgba(180,200,255,0.8)"
-            filter="url(#lineGlow)"
-            style={{ opacity: 0, transition: "opacity 0.3s" }}
-          />
+          <path d="M 1 0 L 1 400" stroke="rgba(180,200,255,0.4)" strokeWidth="1.5" fill="none" filter="url(#lineGlow)" />
+          <circle ref={svgOrbRef} cx="1" cy="0" r="5" fill="rgba(180,200,255,0.8)" filter="url(#lineGlow)" style={{ opacity: 0, transition: "opacity 0.3s" }} />
         </svg>
         <div className={styles.stepsContent}>
           <p className={styles.sectionEyebrow}>the process</p>
           <div className={styles.stepsContainer}>
             {[
-              {
-                num: "01",
-                title: "Open Serenity",
-                text: "No prompts. No forms. Just an open space where you say whatever needs saying.",
-              },
-              {
-                num: "02",
-                title: "It listens differently",
-                text: "Emotion is detected quietly. Patterns are tracked without asking. Nothing is forced.",
-              },
-              {
-                num: "03",
-                title: "You begin to understand",
-                text: "Over days and weeks, your emotional landscape becomes visible. Clarity arrives on its own terms.",
-              },
+              { num: "01", title: "Open Serenity", text: "No prompts. No forms. Just an open space where you say whatever needs saying." },
+              { num: "02", title: "It listens differently", text: "Emotion is detected quietly. Patterns are tracked without asking. Nothing is forced." },
+              { num: "03", title: "You begin to understand", text: "Over days and weeks, your emotional landscape becomes visible. Clarity arrives on its own terms." },
             ].map((step) => (
               <div key={step.num} className={styles.stepItem}>
                 <div className={styles.stepNumberGhost}>{step.num}</div>
@@ -1186,23 +999,13 @@ export function Landing() {
 
       {/* Fog transition: Steps → Quiet */}
       <div className={styles.transitionStepsToQuiet}>
-        <img
-          className={styles.fogTransitionImg}
-          src="/images/fog-transition-bottom.jpg"
-          alt=""
-        />
+        <img className={styles.fogTransitionImg} src="/images/fog-transition-bottom.jpg" alt="" />
       </div>
 
-      {/* Quiet section */}
+      {/* Quiet / Sakura */}
       <section ref={quietSectionRef} className={styles.quietSection}>
-        <img
-          ref={quietBgRef}
-          className={styles.quietBg}
-          src="/images/bluesakura.png"
-          alt=""
-        />
+        <img ref={quietBgRef} className={styles.quietBg} src="/images/bluesakura.png" alt="" />
         <div className={styles.quietOverlay} />
-
         <div className={styles.fireflyContainer}>
           {Array.from({ length: 16 }).map((_, i) => (
             <div
@@ -1217,9 +1020,9 @@ export function Landing() {
             />
           ))}
         </div>
-
         <div className={styles.waterRipple} />
-
+        <div className={styles.breathRingInner} />
+        <div className={styles.breathRingOuter} />
         <p ref={quietQuoteRef} className={styles.quietQuote}>
           Some things are easier to say in the dark.
         </p>
@@ -1227,21 +1030,14 @@ export function Landing() {
 
       {/* Fog transition: Quiet → Closing */}
       <div className={styles.transitionQuietToClosing}>
-        <img
-          className={styles.fogTransitionImg}
-          src="/images/fog-transition-top.jpg"
-          alt=""
-        />
+        <img className={styles.fogTransitionImg} src="/images/fog-transition-top.jpg" alt="" />
       </div>
 
-      {/* Closing section */}
+      {/* Closing */}
       <section ref={closingSectionRef} className={styles.closingSection}>
         <video
           className={styles.closingBg}
-          autoPlay
-          loop
-          muted
-          playsInline
+          autoPlay loop muted playsInline
           poster="/images/closing-poster.jpg"
           src="/videos/closing.mp4"
         />
@@ -1254,19 +1050,10 @@ export function Landing() {
             <p className={styles.quoteLine2}>You don't have to be.</p>
           </div>
           <div ref={closingCtasRef} className={styles.closingCtas}>
-            <button className={styles.glassBtn} onClick={handleBegin}>
-              Create your space
-            </button>
-            <button
-              className={styles.glassBtnSecondary}
-              onClick={handleWelcomeBack}
-            >
-              Welcome back
-            </button>
+            <button className={styles.glassBtn} onClick={handleBegin}>Create your space</button>
+            <button className={styles.glassBtnSecondary} onClick={handleWelcomeBack}>Welcome back</button>
           </div>
-          <p className={styles.disclaimer}>
-            Your space to reflect. Not a substitute for professional care.
-          </p>
+          <p className={styles.disclaimer}>Your space to reflect. Not a substitute for professional care.</p>
         </div>
       </section>
     </div>

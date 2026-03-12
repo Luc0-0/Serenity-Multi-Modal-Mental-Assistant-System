@@ -1,4 +1,4 @@
-/* Serenity Check-In Module — Enhanced */
+/* Serenity Check-In Module */
 
 :root {
   --orb-size: min(560px, 82vmin);
@@ -10,9 +10,7 @@
   --text-muted: rgba(255, 240, 210, 0.55);
 }
 
-/* ═══════════════════════════════════════
-   CONTAINER
-   ═══════════════════════════════════════ */
+/* CONTAINER */
 .container {
   position: relative;
   width: 100%;
@@ -31,9 +29,7 @@
   overflow: hidden;
 }
 
-/* ═══════════════════════════════════════
-   BACKGROUND — Ken Burns + Chat Dim
-   ═══════════════════════════════════════ */
+/* BACKGROUND */
 .backgroundImage {
   position: fixed;
   top: 0;
@@ -100,7 +96,7 @@
   transition: background 1s ease;
 }
 
-/* Noise — reduced opacity for cleaner image */
+/* Noise overlay */
 .backgroundImage::before {
   content: "";
   position: absolute;
@@ -112,9 +108,7 @@
   pointer-events: none;
 }
 
-/* ═══════════════════════════════════════
-   AMBIENT GLOW (cursor-following)
-   ═══════════════════════════════════════ */
+/* AMBIENT GLOW */
 .ambientGlow {
   position: fixed;
   inset: 0;
@@ -124,9 +118,7 @@
   transition: opacity 0.5s ease;
 }
 
-/* ═══════════════════════════════════════
-   FIREFLIES
-   ═══════════════════════════════════════ */
+/* FIREFLIES */
 .firefliesLayer {
   position: fixed;
   inset: 0;
@@ -176,9 +168,7 @@
   }
 }
 
-/* ═══════════════════════════════════════
-   WELCOME SCREEN
-   ═══════════════════════════════════════ */
+/* WELCOME SCREEN */
 .content {
   flex: 1;
   display: flex;
@@ -193,13 +183,13 @@
     transform 0.6s ease;
 }
 
-/* Orb exit transition — shrink and fade when entering chat */
+/* Orb exit transition */
 .content.orbExiting {
   opacity: 0;
   transform: scale(0.85);
 }
 
-/* ── Orb ── */
+/* Orb */
 .orbContainer {
   position: relative;
   width: var(--orb-size);
@@ -227,7 +217,7 @@
   z-index: 0;
 }
 
-/* Slow, breathing ring — not a techy spinner */
+/* Breathing ring */
 .orbRing {
   position: absolute;
   inset: -1px;
@@ -333,7 +323,7 @@
   gap: 0;
 }
 
-/* ── Welcome text — warm white for readability ── */
+/* Welcome text */
 .welcomeHeading {
   font-family: "Playfair Display", serif;
   font-size: clamp(2.6rem, 5vw, 4.2rem);
@@ -350,11 +340,11 @@
 }
 
 .subtitle {
-   font-family: "Libre Baskerville", serif;
-   font-size: clamp(15px, 1.7vw, 17px);
-   font-style: italic;
-   font-weight: 400;
-   color: rgba(35, 28, 22, 0.78);
+  font-family: "Libre Baskerville", serif;
+  font-size: clamp(15px, 1.7vw, 17px);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(35, 28, 22, 0.78);
   margin: 0 0 28px 0;
   letter-spacing: 0.08em;
   max-width: 100%;
@@ -379,7 +369,7 @@
   opacity: 0;
 }
 
-/* ── Input ── */
+/* Input */
 .inputWrapper {
   width: 100%;
   max-width: 320px;
@@ -390,14 +380,14 @@
 }
 
 .inputContainer {
-   position: relative;
-   display: flex;
-   align-items: center;
-   border-bottom: 1.5px solid rgba(35, 28, 22, 0.2);
-   transition: border-color 0.4s ease;
- }
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1.5px solid rgba(35, 28, 22, 0.2);
+  transition: border-color 0.4s ease;
+}
 
-/* Center-out underline on focus */
+/* Underline on focus */
 .inputContainer::after {
   content: "";
   position: absolute;
@@ -417,19 +407,19 @@
 }
 
 .inputContainer:focus-within {
-   border-bottom-color: rgba(35, 28, 22, 0.35);
- }
+  border-bottom-color: rgba(35, 28, 22, 0.35);
+}
 
 .minimalInput {
-   width: 100%;
-   background: transparent;
-   border: none;
-   padding: 14px 28px 14px 0;
-   font-family: "Libre Baskerville", serif;
-   font-size: 1.15rem;
-   font-style: italic;
-   font-weight: 400;
-   color: rgba(35, 28, 22, 0.88);
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 28px 14px 0;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(35, 28, 22, 0.88);
   text-align: center;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
   outline: none;
@@ -438,7 +428,7 @@
 }
 
 .minimalInput::placeholder {
-   color: rgba(35, 28, 22, 0.45);
+  color: rgba(35, 28, 22, 0.45);
   font-weight: 400;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
@@ -488,7 +478,7 @@
   pointer-events: none;
 }
 
-/* ── Action buttons — upgraded with gold bar ── */
+/* Action buttons */
 .actionButtons {
   display: flex;
   gap: 48px;
@@ -499,11 +489,11 @@
 }
 
 .actionBtn {
-   position: relative;
-   padding: 0 0 0 0;
-   background: none;
-   border: none;
-   color: rgba(35, 28, 22, 0.68);
+  position: relative;
+  padding: 0 0 0 0;
+  background: none;
+  border: none;
+  color: rgba(35, 28, 22, 0.68);
   font-family: "Libre Baskerville", serif;
   font-size: 13px;
   font-weight: 400;
@@ -527,7 +517,7 @@
 }
 
 .actionBtn:hover {
-   color: rgba(35, 28, 22, 0.95);
+  color: rgba(35, 28, 22, 0.95);
 }
 
 .actionBtn:hover .actionBtnBar {
@@ -553,7 +543,7 @@
   transform: scale(0.97);
 }
 
-/* ── Ambient quote ── */
+/* Quote */
 .ambientQuote {
   position: absolute;
   bottom: 80px;
@@ -570,7 +560,7 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Footer ── */
+/* Footer */
 .footer {
   position: relative;
   z-index: 5;
@@ -588,9 +578,7 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* ═══════════════════════════════════════
-   ANIMATIONS
-   ═══════════════════════════════════════ */
+/* ANIMATIONS */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -622,9 +610,7 @@
   }
 }
 
-/* ═══════════════════════════════════════
-   CHAT MODE
-   ═══════════════════════════════════════ */
+/* CHAT MODE */
 .chatContentWrapper {
   flex: 1;
   display: flex;
@@ -676,7 +662,7 @@
   );
 }
 
-/* ── Insights panel — soft, no hard card ── */
+/* Insights panel */
 .insightsPanel {
   width: 300px;
   min-width: 300px;
@@ -690,7 +676,7 @@
   animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ── Messages ── */
+/* Messages */
 .message {
   display: flex;
   animation: messageSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -727,7 +713,7 @@
   margin-bottom: 0;
 }
 
-/* User bubbles — dark, minimal */
+/* User bubbles */
 .message.user .messageContent {
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -742,7 +728,7 @@
   line-height: 1.55;
 }
 
-/* Assistant bubbles — warm golden tint */
+/* Assistant bubbles */
 .message.assistant .messageContent {
   background: rgba(180, 140, 80, 0.04);
   border: 1px solid rgba(196, 168, 130, 0.1);
@@ -775,7 +761,7 @@
   text-align: left;
 }
 
-/* ── Typing indicator ── */
+/* Typing indicator */
 .typingIndicator {
   display: flex;
   gap: 4px;
@@ -809,9 +795,7 @@
   }
 }
 
-/* ═══════════════════════════════════════
-   CHAT INPUT
-   ═══════════════════════════════════════ */
+/* CHAT INPUT */
 .chatInputArea {
   position: absolute;
   bottom: 0;
@@ -910,9 +894,7 @@
   cursor: default;
 }
 
-/* ═══════════════════════════════════════
-   INSIGHTS EDGE TAB
-   ═══════════════════════════════════════ */
+/* INSIGHTS EDGE TAB */
 .insightsEdgeTab {
   position: absolute;
   right: 0;
@@ -945,9 +927,6 @@
   right: 300px;
 }
 
-/* ═══════════════════════════════════════
-   ERROR STATES
-   ═══════════════════════════════════════ */
 .errorMessage {
   padding: 12px 16px;
   margin: 6px 0;
@@ -1002,9 +981,7 @@
   color: rgba(212, 192, 162, 0.85);
 }
 
-/* ═══════════════════════════════════════
-   EMPTY STATE
-   ═══════════════════════════════════════ */
+/* EMPTY STATE */
 .emptyState {
   display: flex;
   align-items: center;
@@ -1025,9 +1002,7 @@
   opacity: 1 !important;
 }
 
-/* ═══════════════════════════════════════
-   SCROLLBAR
-   ═══════════════════════════════════════ */
+/* SCROLLBAR */
 .messagesArea::-webkit-scrollbar {
   width: 3px;
 }
@@ -1042,9 +1017,7 @@
   background: rgba(196, 168, 130, 0.22);
 }
 
-/* ═══════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════ */
+/* RESPONSIVE */
 @media (max-width: 1200px) {
   .messagesArea {
     padding: 28px 40px 160px 40px;
@@ -1258,7 +1231,9 @@
     padding: 14px 14px 0 14px;
     opacity: 0;
     pointer-events: none;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .insightsPanel.insightsPanelOpen {

@@ -116,6 +116,7 @@ export function Insights() {
   const [insightsData, setInsightsData] = useState(null);
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   const authFetch = useCallback(async (url) => {
@@ -139,11 +140,12 @@ export function Insights() {
   const fetchInsights = useCallback(async (days) => {
     setIsLoading(true);
     setInsightsData(null);
+    setFetchFailed(false);
     try {
       const data = await authFetch(`${API_BASE_URL}/api/emotions/insights/?days=${days}`);
       if (data) setInsightsData(transformData(data));
     } catch {
-      setInsightsData(null);
+      setFetchFailed(true);
     } finally {
       setIsLoading(false);
     }
@@ -181,18 +183,63 @@ export function Insights() {
     return (
       <div className={styles.container}>
         <div className={styles.backgroundImage} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-          <div style={{ textAlign: "center", color: "#f5f5f5" }}>
-            <div style={{
-              width: "40px", height: "40px",
-              border: "3px solid rgba(212, 165, 116, 0.2)",
-              borderTopColor: "#d4a574",
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-              margin: "0 auto 1rem",
-            }} />
-            <p style={{ fontSize: "0.9rem", color: "#a0a0a0" }}>Loading your insights...</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div className={styles.contentWrapper}>
+          <header className={styles.header}>
+            <div className={styles.shimmer} style={{ width: "140px", height: "42px", borderRadius: "8px", margin: "0 auto 0.75rem" }} />
+            <div className={styles.shimmer} style={{ width: "220px", height: "14px", borderRadius: "6px", margin: "0 auto 1.5rem" }} />
+            <div className={styles.shimmer} style={{ width: "100px", height: "34px", borderRadius: "10px", margin: "0 auto" }} />
+          </header>
+          <main className={styles.main}>
+            <div className={styles.shimmer} style={{ height: "72px", borderRadius: "16px", marginBottom: "1.5rem" }} />
+            <div className={styles.insightsCarouselWrapper}>
+              <div
+                className={styles.insightsGrid}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(260px, 1fr) minmax(520px, 2fr) minmax(240px, 1fr)",
+                  gap: "1.25rem",
+                  marginBottom: "2rem",
+                }}
+              >
+                {[300, 400, 300].map((h, i) => (
+                  <div key={i} className={styles.glassCard} style={{ minHeight: `${h}px`, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    <div className={styles.shimmer} style={{ width: "60%", height: "14px", borderRadius: "6px" }} />
+                    <div className={styles.shimmer} style={{ width: "40%", height: "10px", borderRadius: "6px" }} />
+                    <div className={styles.shimmer} style={{ flex: 1, borderRadius: "12px", minHeight: "80px" }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchFailed) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.backgroundImage} />
+        <div className={styles.contentWrapper}>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="23" stroke="rgba(180,100,100,0.2)" strokeWidth="1" />
+                <line x1="16" y1="16" x2="32" y2="32" stroke="rgba(180,100,100,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="32" y1="16" x2="16" y2="32" stroke="rgba(180,100,100,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h2 className={styles.emptyTitle}>Couldn't load insights</h2>
+            <p className={styles.emptyText}>
+              There was a problem reaching the server. Check your connection and try again.
+            </p>
+            <button
+              className={styles.emptyButton}
+              onClick={() => fetchInsights(period)}
+              style={{ borderColor: "rgba(180,100,100,0.3)", color: "rgba(200,130,130,0.8)" }}
+            >
+              Try again
+            </button>
           </div>
         </div>
       </div>
@@ -205,12 +252,22 @@ export function Insights() {
         <div className={styles.backgroundImage} />
         <div className={styles.contentWrapper}>
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>◈</div>
-            <h2 className={styles.emptyTitle}>No insights yet</h2>
+            <div className={styles.emptyIcon}>
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                <circle cx="28" cy="28" r="27" stroke="rgba(212,165,116,0.15)" strokeWidth="1" />
+                <circle cx="28" cy="28" r="20" stroke="rgba(212,165,116,0.08)" strokeWidth="1" />
+                <circle cx="28" cy="28" r="3" fill="rgba(212,165,116,0.35)" />
+                <circle cx="28" cy="12" r="1.5" fill="rgba(212,165,116,0.2)" />
+                <circle cx="28" cy="44" r="1.5" fill="rgba(212,165,116,0.2)" />
+                <circle cx="12" cy="28" r="1.5" fill="rgba(212,165,116,0.2)" />
+                <circle cx="44" cy="28" r="1.5" fill="rgba(212,165,116,0.2)" />
+              </svg>
+            </div>
+            <h2 className={styles.emptyTitle}>No patterns yet</h2>
             <p className={styles.emptyText}>
-              Start a few conversations with Serenity and your emotional patterns will appear here.
+              Check in a few times and your emotional landscape will emerge here.
             </p>
-            <button className={styles.emptyButton} onClick={() => navigate("/checkin")}>
+            <button className={styles.emptyButton} onClick={() => navigate("/check-in")}>
               Start a Check-in
             </button>
           </div>

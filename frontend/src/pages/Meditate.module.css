@@ -1,19 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap');
 
-/* ━━━━━━━━━━━━━━━━━━
-   CONTAINER & BG
-   ━━━━━━━━━━━━━━━━━━ */
+/* CONTAINER & BG */
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    min-height: 100vh;
+    gap: clamp(1rem, 2.5vh, 2rem);
+    height: 100dvh;
+    box-sizing: border-box;
     position: relative;
     overflow: hidden;
     color: #e6dcc3;
-    padding: 2rem 1rem;
+    padding: clamp(1rem, 4vh, 2.5rem) 1rem;
 }
 
 .backgroundImage {
@@ -40,40 +39,34 @@
     pointer-events: none;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   ETHEREAL FLOW CORE
-   ━━━━━━━━━━━━━━━━━━ */
+/* FLOW CORE */
 .flowContainer {
     position: relative;
     z-index: 10;
-    width: 320px;
-    /* Increased back from 280px */
-    height: 320px;
+    width: clamp(220px, 45vh, 360px);
+    height: clamp(220px, 45vh, 360px);
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 60px;
+    margin-bottom: clamp(10px, 4vh, 40px);
     cursor: pointer;
 }
 
-/* 
-   Layer 1: The Liquid Flow
-   Pro-level white/silver gradient.
-*/
+/* Layer 1 */
 .flowRing {
     position: absolute;
     inset: 0;
     border-radius: 50%;
 
-    /* Pure White & Silver Flow */
+
     background: conic-gradient(from 0deg,
             rgba(255, 255, 255, 0),
             rgba(255, 255, 255, 0.5) 20%,
-            /* Soft White */
+
             rgba(240, 248, 255, 0.1) 40%,
-            /* Very subtle cool tint */
+
             rgba(255, 255, 255, 0.9) 60%,
-            /* Brightest White Highlight */
+
             rgba(230, 230, 230, 0.3) 80%,
             rgba(255, 255, 255, 0) 100%);
 
@@ -82,44 +75,35 @@
 
     animation: spin 8s linear infinite;
     opacity: 0.9;
-    filter: blur(4px);
-    /* Increased blur for "light" feel */
+
 }
 
-/*
-   Layer 1.5: Aurora Touch
-   Subtle shifting colors that fade in and out.
-*/
+/* Layer 1.5 */
 .auroraRing {
     position: absolute;
     inset: -5px;
-    /* Slightly wider */
     border-radius: 50%;
 
-    /* Subtle Ethereal Colors: Pale Teal, Soft Violet, Transparent */
+
     background: conic-gradient(from 180deg,
             transparent 0%,
             rgba(64, 224, 208, 0.2) 25%,
-            /* Turquoise */
+
             transparent 50%,
             rgba(230, 230, 250, 0.2) 75%,
-            /* Lavender */
+
             transparent 100%);
 
     -webkit-mask: radial-gradient(transparent 58%, black 60%);
     mask: radial-gradient(transparent 58%, black 60%);
 
     filter: blur(10px);
-    /* Diffused light */
     animation:
         spin 15s linear infinite reverse,
         auroraFade 6s ease-in-out infinite alternate;
 }
 
-/* 
-   Layer 2: The Texture Ring
-   Subtle silver dashed ring.
-*/
+/* Layer 2 */
 .textureRing {
     position: absolute;
     inset: 12px;
@@ -129,23 +113,19 @@
     animation: spin 30s linear infinite reverse;
 }
 
-/* 
-   Layer 3: The Static Outer Glow -> Restored Container Glow
-   Now with subtle aurora tints.
-*/
+/* Layer 3 */
 .staticGlow {
     position: absolute;
     inset: -10px;
-    /* Reduced gap from -30px for tighter fit */
     border-radius: 50%;
 
-    /* Tinted Container Background */
+
     background: radial-gradient(circle,
             rgba(255, 255, 255, 0.05) 0%,
             rgba(64, 224, 208, 0.03) 40%,
-            /* Hint of Turquoise */
+
             rgba(230, 230, 250, 0.03) 70%,
-            /* Hint of Lavender */
+
             transparent 85%);
 
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -160,29 +140,27 @@
 /* Central Core Glow */
 .coreGlow {
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 38%;
+    height: 38%;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
     filter: blur(25px);
     z-index: 20;
     animation: pulseCore 5s ease-in-out infinite;
 }
 
-/* Breathing Orb (replaces play button) */
+/* Breathing Orb */
 .breathingOrb {
     position: absolute;
     z-index: 30;
-    width: 88px;
-    height: 88px;
+    width: 28%;
+    height: 28%;
     border-radius: 50%;
     will-change: transform;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   NEW BREATHING UI
-   ━━━━━━━━━━━━━━━━━━ */
+/* BREATHING UI */
 
-/* Ambient background layer that shifts per phase */
+/* Ambient background layer */
 .phaseAmbient {
     position: fixed;
     inset: 0;
@@ -198,7 +176,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: clamp(0.5rem, 1.5vh, 1.5rem);
 }
 
 /* Pattern selector pills */
@@ -281,14 +259,14 @@
     background: rgba(212, 175, 55, 0.08);
 }
 
-/* Phase label + countdown below orb */
+/* Phase label */
 .phaseDisplay {
     text-align: center;
-    min-height: 80px;
+    min-height: clamp(60px, 8vh, 80px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
 }
 
 .phaseLabel {
@@ -304,7 +282,7 @@
 
 .phaseCountdown {
     font-family: 'Inter', monospace;
-    font-size: 2.4rem;
+    font-size: clamp(2rem, 4vh, 2.4rem);
     font-weight: 200;
     color: rgba(230, 220, 195, 0.75);
     letter-spacing: 0.04em;
@@ -355,9 +333,7 @@
     color: rgba(230, 220, 195, 0.7);
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   BOTTOM NAVIGATION
-   ━━━━━━━━━━━━━━━━━━ */
+/* BOTTOM NAVIGATION */
 .bottomNav {
     position: relative;
     z-index: 10;
@@ -398,9 +374,7 @@
     opacity: 0.8;
 }
 
-/* ━━━━━━━━━━━━━━━━━━
-   ANIMATIONS
-   ━━━━━━━━━━━━━━━━━━ */
+/* ANIMATIONS */
 
 @keyframes spin {
     from {
@@ -436,7 +410,6 @@
     100% {
         box-shadow:
             0 0 60px rgba(255, 255, 255, 0.5),
-            /* Brighter, tighter glow */
             inset 0 0 20px rgba(255, 255, 255, 0.2);
     }
 }
@@ -469,9 +442,8 @@
 
 @media (max-width: 768px) {
     .container {
-        overflow-x: hidden;
-        overflow-y: auto;
-        padding-bottom: 80px;
+        overflow: hidden;
+        padding-bottom: clamp(10px, 3vh, 30px);
     }
 
     .backgroundImage {
@@ -483,9 +455,9 @@
     }
 
     .flowContainer {
-        width: min(70vw, 280px) !important;
-        height: min(70vw, 280px) !important;
-        margin-bottom: 40px;
+        width: min(75vw, 40vh) !important;
+        height: min(75vw, 40vh) !important;
+        margin-bottom: clamp(10px, 3vh, 30px);
         cursor: pointer;
         touch-action: manipulation;
     }
@@ -513,14 +485,14 @@
     }
 
     .coreGlow {
-        width: 100px;
-        height: 100px;
+        width: 38%;
+        height: 38%;
         background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
     }
 
     .breathingOrb {
-        width: 72px;
-        height: 72px;
+        width: 28%;
+        height: 28%;
     }
 
     .patternSelector {
@@ -545,7 +517,7 @@
         font-size: 0.8rem;
     }
 
-    /* Bottom navigation (kept for visual consistency if re-added) */
+    /* Bottom navigation */
     .bottomNav {
         position: fixed;
         bottom: 0;
@@ -585,7 +557,7 @@
         transform: scale(0.96);
     }
 
-    /* Remove hover-only states */
+    /* Hover states */
     .navBtn:hover {
         background: rgba(20, 20, 25, 0.3);
         border-color: rgba(255, 255, 255, 0.06);

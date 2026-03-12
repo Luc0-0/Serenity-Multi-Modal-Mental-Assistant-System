@@ -68,6 +68,9 @@ export function Landing() {
   const filmGrainRef = useRef(null);
   const socialProofSectionRef = useRef(null);
   const comparisonSectionRef = useRef(null);
+  const stat1Ref = useRef(null);
+  const stat2Ref = useRef(null);
+  const stat3Ref = useRef(null);
 
   // Smooth scroll with Lenis
   useEffect(() => {
@@ -702,45 +705,82 @@ export function Landing() {
     }
   }, []);
 
-  // ── Social proof strip — staggered stat fade-in ──────────────────
+  // ── Social proof strip — headline + stat fade-in + number counters ──
   useEffect(() => {
-    const statItems = document.querySelectorAll(`.${styles.socialStatItem}`);
-    if (!statItems.length) return;
+    const trigger = socialProofSectionRef.current;
+    if (!trigger) return;
+
+    // Headline word-by-word reveal
+    const headline = trigger.querySelector(`.${styles.socialProofHeadline}`);
+    if (headline) {
+      const wordSpans = splitIntoWords(headline);
+      gsap.to(wordSpans, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.09,
+        ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 80%", once: true },
+      });
+    }
+
+    // Stat items staggered rise
+    const statItems = trigger.querySelectorAll(`.${styles.socialStatItem}`);
     gsap.fromTo(
       statItems,
-      { opacity: 0, y: 30 },
+      { opacity: 0, y: 32 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: socialProofSectionRef.current,
-          start: "top 75%",
-          once: true,
-        },
+        duration: 0.85,
+        stagger: 0.18,
+        ease: "power3.out",
+        scrollTrigger: { trigger, start: "top 74%", once: true },
       },
     );
-    const headline = socialProofSectionRef.current?.querySelector(
-      `.${styles.socialProofHeadline}`,
-    );
-    if (headline) {
+
+    // Counter: "1 in 4" — clip-path wipe left→right
+    if (stat1Ref.current) {
       gsap.fromTo(
-        headline,
-        { opacity: 0, y: 20 },
+        stat1Ref.current,
+        { clipPath: "inset(0 100% 0 0)", opacity: 1 },
         {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
+          clipPath: "inset(0 0% 0 0)",
+          duration: 1.1,
           ease: "power2.out",
-          scrollTrigger: {
-            trigger: socialProofSectionRef.current,
-            start: "top 80%",
-            once: true,
-          },
+          scrollTrigger: { trigger, start: "top 74%", once: true },
         },
       );
+    }
+
+    // Counter: 75%
+    if (stat2Ref.current) {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 75,
+        duration: 1.8,
+        ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 74%", once: true },
+        onUpdate() {
+          if (stat2Ref.current)
+            stat2Ref.current.textContent = `${Math.round(obj.val)}%`;
+        },
+      });
+    }
+
+    // Counter: 60%
+    if (stat3Ref.current) {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 60,
+        duration: 1.6,
+        ease: "power2.out",
+        scrollTrigger: { trigger, start: "top 74%", once: true },
+        onUpdate() {
+          if (stat3Ref.current)
+            stat3Ref.current.textContent = `${Math.round(obj.val)}%`;
+        },
+      });
     }
   }, []);
 
@@ -962,29 +1002,30 @@ export function Landing() {
 
       {/* ─── Social Proof Strip ───────────────────────────────── */}
       <section ref={socialProofSectionRef} className={styles.socialProofSection}>
+        <div className={styles.textureOverlay} />
         <p className={styles.socialProofHeadline}>
-          Built for the 1 in 4 people who carry things quietly.
+          Most of it goes unsaid.
         </p>
         <div className={styles.socialStats}>
           <div className={styles.socialStatItem}>
-            <span className={styles.socialStatNumber}>1 in 4</span>
+            <span ref={stat1Ref} className={styles.socialStatNumber}>1 in 4</span>
             <span className={styles.socialStatLabel}>
-              adults experience a mental health condition each year
+              adults go through a mental health condition every year
             </span>
             <span className={styles.socialStatSource}>WHO, 2022</span>
           </div>
           <div className={styles.socialStatDivider} />
           <div className={styles.socialStatItem}>
-            <span className={styles.socialStatNumber}>75%</span>
+            <span ref={stat2Ref} className={styles.socialStatNumber}>0%</span>
             <span className={styles.socialStatLabel}>
-              with mental health challenges never speak to anyone about it
+              never say a word to anyone about what they're going through
             </span>
           </div>
           <div className={styles.socialStatDivider} />
           <div className={styles.socialStatItem}>
-            <span className={styles.socialStatNumber}>60%</span>
+            <span ref={stat3Ref} className={styles.socialStatNumber}>0%</span>
             <span className={styles.socialStatLabel}>
-              have never accessed any form of professional support
+              have never reached out for any kind of help
             </span>
           </div>
         </div>
@@ -992,24 +1033,27 @@ export function Landing() {
 
       {/* ─── Comparison Strip ────────────────────────────────── */}
       <section ref={comparisonSectionRef} className={styles.comparisonSection}>
+        <div className={styles.textureOverlay} />
+        <div className={styles.moonOrb} style={{ left: "6%", top: "12%", opacity: 0.4 }} />
         <p className={styles.sectionEyebrow}>why Serenity</p>
         <h2 className={styles.comparisonHeading}>
-          Serenity vs. a text thread with a friend.
+          Some things are easier to say when you're not worried about being a burden.
         </h2>
+        <p className={styles.comparisonSubtext}>Serenity vs. a text thread with a friend</p>
         <div className={styles.comparisonCard}>
           <div className={styles.comparisonHeader}>
-            <div className={styles.comparisonFeatureCol}>Feature</div>
+            <div className={styles.comparisonFeatureCol} />
             <div className={styles.comparisonBrandCol}>Serenity</div>
             <div className={styles.comparisonOtherCol}>Friend text</div>
           </div>
           {[
-            { feature: "Available at 3am", serenity: true, other: false },
-            { feature: "No judgment, no unsolicited advice", serenity: true, other: false },
-            { feature: "Tracks emotional patterns over time", serenity: true, other: false },
-            { feature: "Remembers what you've shared", serenity: true, other: false },
-            { feature: "Completely private", serenity: true, other: false },
-            { feature: "Never gets tired of listening", serenity: true, other: false },
-          ].map(({ feature, serenity, other }) => (
+            { feature: "There at 3am, every time", serenity: true, other: false },
+            { feature: "No judgment. No advice unless you ask.", serenity: true, other: false },
+            { feature: "Notices patterns you can't see yourself", serenity: true, other: false },
+            { feature: "Remembers everything you've shared", serenity: true, other: false },
+            { feature: "Completely private, always", serenity: true, other: false },
+            { feature: "Never gets tired, never pulls away", serenity: true, other: false },
+          ].map(({ feature, other }) => (
             <div key={feature} className={styles.comparisonRow}>
               <div className={styles.comparisonFeatureCol}>{feature}</div>
               <div className={styles.comparisonBrandCol}>

@@ -1,45 +1,59 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./PageTransition.module.css";
 
-/**
- * Radial light overlay that expands from the center on route change,
- * then fades out to reveal the new page.
- */
+const DEPTH = {
+  "/": 0,
+  "/login": 1,
+  "/signup": 1,
+  "/onboarding": 1,
+  "/checkin": 2,
+  "/journal": 2,
+  "/insights": 2,
+  "/meditate": 2,
+  "/profile": 2,
+};
+
+function getDepth(path) {
+  return DEPTH[path] ?? 1;
+}
+
 export function PageTransition({ location }) {
-    const [phase, setPhase] = useState("idle"); // idle | expand | fade
-    const prevPath = useRef(location.pathname);
-    const isFirstRender = useRef(true);
+  const [phase, setPhase] = useState("idle"); // idle | expand | fade
+  const [direction, setDirection] = useState("forward"); // forward | back
+  const prevPath = useRef(location.pathname);
+  const isFirstRender = useRef(true);
 
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            prevPath.current = location.pathname;
-            return;
-        }
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      prevPath.current = location.pathname;
+      return;
+    }
 
-        if (location.pathname === prevPath.current) return;
-        prevPath.current = location.pathname;
+    if (location.pathname === prevPath.current) return;
 
-        // Phase 1: radial circle expands from center
-        setPhase("expand");
-    }, [location.pathname]);
+    const prevDepth = getDepth(prevPath.current);
+    const nextDepth = getDepth(location.pathname);
+    setDirection(nextDepth >= prevDepth ? "forward" : "back");
+    prevPath.current = location.pathname;
 
-    const handleAnimationEnd = () => {
-        if (phase === "expand") {
-            // Circle fully expanded — route already changed underneath.
-            // Phase 2: fade overlay out to reveal new page
-            setPhase("fade");
-        } else if (phase === "fade") {
-            setPhase("idle");
-        }
-    };
+    setPhase("expand");
+  }, [location.pathname]);
 
-    if (phase === "idle") return null;
+  const handleAnimationEnd = () => {
+    if (phase === "expand") {
+      setPhase("fade");
+    } else if (phase === "fade") {
+      setPhase("idle");
+    }
+  };
 
-    return (
-        <div
-            className={`${styles.overlay} ${styles[phase]}`}
-            onAnimationEnd={handleAnimationEnd}
-        />
-    );
+  if (phase === "idle") return null;
+
+  return (
+    <div
+      className={`${styles.overlay} ${styles[phase]} ${styles[direction]}`}
+      onAnimationEnd={handleAnimationEnd}
+    />
+  );
 }

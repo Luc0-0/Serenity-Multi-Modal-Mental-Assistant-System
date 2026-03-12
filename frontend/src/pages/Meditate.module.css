@@ -8,10 +8,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1.5rem;
     min-height: 100vh;
     position: relative;
     overflow: hidden;
     color: #e6dcc3;
+    padding: 2rem 1rem;
 }
 
 .backgroundImage {
@@ -166,45 +168,191 @@
     animation: pulseCore 5s ease-in-out infinite;
 }
 
-/* Play Button */
-.playButtonWrapper {
+/* Breathing Orb (replaces play button) */
+.breathingOrb {
     position: absolute;
     z-index: 30;
-    width: 70px;
-    height: 70px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+/* ━━━━━━━━━━━━━━━━━━
+   NEW BREATHING UI
+   ━━━━━━━━━━━━━━━━━━ */
+
+/* Ambient background layer that shifts per phase */
+.phaseAmbient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    transition: background 2s ease;
+}
+
+/* Orb + rings wrapper */
+.orbArea {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Pattern selector pills */
+.patternSelector {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+}
+
+.patternPill {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(20, 20, 25, 0.4);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: rgba(230, 220, 195, 0.55);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.patternPill:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    color: rgba(230, 220, 195, 0.85);
+}
+
+.patternPillActive {
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.08);
+    color: #e6dcc3;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+}
+
+/* Session row */
+.sessionRow {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.sessionTimer {
+    font-family: 'Inter', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    color: rgba(230, 220, 195, 0.35);
+}
+
+.audioBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(20, 20, 25, 0.4);
+    color: rgba(230, 220, 195, 0.35);
+    font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.audioBtn:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    color: rgba(230, 220, 195, 0.7);
+}
+
+.audioBtnOn {
+    border-color: rgba(212, 175, 55, 0.5);
+    color: #d6b56e;
+    background: rgba(212, 175, 55, 0.08);
+}
+
+/* Phase label + countdown below orb */
+.phaseDisplay {
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.phaseLabel {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(230, 220, 195, 0.55);
+    margin: 0;
+    transition: color 1.5s ease;
+}
+
+.phaseCountdown {
+    font-family: 'Inter', monospace;
+    font-size: 2.4rem;
+    font-weight: 200;
+    color: rgba(230, 220, 195, 0.75);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin: 0;
+    min-height: 1.2em;
+}
+
+/* Controls */
+.controlRow {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+}
+
+.controlBtn {
+    padding: 12px 36px;
+    border-radius: 30px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: rgba(212, 175, 55, 0.08);
+    color: rgba(230, 220, 195, 0.85);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    min-height: 48px;
+}
+
+.controlBtn:hover {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: rgba(212, 175, 55, 0.6);
+    color: #e6dcc3;
+    transform: translateY(-1px);
+}
+
+.controlBtnSecondary {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(20, 20, 25, 0.35);
+    color: rgba(230, 220, 195, 0.45);
+}
+
+.controlBtnSecondary:hover {
+    border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.5s ease;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-    /* Button glow */
-}
-
-.playIcon {
-    width: 0;
-    height: 0;
-    border-top: 12px solid transparent;
-    border-bottom: 12px solid transparent;
-    border-left: 20px solid rgba(255, 255, 255, 1);
-    /* Pure white */
-    margin-left: 4px;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6));
-    transition: all 0.3s ease;
-}
-
-.flowContainer:hover .playButtonWrapper {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
-}
-
-.flowContainer:hover .playIcon {
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.9));
+    color: rgba(230, 220, 195, 0.7);
 }
 
 /* ━━━━━━━━━━━━━━━━━━
@@ -370,47 +518,34 @@
         background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
     }
 
-    .playButtonWrapper {
-        width: 64px;
-        height: 64px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 0 16px rgba(255, 255, 255, 0.08);
-        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    .breathingOrb {
+        width: 72px;
+        height: 72px;
     }
 
-    .playIcon {
-        border-top: 11px solid transparent;
-        border-bottom: 11px solid transparent;
-        border-left: 18px solid rgba(255, 255, 255, 0.95);
-        margin-left: 3px;
-        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+    .patternSelector {
+        gap: 8px;
     }
 
-    .flowContainer:active .playButtonWrapper {
-        background: rgba(255, 255, 255, 0.12);
-        transform: scale(0.95);
-        border-color: rgba(255, 255, 255, 0.35);
-        box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+    .patternPill {
+        padding: 7px 14px;
+        font-size: 0.72rem;
     }
 
-    .flowContainer:active .playIcon {
-        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.7));
+    .phaseLabel {
+        font-size: 1.2rem;
     }
 
-    /* Remove hover states on mobile */
-    .flowContainer:hover .playButtonWrapper {
-        background: rgba(255, 255, 255, 0.08);
-        transform: scale(1);
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 0 16px rgba(255, 255, 255, 0.08);
+    .phaseCountdown {
+        font-size: 2rem;
     }
 
-    .flowContainer:hover .playIcon {
-        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+    .controlBtn {
+        padding: 11px 28px;
+        font-size: 0.8rem;
     }
 
-    /* Bottom navigation */
+    /* Bottom navigation (kept for visual consistency if re-added) */
     .bottomNav {
         position: fixed;
         bottom: 0;

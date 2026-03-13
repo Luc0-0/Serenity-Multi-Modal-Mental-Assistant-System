@@ -17,6 +17,7 @@ from app.routers.conversations import router as conversations_router
 from app.routers.auth import router as auth_router
 from app.routers.emotions import router as emotions_router
 from app.routers.journal import router as journal_router
+from app.routers.meditate import router as meditate_router
 from app.services.engines.factory import init_engines
 import logging
 
@@ -74,6 +75,7 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(emotions_router)
 app.include_router(journal_router)
+app.include_router(meditate_router)
 app.include_router(chat_router)
 app.include_router(conversations_router)
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { journalService } from "../services/journalService";
 import { exportJournalAsMarkdown } from "../services/exportService";
@@ -369,6 +369,7 @@ export function Journal() {
   const [filterType, setFilterType] = useState("all");
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showMeditationPrompt, setShowMeditationPrompt] = useState(false);
   const textAreaRef = useRef(null);
 
   useEffect(() => {
@@ -415,6 +416,9 @@ export function Journal() {
       setTodayRating(null);
       setTextAreaExpanded(false);
       setError(null);
+      if (["worst", "bad"].includes(todayRating)) {
+        setShowMeditationPrompt(true);
+      }
     } catch (err) {
       setError("Failed to save entry. Please try again.");
     } finally {
@@ -727,6 +731,32 @@ export function Journal() {
             </div>
           </div>
         </section>
+
+        {/* ── Meditation suggestion ── */}
+        {showMeditationPrompt && (
+          <div className={styles.meditationPrompt}>
+            <div className={styles.meditationPromptContent}>
+              <span className={styles.meditationPromptIcon}>✦</span>
+              <div>
+                <p className={styles.meditationPromptTitle}>A meditation might help</p>
+                <p className={styles.meditationPromptText}>
+                  Based on how you&apos;re feeling, Serenity can generate a personal guided session for you.
+                </p>
+              </div>
+            </div>
+            <div className={styles.meditationPromptActions}>
+              <Link to="/meditate" className={styles.meditationPromptBtn}>
+                Open Meditate →
+              </Link>
+              <button
+                className={styles.meditationPromptDismiss}
+                onClick={() => setShowMeditationPrompt(false)}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Loading skeleton ── */}
         {isLoading && (

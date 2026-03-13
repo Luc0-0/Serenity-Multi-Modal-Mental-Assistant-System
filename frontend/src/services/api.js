@@ -226,6 +226,24 @@ export const getErrorDisplay = (error) => {
   };
 };
 
+export const getMeditationSuggestion = async () => {
+  const token = localStorage.getItem('auth_token');
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/meditate/suggest`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    },
+    45000 // LLM generation can take a while
+  );
+  if (!response.ok) {
+    throw { message: 'Failed to generate meditation session', code: `HTTP_${response.status}` };
+  }
+  return response.json();
+};
+
 export const sendChatMessageStream = async ({ message, conversation_id = null }, onChunk) => {
   if (!message || typeof message !== 'string') {
     throw {

@@ -2159,3 +2159,105 @@
     margin-left: 0;
   }
 }
+
+/* ── Meditation suggestion prompt ── */
+.meditationPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: rgba(90, 175, 155, 0.06);
+  border: 1px solid rgba(90, 175, 155, 0.2);
+  border-radius: 16px;
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 0.5rem;
+  animation: promptSlideIn 0.4s ease-out;
+}
+
+@keyframes promptSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.meditationPromptContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.meditationPromptIcon {
+  font-size: 1.2rem;
+  color: rgba(90, 175, 155, 0.7);
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.meditationPromptTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(160, 220, 200, 0.85);
+  margin: 0 0 3px;
+  letter-spacing: 0.02em;
+}
+
+.meditationPromptText {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(200, 210, 200, 0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.meditationPromptActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.meditationPromptBtn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(90, 175, 155, 0.35);
+  background: rgba(90, 175, 155, 0.08);
+  color: rgba(160, 220, 200, 0.85);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.meditationPromptBtn:hover {
+  background: rgba(90, 175, 155, 0.15);
+  border-color: rgba(90, 175, 155, 0.55);
+  color: rgba(180, 235, 215, 0.95);
+}
+
+.meditationPromptDismiss {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: rgba(230, 220, 195, 0.3);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.meditationPromptDismiss:hover {
+  color: rgba(230, 220, 195, 0.7);
+  border-color: rgba(255, 255, 255, 0.2);
+}

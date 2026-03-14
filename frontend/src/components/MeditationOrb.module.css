@@ -1,0 +1,151 @@
+/* MeditationOrb - Core orb with rings and effects */
+
+.orbWrapper {
+  position: relative;
+  width: clamp(200px, 42vh, 320px);
+  height: clamp(200px, 42vh, 320px);
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+/* Flow container for orb */
+.flowContainer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+  will-change: transform;
+}
+
+.flowContainer:active {
+  transform: scale(0.98);
+}
+
+/* Rotating flow ring */
+.flowRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.04) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  -webkit-mask: radial-gradient(transparent 62%, black 63%);
+  mask: radial-gradient(transparent 62%, black 63%);
+  animation: spin 28s linear infinite;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Aurora ring - slow reverse spin */
+.auroraRing {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 180deg,
+    transparent 0%,
+    rgba(90, 175, 155, 0.08) 40%,
+    transparent 60%,
+    rgba(212, 175, 55, 0.06) 100%
+  );
+  -webkit-mask: radial-gradient(transparent 58%, black 60%);
+  mask: radial-gradient(transparent 58%, black 60%);
+  filter: blur(12px);
+  animation: spin 22s linear infinite reverse;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Texture ring - thin border */
+.textureRing {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Static outer glow */
+.staticGlow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(90, 175, 155, 0.02) 35%,
+    rgba(212, 175, 55, 0.02) 70%,
+    transparent 88%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+/* Core glow - pulsing center */
+.coreGlow {
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 70%
+  );
+  animation: pulseCore 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Main breathing orb */
+.breathingOrb {
+  position: absolute;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  will-change: transform;
+  z-index: 30;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseCore {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .orbWrapper {
+    width: min(72vw, 38vh);
+    height: min(72vw, 38vh);
+    touch-action: manipulation;
+  }
+
+  .flowContainer {
+    touch-action: manipulation;
+  }
+}

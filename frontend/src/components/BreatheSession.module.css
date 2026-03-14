@@ -1,0 +1,361 @@
+/* BreatheSession - Breathing exercises tab layout */
+
+.breatheContent {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  z-index: 10;
+}
+
+/* Left insight container */
+.leftInsightContainer {
+  width: 100%;
+  max-width: 180px;
+  margin-bottom: 1rem;
+}
+
+.insightBox {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(230, 220, 195, 0.15);
+  background: rgba(20, 20, 25, 0.4);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  max-height: 120px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.insightBox:hover {
+  max-height: 400px;
+  background: rgba(20, 20, 25, 0.8);
+  border-color: rgba(230, 220, 195, 0.25);
+}
+
+.insightText {
+  font-family: var(--font-family-serif);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(230, 220, 195, 0.75);
+  margin: 0;
+  font-weight: 300;
+}
+
+.insightOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(to top, rgba(20, 20, 25, 0.8), transparent);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  border-radius: 0 0 11px 11px;
+}
+
+.insightBox:hover .insightOverlay {
+  opacity: 0;
+}
+
+/* Pattern container */
+.patternContainer {
+  /* Positioned by OrbLayout */
+}
+
+.patternSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.patternPill {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 15, 18, 0.4);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: rgba(230, 220, 195, 0.5);
+  font-family: var(--font-family-sans);
+  font-size: 0.75rem;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.patternPill:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  color: rgba(230, 220, 195, 0.8);
+}
+
+.patternPill:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: -2px;
+}
+
+.patternActive {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--color-text-primary);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.1), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.patternAI {
+  border-color: rgba(90, 175, 155, 0.2);
+  color: rgba(160, 220, 200, 0.55);
+}
+
+.patternAI:hover {
+  border-color: rgba(90, 175, 155, 0.4);
+  color: rgba(160, 220, 200, 0.85);
+}
+
+/* Session container */
+.sessionContainer {
+  /* Positioned by OrbLayout */
+}
+
+.sessionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sessionTimer {
+  font-family: var(--font-family-sans);
+  font-size: 0.9rem;
+  color: rgba(230, 220, 195, 0.6);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.audioBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 15, 18, 0.4);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: rgba(230, 220, 195, 0.4);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+  line-height: 1;
+  padding: 0;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.audioBtn:hover {
+  border-color: rgba(212, 175, 55, 0.28);
+  color: rgba(230, 220, 195, 0.75);
+}
+
+.audioBtn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: -2px;
+}
+
+.audioBtnOn {
+  border-color: rgba(212, 175, 55, 0.4);
+  color: rgba(212, 175, 55, 0.9);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+/* Control container */
+.controlContainer {
+  /* Positioned by OrbLayout */
+}
+
+.controlButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controlBtn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(230, 220, 195, 0.2);
+  background: rgba(20, 20, 25, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: rgba(230, 220, 195, 0.75);
+  font-family: var(--font-family-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.controlBtn:hover {
+  border-color: rgba(230, 220, 195, 0.4);
+  background: rgba(230, 220, 195, 0.05);
+  color: rgba(230, 220, 195, 0.9);
+}
+
+.controlBtn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: -2px;
+}
+
+.controlBtnSecondary {
+  background: rgba(15, 15, 18, 0.3);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(230, 220, 195, 0.5);
+}
+
+.controlBtnSecondary:hover {
+  background: rgba(15, 15, 18, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(230, 220, 195, 0.7);
+}
+
+/* Phase display */
+.phaseDisplay {
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.phaseLabel {
+  font-family: var(--font-family-sans);
+  font-size: 1rem;
+  color: rgba(230, 220, 195, 0.7);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  min-height: 1.2em;
+}
+
+.phaseCountdown {
+  font-family: var(--font-family-sans);
+  font-size: 2.4rem;
+  color: var(--color-text-primary);
+  margin: 4px 0 0 0;
+  font-weight: 300;
+  min-height: 2.8em;
+  letter-spacing: -0.02em;
+}
+
+.orbTapHint {
+  position: absolute;
+  z-index: 40;
+  font-family: var(--font-family-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(230, 220, 195, 0.4);
+  pointer-events: none;
+  user-select: none;
+  font-weight: 500;
+}
+
+/* Get AI hint button */
+.getAiHintBtn {
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(90, 175, 155, 0.18);
+  background: transparent;
+  color: rgba(160, 220, 200, 0.45);
+  font-family: var(--font-family-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+  outline: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.getAiHintBtn:hover {
+  border-color: rgba(90, 175, 155, 0.4);
+  color: rgba(160, 220, 200, 0.85);
+}
+
+.getAiHintBtn:focus-visible {
+  outline: 2px solid rgba(90, 175, 155, 0.4);
+  outline-offset: 2px;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+  .breatheContent {
+    gap: 1.5rem;
+  }
+
+  .leftInsightContainer {
+    max-width: 100%;
+    padding: 0 1rem;
+    margin-bottom: 0;
+  }
+
+  .phaseDisplay {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .patternPill {
+    padding: 7px 12px;
+    font-size: 0.7rem;
+  }
+
+  .sessionTimer {
+    font-size: 0.85rem;
+  }
+
+  .audioBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .controlBtn {
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+
+  .phaseLabel {
+    font-size: 0.9rem;
+  }
+
+  .phaseCountdown {
+    font-size: 2rem;
+  }
+
+  .getAiHintBtn {
+    padding: 7px 14px;
+    font-size: 0.7rem;
+  }
+}

@@ -25,6 +25,10 @@
   transform: scale(0.98);
 }
 
+.flowContainer:hover {
+  transform: scale(1.04);
+}
+
 /* Rotating flow ring */
 .flowRing {
   position: absolute;
@@ -115,6 +119,20 @@
   z-index: 30;
 }
 
+/* Breathing orb aura pulse */
+.breathingOrb::after {
+  content: "";
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 70%
+  );
+  animation: auraPulse 8s ease-in-out infinite;
+}
+
 /* Animations */
 @keyframes spin {
   from {
@@ -134,6 +152,18 @@
   50% {
     opacity: 0.85;
     transform: scale(1.1);
+  }
+}
+
+@keyframes auraPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.15);
   }
 }
 

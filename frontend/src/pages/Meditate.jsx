@@ -7,6 +7,7 @@ export function Meditate() {
   const [activeTab, setActiveTab] = useState("guided");
   const [suggestion, setSuggestion] = useState(null);
   const [currentPattern, setCurrentPattern] = useState("box");
+  const [breathingPhase, setBreathingPhase] = useState(""); // for reactive aura
   const backgroundMediRef = useRef(null);
   const backgroundBreathRef = useRef(null);
 
@@ -71,6 +72,10 @@ export function Meditate() {
           background:
             activeTab === "guided"
               ? "radial-gradient(circle at 50% 50%, rgba(110, 140, 215, 0.45) 0%, transparent 65%)"
+              : breathingPhase === "Inhale"
+              ? "radial-gradient(circle at 50% 50%, rgba(90, 175, 155, 0.55) 0%, transparent 65%)"
+              : breathingPhase === "Exhale"
+              ? "radial-gradient(circle at 50% 50%, rgba(90, 175, 155, 0.35) 0%, transparent 65%)"
               : "radial-gradient(circle at 50% 50%, rgba(90, 175, 155, 0.45) 0%, transparent 65%)",
         }}
       />
@@ -105,6 +110,7 @@ export function Meditate() {
           suggestion={suggestion}
           currentPattern={currentPattern}
           onPatternChange={setCurrentPattern}
+          onBreathingPhaseChange={setBreathingPhase}
         />
       )}
     </div>

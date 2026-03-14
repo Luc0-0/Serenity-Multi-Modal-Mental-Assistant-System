@@ -63,7 +63,7 @@ function formatTime(secs) {
   return `${m}:${s}`;
 }
 
-export function BreatheSession({ suggestion, currentPattern, onPatternChange }) {
+export function BreatheSession({ suggestion, currentPattern, onPatternChange, onBreathingPhaseChange }) {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const breathingTimer = useBreathingTimer(currentPattern);
   const {
@@ -87,6 +87,12 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
   useEffect(() => {
     changePattern(currentPattern);
   }, [currentPattern]);
+
+  useEffect(() => {
+    if (onBreathingPhaseChange) {
+      onBreathingPhaseChange(currentLabel);
+    }
+  }, [currentLabel, onBreathingPhaseChange]);
 
   const handlePatternSelect = (patternKey) => {
     changePattern(patternKey);

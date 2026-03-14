@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import styles from "./Meditate.module.css";
 import { getMeditationSuggestion } from "../services/api";
 
-// ── Breathing patterns ──────────────────────────────────────────────────────
 const PATTERNS = {
   box:  { name: "Box",   phases: [4, 4, 4, 4], labels: ["Inhale", "Hold", "Exhale", "Hold"] },
   calm: { name: "4-7-8", phases: [4, 7, 8, 0], labels: ["Inhale", "Hold", "Exhale", ""] },
@@ -16,16 +15,15 @@ const PHASE_COLOR = {
   Exhale: "rgba(90, 175, 155, 0.45)",
 };
 
-// ── Guided: track selection ─────────────────────────────────────────────────
-// All point to fear.mp3 as placeholder — swap filenames when others are ready
+// Placeholder paths; replace with real files when ready
 const TRACK_MAP = {
   fear:    "/audio/meditations/fear.mp3",
-  sadness: "/audio/meditations/fear.mp3", // → sadness.mp3
-  anger:   "/audio/meditations/fear.mp3", // → anger.mp3
-  joy:     "/audio/meditations/fear.mp3", // → joy.mp3
-  neutral: "/audio/meditations/fear.mp3", // → neutral.mp3
-  morning: "/audio/meditations/fear.mp3", // → morning.mp3
-  night:   "/audio/meditations/fear.mp3", // → night.mp3
+  sadness: "/audio/meditations/fear.mp3",
+  anger:   "/audio/meditations/fear.mp3",
+  joy:     "/audio/meditations/fear.mp3",
+  neutral: "/audio/meditations/fear.mp3",
+  morning: "/audio/meditations/fear.mp3",
+  night:   "/audio/meditations/fear.mp3",
 };
 
 function getTrackUrl(emotion) {
@@ -37,11 +35,9 @@ function getTrackUrl(emotion) {
   return TRACK_MAP[emotion] ?? TRACK_MAP.neutral;
 }
 
-// Guided orb color — steady calm blue, teal when playing
 const GUIDED_COLOR_IDLE    = "rgba(110, 140, 215, 0.45)";
 const GUIDED_COLOR_PLAYING = "rgba(90, 175, 155, 0.50)";
 
-// ── Breathing audio tones ───────────────────────────────────────────────────
 function playBreathingTone(label) {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -78,7 +74,7 @@ function playBreathingTone(label) {
       osc.connect(gain); osc.start(); osc.stop(ctx.currentTime + 1.5);
     }
     setTimeout(() => ctx.close(), 2200);
-  } catch { /* audio unavailable */ }
+  } catch { /* no audio */ }
 }
 
 function formatTime(secs) {
@@ -87,20 +83,19 @@ function formatTime(secs) {
   return `${m}:${s}`;
 }
 
-// ── Component ───────────────────────────────────────────────────────────────
 export function Meditate() {
   const [activeTab, setActiveTab] = useState("guided");
 
-  // ── Guided state ──────────────────────────────────────────────────────────
   const [suggestion,    setSuggestion]    = useState(null);
   const [isGenerating,  setIsGenerating]  = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [isPlaying,     setIsPlaying]     = useState(false);
-  const [audioProgress, setAudioProgress] = useState(0); // 0-1
+  const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
   const audioRef = useRef(null);
+  const backgroundMediRef = useRef(null);
+  const backgroundBreathRef = useRef(null);
 
-  // ── Breathing state ───────────────────────────────────────────────────────
   const [patternKey,   setPatternKey]   = useState("box");
   const [isRunning,    setIsRunning]    = useState(false);
   const [phaseIndex,   setPhaseIndex]   = useState(0);
@@ -115,13 +110,27 @@ export function Meditate() {
   const currentDuration = pattern.phases[phaseIndex];
   const breatheOrbColor = PHASE_COLOR[currentLabel] || PHASE_COLOR.Hold;
 
-  // ── Derived guided values ─────────────────────────────────────────────────
   const guidedOrbColor = isPlaying ? GUIDED_COLOR_PLAYING : GUIDED_COLOR_IDLE;
   const activeOrbColor = activeTab === "guided" ? guidedOrbColor : breatheOrbColor;
 
-  // ── Cleanup audio on unmount ──────────────────────────────────────────────
   useEffect(() => {
+    const medi = new Audio("/audio/meditations/medi.mp3");
+    medi.loop = true;
+    medi.volume = 0.22;
+    medi.preload = "auto";
+    backgroundMediRef.current = medi;
+
+    const breath = new Audio("/audio/meditations/Breath.mp3");
+    breath.loop = true;
+    breath.volume = 0.22;
+    breath.preload = "auto";
+    backgroundBreathRef.current = breath;
+
     return () => {
+      medi.pause();
+      breath.pause();
+      backgroundMediRef.current = null;
+      backgroundBreathRef.current = null;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -129,7 +138,21 @@ export function Meditate() {
     };
   }, []);
 
-  // Stop audio when switching away from guided tab
+  useEffect(() => {
+    const medi = backgroundMediRef.current;
+    const breath = backgroundBreathRef.current;
+    if (!medi || !breath) return;
+    if (activeTab === "guided") {
+      breath.pause();
+      breath.currentTime = 0;
+      medi.play().catch(() => {});
+    } else {
+      medi.pause();
+      medi.currentTime = 0;
+      breath.play().catch(() => {});
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     if (activeTab !== "guided" && audioRef.current) {
       audioRef.current.pause();
@@ -137,9 +160,7 @@ export function Meditate() {
     }
   }, [activeTab]);
 
-  // ── Guided: generate session ──────────────────────────────────────────────
   const handleGenerate = async () => {
-    // Stop any playing audio
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setIsPlaying(false);
     setAudioProgress(0);
@@ -149,7 +170,6 @@ export function Meditate() {
     try {
       const data = await getMeditationSuggestion();
       setSuggestion(data);
-      // Pre-load the audio
       const url = getTrackUrl(data.emotion || "neutral");
       const audio = new Audio(url);
       audio.preload = "auto";
@@ -165,7 +185,6 @@ export function Meditate() {
     }
   };
 
-  // ── Guided: play / pause ──────────────────────────────────────────────────
   const handleOrbClick = () => {
     if (activeTab === "guided") {
       if (!suggestion) { handleGenerate(); return; }
@@ -197,7 +216,6 @@ export function Meditate() {
     }
   };
 
-  // ── Breathing logic ───────────────────────────────────────────────────────
   useEffect(() => {
     const scale = PHASE_SCALE[currentLabel];
     if (scale !== null && scale !== undefined) setOrbScale(scale);
@@ -261,10 +279,7 @@ export function Meditate() {
       ? `transform ${currentDuration}s ease-in-out`
       : "transform 0.4s ease";
 
-  // Guided orb scale: slow gentle pulse when playing, static otherwise
-  const guidedOrbScale = isPlaying ? null : 1.0; // null = handled by CSS animation
-
-  // Breathe orb scale
+  const guidedOrbScale = isPlaying ? null : 1.0;
   const activeOrbScale = activeTab === "guided"
     ? (isPlaying ? null : 1.0)
     : orbScale;
@@ -278,8 +293,7 @@ export function Meditate() {
         style={{ background: `radial-gradient(circle at 50% 50%, ${activeOrbColor} 0%, transparent 65%)` }}
       />
 
-      {/* ── Tab switcher ── */}
-      <div className={styles.tabRow}>
+      <div className={`${styles.tabRow} ${styles.revealStagger1}`}>
         <button
           className={`${styles.tab} ${activeTab === "guided" ? styles.tabActive : ""}`}
           onClick={() => setActiveTab("guided")}
@@ -294,11 +308,9 @@ export function Meditate() {
         </button>
       </div>
 
-      {/* ══════════════════════════ GUIDED TAB ══════════════════════════ */}
       {activeTab === "guided" && (
-        <>
-          {/* Orb area */}
-          <div className={styles.orbArea}>
+        <div className={styles.tabContent}>
+          <div className={`${styles.orbArea} ${styles.revealStagger2}`}>
             <div
               className={styles.flowContainer}
               onClick={handleOrbClick}
@@ -310,7 +322,6 @@ export function Meditate() {
               <div className={styles.staticGlow} />
               <div className={styles.coreGlow} />
 
-              {/* Breathing orb — CSS class drives pulse when playing */}
               <div
                 className={`${styles.breathingOrb} ${isPlaying ? styles.guidedOrbPlaying : ""}`}
                 style={
@@ -328,7 +339,6 @@ export function Meditate() {
                 }
               />
 
-              {/* Centre hint */}
               {isGenerating ? (
                 <div className={styles.orbGeneratingRing} />
               ) : !suggestion ? (
@@ -340,7 +350,6 @@ export function Meditate() {
               )}
             </div>
 
-            {/* Progress arc below orb */}
             {suggestion && audioDuration > 0 && (
               <div className={styles.progressTrack}>
                 <div
@@ -350,7 +359,6 @@ export function Meditate() {
               </div>
             )}
 
-            {/* Insight + status */}
             <div className={styles.phaseDisplay}>
               {isGenerating ? (
                 <p className={styles.phaseLabel}>Crafting your session…</p>
@@ -373,8 +381,7 @@ export function Meditate() {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className={styles.controlRow}>
+          <div className={`${styles.controlRow} ${styles.revealStagger3}`}>
             {!suggestion ? (
               <button className={styles.controlBtn} onClick={handleGenerate} disabled={isGenerating}>
                 {isGenerating ? "Loading…" : "Generate My Session"}
@@ -394,9 +401,8 @@ export function Meditate() {
             )}
           </div>
 
-          {/* Secondary actions */}
           {suggestion && (
-            <div className={styles.guidedSecondaryRow}>
+            <div className={`${styles.guidedSecondaryRow} ${styles.revealStagger4}`}>
               <button
                 className={styles.regenerateBtn}
                 onClick={handleGenerate}
@@ -410,15 +416,15 @@ export function Meditate() {
             </div>
           )}
 
-          {generateError && <p className={styles.generateError}>{generateError}</p>}
-        </>
+          {generateError && (
+            <p className={`${styles.generateError} ${styles.revealStagger5}`}>{generateError}</p>
+          )}
+        </div>
       )}
 
-      {/* ══════════════════════════ BREATHE TAB ══════════════════════════ */}
       {activeTab === "breathe" && (
-        <>
-          {/* Pattern pills */}
-          <div className={styles.patternSelector}>
+        <div className={styles.tabContent}>
+          <div className={`${styles.patternSelector} ${styles.revealStagger2}`}>
             {Object.entries(PATTERNS).map(([key, p]) => (
               <button
                 key={key}
@@ -441,8 +447,7 @@ export function Meditate() {
             )}
           </div>
 
-          {/* Session timer + audio toggle */}
-          <div className={styles.sessionRow}>
+          <div className={`${styles.sessionRow} ${styles.revealStagger3}`}>
             <span className={styles.sessionTimer}>{formatTime(sessionSecs)}</span>
             <button
               className={`${styles.audioBtn} ${audioEnabled ? styles.audioBtnOn : ""}`}
@@ -453,8 +458,7 @@ export function Meditate() {
             </button>
           </div>
 
-          {/* Orb */}
-          <div className={styles.orbArea}>
+          <div className={`${styles.orbArea} ${styles.revealStagger4}`}>
             <div
               className={styles.flowContainer}
               onClick={() => setIsRunning((r) => !r)}
@@ -487,8 +491,7 @@ export function Meditate() {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className={styles.controlRow}>
+          <div className={`${styles.controlRow} ${styles.revealStagger5}`}>
             <button className={styles.controlBtn} onClick={() => setIsRunning((r) => !r)}>
               {isRunning ? "Pause" : "Begin"}
             </button>
@@ -508,7 +511,7 @@ export function Meditate() {
               ✦ Get AI session &amp; breathing recommendation
             </button>
           )}
-        </>
+        </div>
       )}
     </div>
   );

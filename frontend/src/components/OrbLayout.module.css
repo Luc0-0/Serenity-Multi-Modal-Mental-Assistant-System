@@ -1,100 +1,119 @@
-/* OrbLayout - SVG-based button clipping system */
+/* OrbLayout - CSS clip-path based button clipping */
 
 .orbLayoutWrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+/* Center orb container */
+.orbCenter {
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.orbLayoutSvg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* Button container positioning */
+/* Base button positioning */
 .orbButton {
   position: absolute;
+  z-index: 15;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 15;
   cursor: pointer;
   transition: all 0.3s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Left button - centered vertically on left side */
+/* LEFT button - centered vertically on left */
 .orbButton.left {
   left: 50%;
   top: 50%;
-  width: var(--button-width);
-  height: var(--button-height);
-  transform: translate(calc(-100% - 80px), -50%);
-  justify-content: flex-end;
+  transform: translate(calc(-100% - 120px), -50%);
+  /* Clip right edge of button against invisible circle */
+  clip-path: polygon(
+    0% 0%,
+    85% 0%,        /* Leave 85% visible, clip 15% on the right */
+    85% 100%,
+    0% 100%
+  );
 }
 
 .orbButton.left:hover {
-  transform: translate(calc(-100% - 80px), -50%) scale(1.05);
+  transform: translate(calc(-100% - 120px), -50%) scale(1.05);
 }
 
-/* Right top button */
+/* RIGHT-TOP button - upper right */
 .orbButton.rightTop {
   right: 50%;
   top: 50%;
-  width: var(--button-width);
-  height: var(--button-height);
-  transform: translate(calc(100% + 60px), calc(-50% - 60px));
+  transform: translate(calc(100% + 60px), calc(-50% - 80px));
+  /* Clip left edge of button against invisible circle */
+  clip-path: polygon(
+    15% 0%,        /* Start clipped on left side */
+    100% 0%,
+    100% 100%,
+    15% 100%
+  );
 }
 
 .orbButton.rightTop:hover {
-  transform: translate(calc(100% + 60px), calc(-50% - 60px)) scale(1.08);
+  transform: translate(calc(100% + 60px), calc(-50% - 80px)) scale(1.08);
 }
 
-/* Right top-bottom button (second in stack) */
+/* RIGHT-MID button - middle right */
 .orbButton.rightTopBottom {
   right: 50%;
   top: 50%;
-  width: var(--button-width);
-  height: var(--button-height);
-  transform: translate(calc(100% + 60px), calc(-50% + 0px));
+  transform: translate(calc(100% + 60px), calc(-50% - 10px));
+  /* Clip left edge */
+  clip-path: polygon(
+    15% 0%,
+    100% 0%,
+    100% 100%,
+    15% 100%
+  );
 }
 
 .orbButton.rightTopBottom:hover {
-  transform: translate(calc(100% + 60px), calc(-50% + 0px)) scale(1.08);
+  transform: translate(calc(100% + 60px), calc(-50% - 10px)) scale(1.08);
 }
 
-/* Right bottom buttons stack */
+/* RIGHT-BOTTOM buttons - lower right */
 .orbButton.rightBottom {
   right: 50%;
   bottom: 50%;
-  width: var(--button-width);
-  height: var(--button-height);
   transform: translate(calc(100% + 60px), 50%);
   flex-direction: column;
   gap: 6px;
+  /* Clip left edge */
+  clip-path: polygon(
+    15% 0%,
+    100% 0%,
+    100% 100%,
+    15% 100%
+  );
 }
 
 .orbButton.rightBottom:hover {
-  transform: translate(calc(100% + 60px), 50%) scale(1.02);
+  transform: translate(calc(100% + 60px), 50%) scale(1.05);
 }
 
-/* Glow effect on hover - extends from orb */
+/* Glow effect on button hover */
 .orbButton::before {
   content: '';
   position: absolute;
-  inset: -8px;
-  border-radius: inherit;
+  inset: -12px;
+  border-radius: 8px;
   background: radial-gradient(
-    circle at 30% 30%,
-    rgba(212, 175, 55, 0.1) 0%,
-    rgba(90, 175, 155, 0.05) 50%,
+    circle at 50% 50%,
+    rgba(212, 175, 55, 0.15) 0%,
+    rgba(90, 175, 155, 0.08) 40%,
     transparent 100%
   );
   opacity: 0;
@@ -107,16 +126,17 @@
   opacity: 1;
 }
 
-/* Responsive - stack buttons vertically on smaller screens */
+/* Mobile - revert to standard positioning */
 @media (max-width: 1024px) {
   .orbButton.left {
-    transform: translate(-50%, calc(-100% - 20px));
+    transform: translate(-50%, calc(-100% - 40px));
     left: 50%;
     top: auto;
+    clip-path: none;
   }
 
   .orbButton.left:hover {
-    transform: translate(-50%, calc(-100% - 20px)) scale(1.05);
+    transform: translate(-50%, calc(-100% - 40px)) scale(1.05);
   }
 
   .orbButton.rightTop,
@@ -125,14 +145,17 @@
     position: relative;
     right: auto;
     bottom: auto;
+    top: auto;
+    left: auto;
     transform: none;
     margin: 0 8px;
+    clip-path: none;
   }
 
   .orbButton.rightTop:hover,
   .orbButton.rightTopBottom:hover,
   .orbButton.rightBottom:hover {
-    transform: scale(1.08);
+    transform: scale(1.05);
   }
 }
 
@@ -146,7 +169,6 @@
     transform: translate(-50%, -50%);
     left: 50%;
     top: 50%;
-    margin-bottom: 16px;
   }
 
   .orbButton.rightTop,

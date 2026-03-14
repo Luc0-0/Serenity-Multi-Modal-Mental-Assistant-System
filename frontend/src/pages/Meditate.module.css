@@ -1,19 +1,19 @@
-/* Meditate page. Tokens from index.css */
+/* Meditate page - Main layout and container */
 
 /* Container & background */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: clamp(1.2rem, 3vh, 2.4rem);
+  justify-content: center;
+  gap: clamp(2rem, 4vh, 3rem);
   min-height: 100dvh;
   box-sizing: border-box;
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
   color: var(--color-text-primary);
-  padding: clamp(1rem, 4vh, 2rem) 1rem clamp(2.5rem, 6vh, 4rem);
+  padding: clamp(1.5rem, 4vh, 2.5rem) 1rem;
 }
 
 .backgroundImage {
@@ -54,647 +54,57 @@
   opacity: 0.5;
 }
 
-/* Staggered reveal */
-.revealStagger1 {
-  animation: revealFade 0.6s ease-out both;
-}
-.revealStagger2 {
-  animation: revealFade 0.6s ease-out 0.08s both;
-}
-.revealStagger3 {
-  animation: revealFade 0.6s ease-out 0.16s both;
-}
-.revealStagger4 {
-  animation: revealFade 0.6s ease-out 0.24s both;
-}
-.revealStagger5 {
-  animation: revealFade 0.6s ease-out 0.32s both;
-}
-
-@keyframes revealFade {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Tab transition */
-.tabContent {
-  animation: tabFade 0.25s ease-out;
-}
-@keyframes tabFade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Tabs */
+/* Neomorphic Tab Toggle */
 .tabRow {
-  position: relative;
-  z-index: 10;
+  position: fixed;
+  top: clamp(1rem, 3vh, 1.5rem);
+  z-index: 100;
   display: flex;
-  gap: 4px;
-  background: rgba(15, 15, 18, 0.6);
+  gap: 2px;
+  background: rgba(15, 15, 18, 0.5);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-full);
-  padding: 4px;
-  margin-top: clamp(0.5rem, 2vh, 1rem);
-  transition: border-color 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 3px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3),
+              0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .tab {
-  padding: 10px 28px;
-  border-radius: var(--radius-full);
-  border: 1px solid transparent;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
   background: transparent;
-  color: rgba(230, 220, 195, 0.4);
+  color: rgba(230, 220, 195, 0.5);
   font-family: var(--font-family-sans);
   font-size: 0.78rem;
-  font-variant-caps: small-caps;
-  letter-spacing: 0.12em;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  outline: none;
-}
-
-.tab:hover {
-  color: rgba(230, 220, 195, 0.65);
-}
-
-.tab:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.5);
-  outline-offset: 2px;
-}
-
-.tabActive {
-  background: rgba(212, 175, 55, 0.12);
-  border-color: rgba(212, 175, 55, 0.25);
-  color: var(--color-text-primary);
-  box-shadow: none;
-}
-
-/* Guided panel */
-.guidedPanel {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.2rem;
-  flex: 1;
-}
-
-/* Orb area */
-.orbArea {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(1rem, 2.5vh, 2rem);
-  max-width: 480px;
-  width: 100%;
-}
-
-/* Orb container */
-.flowContainer {
-  position: relative;
-  z-index: 10;
-  width: clamp(200px, 42vh, 320px);
-  height: clamp(200px, 42vh, 320px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease;
-}
-
-.flowContainer:active {
-  transform: scale(0.98);
-}
-
-/* Orb rings */
-.flowRing {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 30%,
-    rgba(255, 255, 255, 0.04) 70%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  -webkit-mask: radial-gradient(transparent 62%, black 63%);
-  mask: radial-gradient(transparent 62%, black 63%);
-  animation: spin 28s linear infinite;
-  opacity: 0.5;
-}
-
-.auroraRing {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 180deg,
-    transparent 0%,
-    rgba(90, 175, 155, 0.08) 40%,
-    transparent 60%,
-    rgba(212, 175, 55, 0.06) 100%
-  );
-  -webkit-mask: radial-gradient(transparent 58%, black 60%);
-  mask: radial-gradient(transparent 58%, black 60%);
-  filter: blur(12px);
-  animation: spin 22s linear infinite reverse;
-  opacity: 0.6;
-}
-
-.textureRing {
-  position: absolute;
-  inset: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  opacity: 0.35;
-  animation: none;
-}
-
-.staticGlow {
-  position: absolute;
-  inset: -12px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(90, 175, 155, 0.02) 35%,
-    rgba(212, 175, 55, 0.02) 70%,
-    transparent 88%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.06);
-  animation: none;
-}
-
-.coreGlow {
-  position: absolute;
-  width: 36%;
-  height: 36%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(255, 255, 255, 0.2) 0%,
-    transparent 65%
-  );
-  filter: blur(20px);
-  z-index: 20;
-  animation: pulseCore 6s ease-in-out infinite;
-}
-
-.breathingOrb {
-  position: absolute;
-  z-index: 30;
-  width: 28%;
-  height: 28%;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.orbTapHint {
-  position: absolute;
-  z-index: 40;
-  font-family: var(--font-family-serif);
-  font-size: 0.7rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba(230, 220, 195, 0.22);
-  pointer-events: none;
-  user-select: none;
-  animation: fadeInOut 3.5s ease-in-out infinite;
-}
-
-@keyframes fadeInOut {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* Guided playing pulse */
-.guidedOrbPlaying {
-  animation: guidedPulse 4s ease-in-out infinite;
-}
-
-@keyframes guidedPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1.35);
-    opacity: 1;
-  }
-}
-
-.orbGeneratingRing {
-  position: absolute;
-  z-index: 40;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  border-top-color: rgba(212, 175, 55, 0.55);
-  border-right-color: rgba(212, 175, 55, 0.15);
-  animation: spin 1.4s linear infinite;
-  pointer-events: none;
-}
-
-.orbCentreIcon {
-  position: absolute;
-  z-index: 40;
-  font-size: 1rem;
-  color: rgba(230, 220, 195, 0.5);
-  pointer-events: none;
-  user-select: none;
-  transition: opacity 0.25s ease;
-}
-
-/* Progress bar */
-.progressTrack {
-  width: clamp(140px, 36vw, 260px);
-  height: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 0;
-}
-
-.progressFill {
-  height: 100%;
-  background: rgba(90, 175, 155, 0.5);
-  border-radius: 2px;
-  transition: width 0.4s linear;
-}
-
-/* Phase / insight text */
-.phaseDisplay {
-  text-align: center;
-  min-height: clamp(56px, 7vh, 72px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.phaseLabel {
-  font-family: var(--font-family-serif);
-  font-size: clamp(1.35rem, 2.8vw, 1.75rem);
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  margin: 0;
-  transition: color 1.2s ease;
-}
-
-.phaseCountdown {
-  font-family: var(--font-family-sans);
-  font-size: clamp(1.85rem, 3.5vh, 2.25rem);
-  font-weight: 200;
-  font-variant-numeric: tabular-nums;
-  color: rgba(230, 220, 195, 0.7);
-  letter-spacing: 0.02em;
-  line-height: 1;
-  margin: 0;
-  min-height: 1.2em;
-}
-
-.guidedInsight {
-  font-family: var(--font-family-serif);
-  font-size: clamp(0.95rem, 2vw, 1.08rem);
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.7;
-  color: var(--color-text-secondary);
-  text-align: center;
-  max-width: 420px;
-  margin: 0;
-  transition: opacity 1.2s ease;
-}
-
-.guidedInsightFade {
-  opacity: 0.35;
-}
-
-.guidedIdleText {
-  font-family: var(--font-family-sans);
-  font-size: 0.8rem;
-  color: rgba(230, 220, 195, 0.32);
-  text-align: center;
-  max-width: 300px;
-  line-height: 1.6;
-  margin: 0;
-  letter-spacing: 0.02em;
-}
-
-.sessionTimer {
-  font-family: var(--font-family-sans);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-  color: rgba(230, 220, 195, 0.4);
-}
-
-/* Controls */
-.controlRow {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.controlBtn {
-  padding: 12px 32px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(212, 175, 55, 0.28);
-  background: rgba(212, 175, 55, 0.08);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-sans);
-  font-size: 0.82rem;
   font-variant-caps: small-caps;
   letter-spacing: 0.1em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 46px;
+  transition: all 0.3s ease;
   outline: none;
+  font-weight: 500;
 }
 
-.controlBtn:hover:not(:disabled) {
-  background: rgba(212, 175, 55, 0.14);
-  border-color: rgba(212, 175, 55, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.12);
+.tab:hover {
+  color: rgba(230, 220, 195, 0.7);
 }
 
-.controlBtn:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.5);
-  outline-offset: 2px;
-}
-
-.controlBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.controlBtnSecondary {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: rgba(20, 20, 25, 0.4);
-  color: rgba(230, 220, 195, 0.5);
-}
-
-.controlBtnSecondary:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(230, 220, 195, 0.72);
-}
-
-/* Regenerate + apply pattern */
-.guidedSecondaryRow {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.regenerateBtn {
-  padding: 10px 20px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
-  color: rgba(230, 220, 195, 0.35);
-  font-family: var(--font-family-sans);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-  min-height: 40px;
-  outline: none;
-}
-
-.regenerateBtn:hover:not(:disabled) {
-  color: rgba(230, 220, 195, 0.65);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.regenerateBtn:focus-visible {
+.tab:focus-visible {
   outline: 2px solid rgba(212, 175, 55, 0.4);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
-.regenerateBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.applyPatternBtn {
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  background: rgba(212, 175, 55, 0.06);
-  color: rgba(230, 220, 195, 0.78);
-  font-family: var(--font-family-sans);
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  white-space: nowrap;
-  outline: none;
-}
-
-.applyPatternBtn:hover {
-  background: rgba(212, 175, 55, 0.12);
-  border-color: rgba(212, 175, 55, 0.4);
-  color: var(--color-text-primary);
-}
-
-.applyPatternBtn:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.4);
-  outline-offset: 2px;
-}
-
-.generateError {
-  font-family: var(--font-family-sans);
-  font-size: 0.78rem;
-  color: rgba(220, 120, 100, 0.85);
-  margin: 0;
-  text-align: center;
-}
-
-/* Breathe tab */
-.patternSelector {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.patternPill {
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 15, 18, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: rgba(230, 220, 195, 0.5);
-  font-family: var(--font-family-sans);
-  font-size: 0.76rem;
-  font-variant-caps: small-caps;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-  outline: none;
-}
-
-.patternPill:hover {
-  border-color: rgba(212, 175, 55, 0.25);
-  color: rgba(230, 220, 195, 0.85);
-}
-
-.patternPill:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.4);
-  outline-offset: 2px;
-}
-
-.patternPillActive {
-  border-color: rgba(212, 175, 55, 0.35);
-  background: rgba(212, 175, 55, 0.08);
-  color: var(--color-text-primary);
-  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.1);
-}
-
-.patternPillAI {
-  border-color: rgba(90, 175, 155, 0.2);
-  color: rgba(160, 220, 200, 0.55);
-}
-
-.patternPillAI:hover {
-  border-color: rgba(90, 175, 155, 0.4);
-  color: rgba(160, 220, 200, 0.9);
-}
-
-.sessionRow {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-.audioBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 15, 18, 0.5);
-  color: rgba(230, 220, 195, 0.4);
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-  line-height: 1;
-  padding: 0;
-  outline: none;
-}
-
-.audioBtn:hover {
-  border-color: rgba(212, 175, 55, 0.28);
-  color: rgba(230, 220, 195, 0.75);
-}
-
-.audioBtn:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.4);
-  outline-offset: 2px;
-}
-
-.audioBtnOn {
-  border-color: rgba(212, 175, 55, 0.4);
-  color: var(--color-cta-start);
-  background: rgba(212, 175, 55, 0.08);
-}
-
-.getAiHintBtn {
-  margin-top: 0.25rem;
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(90, 175, 155, 0.18);
-  background: transparent;
-  color: rgba(160, 220, 200, 0.45);
-  font-family: var(--font-family-sans);
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-  position: relative;
-  z-index: 10;
-  outline: none;
-}
-
-.getAiHintBtn:hover {
-  border-color: rgba(90, 175, 155, 0.4);
-  color: rgba(160, 220, 200, 0.85);
-}
-
-.getAiHintBtn:focus-visible {
-  outline: 2px solid rgba(90, 175, 155, 0.4);
-  outline-offset: 2px;
-}
-
-/* Unused card/panel styles */
-.guidedEmpty,
-.guidedLoading,
-.guidedCard,
-.guidedReason,
-.aiSuggestionRow,
-.aiSuggestionLabel,
-.scriptArea,
-.scriptPara,
-.ttsRow,
-.ttsBtn,
-.ttsBtnActive,
-.ttsBtnStop,
-.speakingWave {
-  font-family: var(--font-family-sans);
-}
-
-.guidedEmptyTitle,
-.loadingText {
-  font-family: var(--font-family-serif);
+.tabActive {
+  background: linear-gradient(135deg, 
+    rgba(230, 220, 195, 0.08) 0%, 
+    rgba(212, 175, 55, 0.06) 100%);
+  color: rgba(230, 220, 195, 0.9);
+  box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.3),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
 }
 
 /* Animations */
@@ -719,7 +129,7 @@
   }
 }
 
-/* Mobile */
+/* Mobile adjustments */
 @media (max-width: 768px) {
   .backgroundImage {
     opacity: 0.35;
@@ -733,36 +143,16 @@
     );
   }
 
+  .container {
+    padding: clamp(4rem, 12vh, 6rem) 1rem clamp(1rem, 3vh, 2rem);
+  }
+
   .tabRow {
-    margin-top: 0.5rem;
+    padding: 2px;
   }
 
   .tab {
-    padding: 9px 22px;
+    padding: 8px 18px;
     font-size: 0.72rem;
-  }
-
-  .flowContainer {
-    width: min(72vw, 38vh);
-    height: min(72vw, 38vh);
-    touch-action: manipulation;
-  }
-
-  .patternPill {
-    padding: 7px 16px;
-    font-size: 0.72rem;
-  }
-
-  .phaseLabel {
-    font-size: 1.15rem;
-  }
-
-  .phaseCountdown {
-    font-size: 1.9rem;
-  }
-
-  .controlBtn {
-    padding: 11px 26px;
-    font-size: 0.78rem;
   }
 }

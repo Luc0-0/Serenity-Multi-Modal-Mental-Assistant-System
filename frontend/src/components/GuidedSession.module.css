@@ -1,0 +1,280 @@
+/* GuidedSession - Guided meditation tab layout */
+
+.guidedContent {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  z-index: 10;
+}
+
+.buttonContainer {
+  /* Styled by OrbLayout */
+}
+
+/* Action button - Generate/Regenerate */
+.actionBtn {
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(230, 220, 195, 0.3);
+  background: rgba(20, 20, 25, 0.6);
+  color: rgba(230, 220, 195, 0.8);
+  font-family: var(--font-family-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+  outline: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.actionBtn:hover:not(:disabled) {
+  border-color: rgba(230, 220, 195, 0.5);
+  background: rgba(230, 220, 195, 0.05);
+  color: rgba(230, 220, 195, 1);
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: 2px;
+}
+
+/* Control buttons - Play/Pause, Mute */
+.controlBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(230, 220, 195, 0.3);
+  background: rgba(20, 20, 25, 0.6);
+  color: rgba(230, 220, 195, 0.8);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease;
+  outline: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.controlBtn:hover {
+  border-color: rgba(230, 220, 195, 0.5);
+  background: rgba(230, 220, 195, 0.05);
+}
+
+.controlBtn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: 2px;
+}
+
+.btnMuted {
+  opacity: 0.6;
+}
+
+/* Orb center icons */
+.orbCentreIcon {
+  position: absolute;
+  z-index: 40;
+  font-size: 1.4rem;
+  color: rgba(230, 220, 195, 0.85);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.orbTapHint {
+  position: absolute;
+  z-index: 40;
+  font-family: var(--font-family-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(230, 220, 195, 0.4);
+  pointer-events: none;
+  user-select: none;
+  font-weight: 500;
+}
+
+.orbGeneratingRing {
+  position: absolute;
+  z-index: 40;
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(230, 220, 195, 0.2);
+  border-top-color: rgba(230, 220, 195, 0.6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Info display below orb */
+.infoDisplay {
+  text-align: center;
+  max-width: 420px;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.label {
+  font-family: var(--font-family-sans);
+  font-size: 0.9rem;
+  color: rgba(230, 220, 195, 0.7);
+  margin: 0;
+}
+
+.insight {
+  font-family: var(--font-family-serif);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+  font-weight: 300;
+}
+
+.idleText {
+  font-family: var(--font-family-serif);
+  font-size: 0.95rem;
+  color: rgba(230, 220, 195, 0.5);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Progress bar */
+.progressTrack {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(90, 175, 155, 0.8),
+    rgba(212, 175, 55, 0.6)
+  );
+  transition: width 0.2s linear;
+  border-radius: 1px;
+}
+
+.timer {
+  font-family: var(--font-family-sans);
+  font-size: 0.8rem;
+  color: rgba(230, 220, 195, 0.5);
+  margin: 8px 0 0 0;
+}
+
+/* Apply pattern button */
+.applyPatternBtn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.06);
+  color: rgba(230, 220, 195, 0.75);
+  font-family: var(--font-family-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  outline: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.applyPatternBtn:hover {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--color-text-primary);
+}
+
+.applyPatternBtn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.4);
+  outline-offset: 2px;
+}
+
+/* Error message */
+.errorMsg {
+  font-family: var(--font-family-sans);
+  font-size: 0.8rem;
+  color: rgba(220, 120, 100, 0.85);
+  margin: 0;
+  text-align: center;
+  max-width: 300px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+  .guidedContent {
+    gap: 1.5rem;
+  }
+
+  .infoDisplay {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .actionBtn {
+    padding: 10px 20px;
+    font-size: 0.8rem;
+  }
+
+  .controlBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .orbCentreIcon {
+    font-size: 1.1rem;
+  }
+
+  .insight {
+    font-size: 0.95rem;
+  }
+
+  .applyPatternBtn {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+  }
+}

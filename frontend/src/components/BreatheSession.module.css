@@ -1,23 +1,24 @@
-/* BreatheSession - Breathing exercises tab */
+/* BreatheSession - Grid-based layout */
 
-.breatheContent {
-  position: relative;
+.breatheGrid {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  grid-template-rows: auto auto auto auto;
+  align-items: center;
+  justify-items: center;
+  gap: 2rem;
   width: 100%;
   max-width: 1000px;
   height: clamp(400px, 60vh, 600px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
+  position: relative;
 }
 
 /* Left - AI Insight */
-.leftInsight {
-  position: absolute;
-  left: -200px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 160px;
+.leftCol {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  max-width: 160px;
 }
 
 .insightBox {
@@ -66,9 +67,10 @@
   opacity: 0;
 }
 
-/* Center Orb */
-.orbWrapper {
-  position: relative;
+/* Center - Orb */
+.centerCol {
+  grid-column: 2;
+  grid-row: 1 / 5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,18 +80,6 @@
 
 .phaseDisplay {
   text-align: center;
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .phaseLabel {
@@ -110,35 +100,35 @@
   margin: 4px 0 0 0;
   font-weight: 300;
   min-height: 2.8em;
-  letter-spacing: -0.02em;
 }
 
 .orbTapHint {
   position: absolute;
-  z-index: 40;
   font-family: var(--font-family-sans);
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(230, 220, 195, 0.4);
-  pointer-events: none;
-  user-select: none;
   font-weight: 500;
 }
 
-/* Right Top - Pattern Selector */
-.patternContainer {
-  /* Positioned by OrbButton */
+/* Right Top - Pattern Pills */
+.rightTopCol {
+  grid-column: 3;
+  grid-row: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .patternSelector {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .patternPill {
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(15, 15, 18, 0.4);
@@ -151,7 +141,6 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: all 0.3s ease;
-  outline: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -176,16 +165,16 @@
   color: rgba(160, 220, 200, 0.85);
 }
 
-/* Right Mid - Session & Audio */
-.sessionContainer {
-  /* Positioned by OrbButton */
-}
-
-.sessionRow {
+/* Right Middle - Timer + Audio */
+.rightMidCol {
+  grid-column: 3;
+  grid-row: 2;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
+  flex-direction: column;
 }
 
 .sessionTimer {
@@ -207,14 +196,8 @@
   color: rgba(230, 220, 195, 0.4);
   font-size: 0.7rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  line-height: 1;
-  padding: 0;
-  outline: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -230,18 +213,18 @@
 }
 
 /* Right Bottom - Controls */
-.controlContainer {
-  /* Positioned by OrbButton */
-}
-
-.controlButtons {
+.rightBottomCol {
+  grid-column: 3;
+  grid-row: 3;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  justify-content: center;
 }
 
 .controlBtn {
-  padding: 10px 16px;
+  padding: 10px 14px;
   border-radius: 6px;
   border: 1px solid rgba(230, 220, 195, 0.2);
   background: rgba(20, 20, 25, 0.5);
@@ -251,10 +234,8 @@
   font-family: var(--font-family-sans);
   font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.3s ease;
-  outline: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
 }
@@ -277,7 +258,15 @@
   color: rgba(230, 220, 195, 0.7);
 }
 
-/* Get AI hint */
+/* AI Hint */
+.aiHintSection {
+  grid-column: 2;
+  grid-row: 5;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .getAiHintBtn {
   padding: 8px 18px;
   border-radius: 6px;
@@ -286,16 +275,10 @@
   color: rgba(160, 220, 200, 0.45);
   font-family: var(--font-family-sans);
   font-size: 0.75rem;
-  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.3s ease;
-  outline: none;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  position: absolute;
-  bottom: -50px;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .getAiHintBtn:hover {
@@ -303,26 +286,45 @@
   color: rgba(160, 220, 200, 0.85);
 }
 
+/* Mobile */
 @media (max-width: 1024px) {
-  .breatheContent {
-    gap: 1.5rem;
+  .breatheGrid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto;
+    gap: 1rem;
     height: auto;
   }
 
-  .leftInsight {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
-    width: 100%;
-    margin-bottom: 1rem;
+  .leftCol {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: 100%;
   }
 
-  .getAiHintBtn {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    transform: none;
-    margin-top: 1rem;
+  .centerCol {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .rightTopCol {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .rightMidCol {
+    grid-column: 1;
+    grid-row: 4;
+    flex-direction: row;
+  }
+
+  .rightBottomCol {
+    grid-column: 1;
+    grid-row: 5;
+    flex-direction: row;
+  }
+
+  .aiHintSection {
+    grid-column: 1;
+    grid-row: 6;
   }
 }

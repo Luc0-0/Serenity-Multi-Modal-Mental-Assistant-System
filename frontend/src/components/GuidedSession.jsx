@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./GuidedSession.module.css";
 import { MeditationOrb } from "./MeditationOrb";
-import { OrbLayout, OrbButton } from "./OrbLayout";
+import { OrbButton } from "./OrbLayout";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 import { getMeditationSuggestion } from "../services/api";
 
@@ -71,8 +71,20 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
 
   return (
     <div className={styles.guidedContent}>
-      <OrbLayout width="100%" height="clamp(400px, 60vh, 600px)">
-        {/* Center Orb */}
+      {/* Left Button - Generate/Regenerate */}
+      <OrbButton position="left" className={styles.buttonContainer}>
+        <button
+          className={styles.actionBtn}
+          onClick={!suggestion ? handleGenerate : () => handleGenerate()}
+          disabled={isGenerating}
+          title={suggestion ? "Regenerate" : "Generate session"}
+        >
+          {isGenerating ? "..." : suggestion ? "Regenerate" : "Generate"}
+        </button>
+      </OrbButton>
+
+      {/* Center Orb */}
+      <div className={styles.orbWrapper}>
         <MeditationOrb
           color={orbColor}
           isPlaying={isPlaying}
@@ -85,84 +97,72 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
           ) : !suggestion ? (
             <div className={styles.orbTapHint}>generate</div>
           ) : isPlaying ? (
-            <div className={styles.orbCentreIcon}>⏸</div>
+            <div className={styles.orbCentreIcon}>||</div>
           ) : (
             <div className={styles.orbCentreIcon}>▶</div>
           )}
         </MeditationOrb>
 
-        {/* Left Button - Generate/Regenerate */}
-        <OrbButton position="left" className={styles.buttonContainer}>
+        {/* Info Display */}
+        {suggestion && (
+          <div className={styles.infoDisplay}>
+            <p className={styles.insight}>{suggestion.insight}</p>
+            {audioDuration > 0 && (
+              <>
+                <div className={styles.progressTrack}>
+                  <div
+                    className={styles.progressFill}
+                    style={{ width: `${audioProgress * 100}%` }}
+                  />
+                </div>
+                <p className={styles.timer}>
+                  {formatTime(Math.round(audioProgress * audioDuration))} /{" "}
+                  {formatTime(Math.round(audioDuration))}
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
+        {isGenerating && (
+          <div className={styles.infoDisplay}>
+            <p className={styles.label}>Crafting your session…</p>
+          </div>
+        )}
+
+        {!suggestion && !isGenerating && (
+          <div className={styles.infoDisplay}>
+            <p className={styles.idleText}>
+              Serenity will craft a session from your journal &amp; emotions.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Right Top Button - Play/Pause */}
+      {suggestion && (
+        <OrbButton position="rightTop" className={styles.buttonContainer}>
           <button
-            className={styles.actionBtn}
-            onClick={!suggestion ? handleGenerate : () => handleGenerate()}
-            disabled={isGenerating}
-            title={suggestion ? "Regenerate" : "Generate session"}
+            className={styles.controlBtn}
+            onClick={togglePlayPause}
+            title={isPlaying ? "Pause" : "Play"}
           >
-            {isGenerating ? "..." : suggestion ? "Regenerate" : "Generate"}
+            {isPlaying ? "Pause" : "Play"}
           </button>
         </OrbButton>
+      )}
 
-        {/* Right Top Buttons - Play/Pause */}
-        {suggestion && (
-          <OrbButton position="rightTop" className={styles.buttonContainer}>
-            <button
-              className={styles.controlBtn}
-              onClick={togglePlayPause}
-              title={isPlaying ? "Pause" : "Play"}
-            >
-              {isPlaying ? "⏸" : "▶"}
-            </button>
-          </OrbButton>
-        )}
-
-        {/* Right Top-Bottom Button - Mute */}
-        {suggestion && (
-          <OrbButton position="rightTopBottom" className={styles.buttonContainer}>
-            <button
-              className={`${styles.controlBtn} ${isMuted ? styles.btnMuted : ""}`}
-              onClick={toggleMute}
-              title={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? "🔇" : "🔊"}
-            </button>
-          </OrbButton>
-        )}
-      </OrbLayout>
-
-      {/* Info Display */}
+      {/* Right Mid Button - Mute */}
       {suggestion && (
-        <div className={styles.infoDisplay}>
-          <p className={styles.insight}>{suggestion.insight}</p>
-          {audioDuration > 0 && (
-            <>
-              <div className={styles.progressTrack}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${audioProgress * 100}%` }}
-                />
-              </div>
-              <p className={styles.timer}>
-                {formatTime(Math.round(audioProgress * audioDuration))} /{" "}
-                {formatTime(Math.round(audioDuration))}
-              </p>
-            </>
-          )}
-        </div>
-      )}
-
-      {isGenerating && (
-        <div className={styles.infoDisplay}>
-          <p className={styles.label}>Crafting your session…</p>
-        </div>
-      )}
-
-      {!suggestion && !isGenerating && (
-        <div className={styles.infoDisplay}>
-          <p className={styles.idleText}>
-            Serenity will craft a session from your journal &amp; emotions.
-          </p>
-        </div>
+        <OrbButton position="rightTopBottom" className={styles.buttonContainer}>
+          <button
+            className={`${styles.controlBtn} ${isMuted ? styles.btnMuted : ""}`}
+            onClick={toggleMute}
+            title={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? "Muted" : "Sound"}
+          </button>
+        </OrbButton>
       )}
 
       {/* Apply pattern button */}

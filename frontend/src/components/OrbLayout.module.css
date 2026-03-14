@@ -1,4 +1,4 @@
-/* OrbLayout - CSS clip-path based button clipping */
+/* OrbLayout - Button positioning around orb */
 
 .orbLayoutWrapper {
   position: relative;
@@ -9,16 +9,12 @@
   height: 100%;
 }
 
-/* Center orb container */
 .orbCenter {
   position: relative;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Base button positioning */
+/* Base button styles */
 .orbButton {
   position: absolute;
   z-index: 15;
@@ -30,128 +26,65 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* LEFT button - centered vertically on left */
+/* LEFT - Centered vertically on left */
 .orbButton.left {
   left: 50%;
   top: 50%;
-  transform: translate(calc(-100% - 120px), -50%);
-  /* Clip right edge of button against invisible circle */
-  clip-path: polygon(
-    0% 0%,
-    85% 0%,        /* Leave 85% visible, clip 15% on the right */
-    85% 100%,
-    0% 100%
-  );
+  transform: translate(calc(-100% - 100px), -50%);
 }
 
 .orbButton.left:hover {
-  transform: translate(calc(-100% - 120px), -50%) scale(1.05);
+  transform: translate(calc(-100% - 100px), -50%) scale(1.05);
 }
 
-/* RIGHT-TOP button - upper right */
+/* RIGHT-TOP - Upper right, above center */
 .orbButton.rightTop {
   right: 50%;
   top: 50%;
-  transform: translate(calc(100% + 60px), calc(-50% - 80px));
-  /* Clip left edge of button against invisible circle */
-  clip-path: polygon(
-    15% 0%,        /* Start clipped on left side */
-    100% 0%,
-    100% 100%,
-    15% 100%
-  );
+  transform: translate(calc(100% + 60px), calc(-50% - 70px));
 }
 
 .orbButton.rightTop:hover {
-  transform: translate(calc(100% + 60px), calc(-50% - 80px)) scale(1.08);
+  transform: translate(calc(100% + 60px), calc(-50% - 70px)) scale(1.08);
 }
 
-/* RIGHT-MID button - middle right */
+/* RIGHT-MID (rightTopBottom) - Middle right, near center */
 .orbButton.rightTopBottom {
   right: 50%;
   top: 50%;
-  transform: translate(calc(100% + 60px), calc(-50% - 10px));
-  /* Clip left edge */
-  clip-path: polygon(
-    15% 0%,
-    100% 0%,
-    100% 100%,
-    15% 100%
-  );
+  transform: translate(calc(100% + 60px), -50%);
 }
 
 .orbButton.rightTopBottom:hover {
-  transform: translate(calc(100% + 60px), calc(-50% - 10px)) scale(1.08);
+  transform: translate(calc(100% + 60px), -50%) scale(1.08);
 }
 
-/* RIGHT-BOTTOM buttons - lower right */
+/* RIGHT-BOTTOM - Lower right */
 .orbButton.rightBottom {
   right: 50%;
-  bottom: 50%;
-  transform: translate(calc(100% + 60px), 50%);
-  flex-direction: column;
-  gap: 6px;
-  /* Clip left edge */
-  clip-path: polygon(
-    15% 0%,
-    100% 0%,
-    100% 100%,
-    15% 100%
-  );
+  top: 50%;
+  transform: translate(calc(100% + 60px), calc(-50% + 70px));
 }
 
 .orbButton.rightBottom:hover {
-  transform: translate(calc(100% + 60px), 50%) scale(1.05);
+  transform: translate(calc(100% + 60px), calc(-50% + 70px)) scale(1.05);
 }
 
-/* Glow effect on button hover */
-.orbButton::before {
-  content: '';
-  position: absolute;
-  inset: -12px;
-  border-radius: 8px;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(212, 175, 55, 0.15) 0%,
-    rgba(90, 175, 155, 0.08) 40%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.orbButton:hover::before {
-  opacity: 1;
-}
-
-/* Mobile - revert to standard positioning */
+/* Mobile fallback */
 @media (max-width: 1024px) {
-  .orbButton.left {
-    transform: translate(-50%, calc(-100% - 40px));
-    left: 50%;
-    top: auto;
-    clip-path: none;
-  }
-
-  .orbButton.left:hover {
-    transform: translate(-50%, calc(-100% - 40px)) scale(1.05);
-  }
-
+  .orbButton.left,
   .orbButton.rightTop,
   .orbButton.rightTopBottom,
   .orbButton.rightBottom {
     position: relative;
     right: auto;
-    bottom: auto;
-    top: auto;
     left: auto;
+    top: auto;
     transform: none;
-    margin: 0 8px;
-    clip-path: none;
+    margin: 8px;
   }
 
+  .orbButton.left:hover,
   .orbButton.rightTop:hover,
   .orbButton.rightTopBottom:hover,
   .orbButton.rightBottom:hover {
@@ -161,19 +94,6 @@
 
 @media (max-width: 640px) {
   .orbButton {
-    width: auto;
-    height: auto;
-  }
-
-  .orbButton.left {
-    transform: translate(-50%, -50%);
-    left: 50%;
-    top: 50%;
-  }
-
-  .orbButton.rightTop,
-  .orbButton.rightTopBottom,
-  .orbButton.rightBottom {
     margin: 4px;
   }
 }

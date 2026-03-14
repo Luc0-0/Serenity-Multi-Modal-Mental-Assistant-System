@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./BreatheSession.module.css";
 import { MeditationOrb } from "./MeditationOrb";
-import { OrbButton } from "./OrbLayout";
 import { useBreathingTimer } from "../hooks/useBreathingTimer";
 
 const PATTERNS = {
@@ -76,18 +75,15 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
     currentLabel,
     currentDuration,
     breatheOrbColor,
-    pattern,
     handlePatternChange: changePattern,
     handleReset,
   } = breathingTimer;
 
-  // Play tone on phase change
   useEffect(() => {
     if (!isRunning || !audioEnabled) return;
     playBreathingTone(currentLabel);
   }, [isRunning, audioEnabled, currentLabel]);
 
-  // Sync with parent pattern change
   useEffect(() => {
     changePattern(currentPattern);
   }, [currentPattern]);
@@ -103,10 +99,10 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
       : "transform 0.4s ease";
 
   return (
-    <div className={styles.breatheContent}>
+    <div className={styles.breatheGrid}>
       {/* Left - AI Insight */}
       {suggestion && (
-        <div className={styles.leftInsight}>
+        <div className={styles.leftCol}>
           <div className={styles.insightBox}>
             <p className={styles.insightText}>{suggestion.insight}</p>
             <div className={styles.insightOverlay} />
@@ -114,8 +110,8 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
         </div>
       )}
 
-      {/* Center Orb */}
-      <div className={styles.orbWrapper}>
+      {/* Center - Orb */}
+      <div className={styles.centerCol}>
         <MeditationOrb
           color={breatheOrbColor}
           scale={orbScale}
@@ -124,7 +120,6 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
           currentLabel={currentLabel}
           orbTransition={orbTransition}
           onClick={() => setIsRunning((r) => !r)}
-          title={isRunning ? "Tap to pause" : "Tap to begin"}
         >
           {!isRunning && <div className={styles.orbTapHint}>tap</div>}
         </MeditationOrb>
@@ -140,8 +135,8 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
         </div>
       </div>
 
-      {/* Right Top - Pattern Selector */}
-      <OrbButton position="rightTop" className={styles.patternContainer}>
+      {/* Right Top - Pattern Pills */}
+      <div className={styles.rightTopCol}>
         <div className={styles.patternSelector}>
           {Object.entries(PATTERNS).map(([key, p]) => (
             <button
@@ -159,43 +154,40 @@ export function BreatheSession({ suggestion, currentPattern, onPatternChange }) 
               }`}
               onClick={() => handlePatternSelect(suggestion.suggested_pattern)}
             >
-              AI Pick
+              AI
             </button>
           )}
         </div>
-      </OrbButton>
+      </div>
 
-      {/* Right Mid - Session Timer & Audio Toggle */}
-      <OrbButton position="rightTopBottom" className={styles.sessionContainer}>
-        <div className={styles.sessionRow}>
-          <span className={styles.sessionTimer}>{formatTime(sessionSecs)}</span>
-          <button
-            className={`${styles.audioBtn} ${audioEnabled ? styles.audioBtnOn : ""}`}
-            onClick={() => setAudioEnabled((a) => !a)}
-            title={audioEnabled ? "Disable audio cues" : "Enable audio cues"}
-          >
-            {audioEnabled ? "On" : "Off"}
-          </button>
-        </div>
-      </OrbButton>
+      {/* Right Middle - Timer + Audio */}
+      <div className={styles.rightMidCol}>
+        <span className={styles.sessionTimer}>{formatTime(sessionSecs)}</span>
+        <button
+          className={`${styles.audioBtn} ${audioEnabled ? styles.audioBtnOn : ""}`}
+          onClick={() => setAudioEnabled((a) => !a)}
+        >
+          {audioEnabled ? "On" : "Off"}
+        </button>
+      </div>
 
       {/* Right Bottom - Controls */}
-      <OrbButton position="rightBottom" className={styles.controlContainer}>
-        <div className={styles.controlButtons}>
-          <button className={styles.controlBtn} onClick={() => setIsRunning((r) => !r)}>
-            {isRunning ? "Pause" : "Begin"}
-          </button>
-          <button className={`${styles.controlBtn} ${styles.controlBtnSecondary}`} onClick={handleReset}>
-            Reset
+      <div className={styles.rightBottomCol}>
+        <button className={styles.controlBtn} onClick={() => setIsRunning((r) => !r)}>
+          {isRunning ? "Pause" : "Begin"}
+        </button>
+        <button className={`${styles.controlBtn} ${styles.controlBtnSecondary}`} onClick={handleReset}>
+          Reset
+        </button>
+      </div>
+
+      {/* AI Hint Button */}
+      {!suggestion && (
+        <div className={styles.aiHintSection}>
+          <button className={styles.getAiHintBtn}>
+            Get AI session &amp; recommendation
           </button>
         </div>
-      </OrbButton>
-
-      {/* Get AI hint button */}
-      {!suggestion && (
-        <button className={styles.getAiHintBtn}>
-          Get AI session &amp; recommendation
-        </button>
       )}
     </div>
   );

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import styles from "./GuidedSession.module.css";
 import { MeditationOrb } from "./MeditationOrb";
-import { OrbButton } from "./OrbLayout";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 import { getMeditationSuggestion } from "../services/api";
 
@@ -15,11 +14,6 @@ const GUIDED_COLOR_IDLE = "rgba(110, 140, 215, 0.45)";
 const GUIDED_COLOR_PLAYING = "rgba(90, 175, 155, 0.50)";
 
 function getTrackUrl(emotion) {
-  const h = new Date().getHours();
-  if ((emotion === "neutral" || emotion === "joy") && h >= 5 && h < 11)
-    return "/audio/meditations/fear.mp3";
-  if ((emotion === "neutral" || emotion === "joy") && (h >= 22 || h < 4))
-    return "/audio/meditations/fear.mp3";
   return "/audio/meditations/fear.mp3";
 }
 
@@ -37,7 +31,6 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
     isMuted,
     loadAudio,
     togglePlayPause,
-    stop,
     toggleMute,
   } = useAudioPlayer();
 
@@ -70,27 +63,25 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
   };
 
   return (
-    <div className={styles.guidedContent}>
-      {/* Left Button - Generate/Regenerate */}
-      <OrbButton position="left" className={styles.buttonContainer}>
+    <div className={styles.guidedGrid}>
+      {/* Left - Generate button */}
+      <div className={styles.leftCol}>
         <button
           className={styles.actionBtn}
-          onClick={!suggestion ? handleGenerate : () => handleGenerate()}
+          onClick={handleGenerate}
           disabled={isGenerating}
-          title={suggestion ? "Regenerate" : "Generate session"}
         >
           {isGenerating ? "..." : suggestion ? "Regenerate" : "Generate"}
         </button>
-      </OrbButton>
+      </div>
 
-      {/* Center Orb */}
-      <div className={styles.orbWrapper}>
+      {/* Center - Orb */}
+      <div className={styles.centerCol}>
         <MeditationOrb
           color={orbColor}
           isPlaying={isPlaying}
           orbTransition={isPlaying ? "transform 0.4s ease" : "transform 6s ease-in-out"}
           onClick={handleOrbClick}
-          title={!suggestion ? "Generate session" : isPlaying ? "Pause" : "Play"}
         >
           {isGenerating ? (
             <div className={styles.orbGeneratingRing} />
@@ -103,7 +94,6 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
           )}
         </MeditationOrb>
 
-        {/* Info Display */}
         {suggestion && (
           <div className={styles.infoDisplay}>
             <p className={styles.insight}>{suggestion.insight}</p>
@@ -139,43 +129,47 @@ export function GuidedSession({ suggestion, onSuggestionUpdate, onApplyPattern }
         )}
       </div>
 
-      {/* Right Top Button - Play/Pause */}
+      {/* Right top - Play button */}
       {suggestion && (
-        <OrbButton position="rightTop" className={styles.buttonContainer}>
+        <div className={styles.rightTopCol}>
           <button
             className={styles.controlBtn}
             onClick={togglePlayPause}
-            title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? "Pause" : "Play"}
           </button>
-        </OrbButton>
+        </div>
       )}
 
-      {/* Right Mid Button - Mute */}
+      {/* Right middle - Mute button */}
       {suggestion && (
-        <OrbButton position="rightTopBottom" className={styles.buttonContainer}>
+        <div className={styles.rightMidCol}>
           <button
             className={`${styles.controlBtn} ${isMuted ? styles.btnMuted : ""}`}
             onClick={toggleMute}
-            title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? "Muted" : "Sound"}
           </button>
-        </OrbButton>
+        </div>
       )}
 
       {/* Apply pattern button */}
       {suggestion && (
-        <button
-          className={styles.applyPatternBtn}
-          onClick={() => onApplyPattern(suggestion.suggested_pattern)}
-        >
-          ✦ {PATTERNS[suggestion.suggested_pattern]?.name} breathing →
-        </button>
+        <div className={styles.applySection}>
+          <button
+            className={styles.applyPatternBtn}
+            onClick={() => onApplyPattern(suggestion.suggested_pattern)}
+          >
+            ✦ {PATTERNS[suggestion.suggested_pattern]?.name} breathing →
+          </button>
+        </div>
       )}
 
-      {generateError && <p className={styles.errorMsg}>{generateError}</p>}
+      {generateError && (
+        <div className={styles.errorSection}>
+          <p className={styles.errorMsg}>{generateError}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/meditate", tags=["meditate"])
 
+VALID_PATTERNS = ("box", "calm", "deep", "wim_hof", "coherent")
+VALID_EMOTIONS = ("sadness", "fear", "anger", "joy", "neutral")
+
 
 def _extract_json(text: str) -> str:
     text = re.sub(r"```(?:json)?\s*", "", text)
@@ -36,11 +39,14 @@ def _fallback(emotion: str = "neutral") -> dict:
         "sadness": "You've been feeling the heaviness of things recently. This session offers a moment of warmth and gentleness — just for you.",
         "anger":   "There's been a lot of friction and frustration in your days. This session is here to help you release that heat and return to yourself.",
         "joy":     "You're in a good place right now. This session will help you stay grounded in it and carry that warmth forward.",
-        "neutral":  "A quiet moment for yourself. This session brings you back to the present — nothing more, nothing less.",
+        "neutral": "A quiet moment for yourself. This session brings you back to the present — nothing more, nothing less.",
     }
     patterns = {
-        "fear": "box", "sadness": "calm", "anger": "deep",
-        "joy": "box", "neutral": "box",
+        "fear":    "box",
+        "sadness": "calm",
+        "anger":   "wim_hof",
+        "joy":     "coherent",
+        "neutral": "box",
     }
     return {
         "suggested_pattern": patterns.get(emotion, "box"),
@@ -54,7 +60,8 @@ async def get_meditation_suggestion(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return a personalised meditation suggestion — emotion + short insight only."""
+    """Return a personalised meditation suggestion based on recent emotion and journal data."""
+    dominant_emotion = "neutral"
     try:
         since = datetime.utcnow() - timedelta(days=30)
         emotion_stmt = (
@@ -81,7 +88,6 @@ async def get_meditation_suggestion(
             dominant_emotion = counts.most_common(1)[0][0]
         else:
             emotion_context = "No recent emotion data."
-            dominant_emotion = "neutral"
 
         if journal_entries:
             excerpts = []
@@ -101,15 +107,17 @@ async def get_meditation_suggestion(
 
 Return ONLY:
 {{
-  "suggested_pattern": "<box | calm | deep>",
+  "suggested_pattern": "<box | calm | deep | wim_hof | coherent>",
   "emotion": "<sadness | fear | anger | joy | neutral>",
   "insight": "<2-3 warm, personal sentences explaining what you notice in their data and why this session will help them. Reference their actual emotional patterns. Speak directly to them as 'you'.>"
 }}
 
 Pattern rules:
-- box (4-4-4-4): anxiety, stress, racing thoughts
-- calm (4-7-8): deep tension, insomnia, agitation
-- deep (5-5): sadness, low energy, grounding needed
+- box (4-4-4-4): anxiety, stress, racing thoughts — structured reset
+- calm (4-7-8): deep tension, insomnia, agitation — nervous system slowdown
+- deep (5-5): sadness, low energy, grounding needed — gentle activation
+- wim_hof (30 breaths + hold): anger, frustration, high arousal — controlled intensity release
+- coherent (5-5): emotional balance, general wellbeing, joy — heart rate coherence
 
 Emotion rules (pick the single most dominant):
 - fear: anxious, stressed, overwhelmed, worried
@@ -128,9 +136,9 @@ Emotion rules (pick the single most dominant):
 
         data = json.loads(_extract_json(raw))
 
-        if data.get("suggested_pattern") not in ("box", "calm", "deep"):
+        if data.get("suggested_pattern") not in VALID_PATTERNS:
             data["suggested_pattern"] = "box"
-        if data.get("emotion") not in ("sadness", "fear", "anger", "joy", "neutral"):
+        if data.get("emotion") not in VALID_EMOTIONS:
             data["emotion"] = dominant_emotion
         if not data.get("insight"):
             data["insight"] = _fallback(data["emotion"])["insight"]
@@ -139,7 +147,7 @@ Emotion rules (pick the single most dominant):
 
     except json.JSONDecodeError as e:
         logger.warning(f"Meditation JSON parse failed: {e}")
-        return _fallback(dominant_emotion if "dominant_emotion" in dir() else "neutral")
+        return _fallback(dominant_emotion)
     except Exception as e:
         logger.error(f"Meditation suggest failed: {e}")
         return _fallback()

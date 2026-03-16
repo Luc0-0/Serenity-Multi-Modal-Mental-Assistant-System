@@ -22,7 +22,7 @@
 .app {
   width: 100%;
   min-height: 100vh;
-  background: radial-gradient(ellipse at 50% 40%, #1e1a20 0%, #141216 40%, #0d0b0f 100%);
+  background: #050508 url('/images/medipagebg.webp') center / cover no-repeat fixed;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -442,11 +442,14 @@
   height: 400px;
 }
 
-/* ── Buttons ── */
+
 .gridButton {
   position: relative;
-  background: rgba(15, 13, 20, 0.75);
-  border: 1px solid hsla(var(--hue3), 20%, 60%, 0.07);
+  background: rgba(8, 6, 14, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-top-color: rgba(255, 255, 255, 0.07);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -462,9 +465,8 @@
   min-width: 280px;
   overflow: hidden;
   box-shadow:
-    4px 4px 14px rgba(0, 0, 0, 0.45),
-    -2px -2px 10px hsla(var(--hue1), 20%, 50%, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    0 2px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   animation: auroraColors 16s ease-in-out infinite;
 }
 
@@ -480,66 +482,44 @@
 .gridButton:hover::after { transform: translateX(100%); }
 
 .gridButton:hover {
-  border-color: hsla(var(--hue1), 25%, 65%, 0.13);
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(12, 10, 20, 0.6);
   box-shadow:
-    4px 4px 18px rgba(0, 0, 0, 0.5),
-    -2px -2px 14px hsla(var(--hue1), 25%, 55%, 0.08),
-    0 0 28px hsla(var(--hue3), 22%, 60%, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 0 20px hsla(var(--hue1), 20%, 55%, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: rgba(220, 215, 230, 0.75);
 }
 
 .gridButton:active {
   transform: scale(0.985);
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .moonlight {
   color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 14px rgba(232, 228, 223, 0.10);
+  text-shadow: 0 0 12px rgba(232, 228, 223, 0.06);
   justify-content: flex-start;
   padding-left: 24px;
-  border-color: hsla(var(--hue1), 25%, 65%, 0.10);
-  box-shadow:
-    4px 4px 14px rgba(0, 0, 0, 0.4),
-    -2px -2px 10px rgba(50, 45, 60, 0.06),
-    inset -2px 0 16px hsla(var(--hue1), 30%, 65%, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  border-left-color: rgba(255, 255, 255, 0.06);
 }
 
 .moonlight:hover {
   color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 20px rgba(232, 228, 223, 0.22);
-  border-color: hsla(var(--hue1), 30%, 65%, 0.18);
-  box-shadow:
-    4px 4px 18px rgba(0, 0, 0, 0.5),
-    -2px -2px 14px rgba(60, 55, 75, 0.08),
-    inset -3px 0 22px hsla(var(--hue1), 35%, 65%, 0.09),
-    0 0 30px hsla(var(--hue1), 30%, 70%, 0.06);
+  text-shadow: 0 0 16px rgba(232, 228, 223, 0.12);
 }
 
 .moonlightRight {
   color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 14px rgba(232, 228, 223, 0.10);
+  text-shadow: 0 0 12px rgba(232, 228, 223, 0.06);
   justify-content: flex-end;
   padding-right: 24px;
-  border-color: hsla(var(--hue2), 25%, 65%, 0.10);
-  box-shadow:
-    4px 4px 14px rgba(0, 0, 0, 0.4),
-    -2px -2px 10px rgba(50, 45, 60, 0.06),
-    inset 2px 0 16px hsla(var(--hue2), 30%, 65%, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  border-right-color: rgba(255, 255, 255, 0.06);
 }
 
 .moonlightRight:hover {
   color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 20px rgba(232, 228, 223, 0.22);
-  border-color: hsla(var(--hue2), 30%, 65%, 0.18);
-  box-shadow:
-    4px 4px 18px rgba(0, 0, 0, 0.5),
-    -2px -2px 14px rgba(60, 55, 75, 0.08),
-    inset 3px 0 22px hsla(var(--hue2), 35%, 65%, 0.09),
-    0 0 30px hsla(var(--hue2), 30%, 70%, 0.06);
+  text-shadow: 0 0 16px rgba(232, 228, 223, 0.12);
 }
 
 /* ── Breathwork selected state ── */
@@ -550,14 +530,13 @@
 
 .breathworkBtnSelected {
   color: rgba(232, 228, 223, 0.95);
-  border-color: hsla(var(--hue2), 35%, 70%, 0.22);
-  background: rgba(20, 18, 28, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(14, 12, 22, 0.7);
   box-shadow:
-    4px 4px 18px rgba(0, 0, 0, 0.5),
-    inset 3px 0 24px hsla(var(--hue2), 40%, 68%, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 0 35px hsla(var(--hue2), 35%, 65%, 0.08);
-  text-shadow: 0 0 20px rgba(232, 228, 223, 0.3);
+    0 4px 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 28px hsla(var(--hue2), 25%, 60%, 0.06);
+  text-shadow: 0 0 14px rgba(232, 228, 223, 0.15);
 }
 
 .breathworkBtnSelected::before {

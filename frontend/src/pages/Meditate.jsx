@@ -23,9 +23,8 @@ function formatTime(secs) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function getTrackUrl(emotion) {
-  const map = { fear: "fear.mp3", sadness: "medi.mp3", anger: "Breath.mp3" };
-  return `/audio/meditations/${map[emotion] || "medi.mp3"}`;
+function getTrackUrl() {
+  return `/audio/meditations/fear.mp3`;
 }
 
 export function Meditate() {
@@ -89,7 +88,7 @@ export function Meditate() {
     try {
       const data = await getMeditationSuggestion();
       setSuggestion(data);
-      const url = getTrackUrl(data.emotion);
+      const url = getTrackUrl();
       guidedAudio.loadAudio(url);
     } catch (e) {
       setError(e.message || "Failed to generate session");

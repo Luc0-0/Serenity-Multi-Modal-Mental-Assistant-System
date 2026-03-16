@@ -36,7 +36,8 @@
 .vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(8, 6, 10, 0.6) 100%);
+  background:
+    radial-gradient(ellipse at center, rgba(5, 5, 8, 0.55) 0%, rgba(5, 5, 8, 0.85) 60%, rgba(5, 5, 8, 0.95) 100%);
   pointer-events: none;
   z-index: 10;
 }
@@ -445,11 +446,8 @@
 
 .gridButton {
   position: relative;
-  background: rgba(8, 6, 14, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-top-color: rgba(255, 255, 255, 0.07);
+  background: rgba(15, 13, 20, 0.75);
+  border: 1px solid hsla(var(--hue3), 20%, 60%, 0.07);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -465,8 +463,9 @@
   min-width: 280px;
   overflow: hidden;
   box-shadow:
-    0 2px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    4px 4px 14px rgba(0, 0, 0, 0.45),
+    -2px -2px 10px hsla(var(--hue1), 20%, 50%, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
   animation: auroraColors 16s ease-in-out infinite;
 }
 
@@ -482,44 +481,66 @@
 .gridButton:hover::after { transform: translateX(100%); }
 
 .gridButton:hover {
-  border-color: rgba(255, 255, 255, 0.09);
-  background: rgba(12, 10, 20, 0.6);
+  border-color: hsla(var(--hue1), 25%, 65%, 0.12);
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.5),
-    0 0 20px hsla(var(--hue1), 20%, 55%, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    4px 4px 18px rgba(0, 0, 0, 0.5),
+    -2px -2px 12px hsla(var(--hue1), 22%, 55%, 0.06),
+    0 0 24px hsla(var(--hue3), 20%, 60%, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   color: rgba(220, 215, 230, 0.75);
 }
 
 .gridButton:active {
   transform: scale(0.985);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .moonlight {
   color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 12px rgba(232, 228, 223, 0.06);
+  text-shadow: 0 0 14px rgba(232, 228, 223, 0.08);
   justify-content: flex-start;
   padding-left: 24px;
-  border-left-color: rgba(255, 255, 255, 0.06);
+  border-color: hsla(var(--hue1), 25%, 65%, 0.10);
+  box-shadow:
+    4px 4px 14px rgba(0, 0, 0, 0.4),
+    -2px -2px 10px rgba(50, 45, 60, 0.05),
+    inset -2px 0 14px hsla(var(--hue1), 28%, 65%, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .moonlight:hover {
   color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 16px rgba(232, 228, 223, 0.12);
+  text-shadow: 0 0 18px rgba(232, 228, 223, 0.15);
+  border-color: hsla(var(--hue1), 28%, 65%, 0.15);
+  box-shadow:
+    4px 4px 18px rgba(0, 0, 0, 0.5),
+    -2px -2px 12px rgba(55, 50, 70, 0.06),
+    inset -3px 0 18px hsla(var(--hue1), 30%, 65%, 0.06),
+    0 0 24px hsla(var(--hue1), 25%, 70%, 0.04);
 }
 
 .moonlightRight {
   color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 12px rgba(232, 228, 223, 0.06);
+  text-shadow: 0 0 14px rgba(232, 228, 223, 0.08);
   justify-content: flex-end;
   padding-right: 24px;
-  border-right-color: rgba(255, 255, 255, 0.06);
+  border-color: hsla(var(--hue2), 25%, 65%, 0.10);
+  box-shadow:
+    4px 4px 14px rgba(0, 0, 0, 0.4),
+    -2px -2px 10px rgba(50, 45, 60, 0.05),
+    inset 2px 0 14px hsla(var(--hue2), 28%, 65%, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .moonlightRight:hover {
   color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 16px rgba(232, 228, 223, 0.12);
+  text-shadow: 0 0 18px rgba(232, 228, 223, 0.15);
+  border-color: hsla(var(--hue2), 28%, 65%, 0.15);
+  box-shadow:
+    4px 4px 18px rgba(0, 0, 0, 0.5),
+    -2px -2px 12px rgba(55, 50, 70, 0.06),
+    inset 3px 0 18px hsla(var(--hue2), 30%, 65%, 0.06),
+    0 0 24px hsla(var(--hue2), 25%, 70%, 0.04);
 }
 
 /* ── Breathwork selected state ── */
@@ -530,13 +551,14 @@
 
 .breathworkBtnSelected {
   color: rgba(232, 228, 223, 0.95);
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(14, 12, 22, 0.7);
+  border-color: hsla(var(--hue2), 32%, 70%, 0.18);
+  background: rgba(18, 16, 26, 0.85);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 0 28px hsla(var(--hue2), 25%, 60%, 0.06);
-  text-shadow: 0 0 14px rgba(232, 228, 223, 0.15);
+    4px 4px 18px rgba(0, 0, 0, 0.5),
+    inset 3px 0 20px hsla(var(--hue2), 35%, 68%, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 28px hsla(var(--hue2), 28%, 65%, 0.05);
+  text-shadow: 0 0 18px rgba(232, 228, 223, 0.2);
 }
 
 .breathworkBtnSelected::before {

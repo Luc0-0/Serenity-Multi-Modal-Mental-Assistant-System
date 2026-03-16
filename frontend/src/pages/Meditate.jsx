@@ -41,45 +41,21 @@ export function Meditate() {
   const guidedAudio = useAudioPlayer();
 
   // Background ambient audio
-  const bgMediRef = useRef(null);
-  const bgBreathRef = useRef(null);
+  const bgAudioRef = useRef(null);
 
   useEffect(() => {
-    const medi = new Audio("/audio/meditations/medi.mp3");
-    medi.loop = true;
-    medi.volume = 0.22;
-    medi.preload = "auto";
-    bgMediRef.current = medi;
-
-    const breath = new Audio("/audio/meditations/Breath.mp3");
-    breath.loop = true;
-    breath.volume = 0.22;
-    breath.preload = "auto";
-    bgBreathRef.current = breath;
+    const bg = new Audio("/audio/meditations/medi.mp3");
+    bg.loop = true;
+    bg.volume = 0.22;
+    bg.preload = "auto";
+    bgAudioRef.current = bg;
+    bg.play().catch(() => {});
 
     return () => {
-      medi.pause();
-      breath.pause();
-      bgMediRef.current = null;
-      bgBreathRef.current = null;
+      bg.pause();
+      bgAudioRef.current = null;
     };
   }, []);
-
-  useEffect(() => {
-    const medi = bgMediRef.current;
-    const breath = bgBreathRef.current;
-    if (!medi || !breath) return;
-
-    if (activeTab === "guided") {
-      breath.pause();
-      breath.currentTime = 0;
-      medi.play().catch(() => {});
-    } else {
-      medi.pause();
-      medi.currentTime = 0;
-      breath.play().catch(() => {});
-    }
-  }, [activeTab]);
 
   // Generate meditation suggestion
   const handleGenerate = useCallback(async () => {
@@ -242,12 +218,17 @@ export function Meditate() {
           <div className={styles.orbReflection} />
 
           {/* Orb center: hint or nothing while playing */}
-          <div className={styles.orbCenter}>
+          <div className={styles.orbCenter} onClick={handleGuidedToggle}>
             {!suggestion && !generating && (
               <span className={styles.orbHint}>begin</span>
             )}
             {generating && (
               <span className={styles.orbHint}>crafting...</span>
+            )}
+            {suggestion && !generating && (
+              <span className={styles.orbHint}>
+                {guidedAudio.isPlaying ? "pause" : "play"}
+              </span>
             )}
           </div>
 
@@ -341,7 +322,7 @@ export function Meditate() {
           <div className={styles.orbReflection} />
 
           {/* Orb center: hint / phase label + countdown */}
-          <div className={styles.orbCenter}>
+          <div className={styles.orbCenter} onClick={handleBreatheToggle}>
             {!breathing.isRunning && !selectedBreath && (
               <span className={styles.orbHint}>tap</span>
             )}

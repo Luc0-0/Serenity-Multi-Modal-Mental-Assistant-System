@@ -41,7 +41,7 @@
   background:
     radial-gradient(ellipse at center, rgba(5, 5, 8, 0.55) 0%, rgba(5, 5, 8, 0.85) 60%, rgba(5, 5, 8, 0.95) 100%);
   pointer-events: none;
-  z-index: 10;
+  z-index: 1;
 }
 
 .ambientGlow {
@@ -335,8 +335,12 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  pointer-events: none;
   text-align: center;
+  cursor: pointer;
+  width: 200px;
+  height: 200px;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .orbHint {

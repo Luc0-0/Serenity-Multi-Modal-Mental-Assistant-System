@@ -22,6 +22,8 @@
 .app {
   width: 100%;
   min-height: 100vh;
+  margin-top: -60px;
+  padding-top: 60px;
   background: #050508 url('/images/medipagebg.webp') center / cover no-repeat fixed;
   display: flex;
   flex-direction: column;

@@ -39,7 +39,7 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at center, rgba(5, 5, 8, 0.55) 0%, rgba(5, 5, 8, 0.85) 60%, rgba(5, 5, 8, 0.95) 100%);
+    radial-gradient(ellipse at center, rgba(5, 5, 8, 0.2) 0%, rgba(5, 5, 8, 0.5) 55%, rgba(5, 5, 8, 0.75) 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -186,16 +186,16 @@
   border: none;
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 25%, hsla(var(--hue1), 35%, 70%, 0.22) 0%, transparent 40%),
-    radial-gradient(circle at 70% 70%, hsla(var(--hue2), 38%, 68%, 0.20) 0%, transparent 35%),
-    radial-gradient(circle at 55% 35%, hsla(var(--hue3), 32%, 72%, 0.16) 0%, transparent 45%),
-    radial-gradient(circle at 40% 65%, hsla(var(--hue2), 30%, 70%, 0.14) 0%, transparent 30%),
-    radial-gradient(circle at 50% 50%, hsla(var(--hue1), 28%, 75%, 0.10) 0%, hsla(var(--hue3), 25%, 70%, 0.06) 40%, transparent 65%);
+    radial-gradient(circle at 30% 25%, hsla(var(--hue1), 40%, 72%, 0.35) 0%, transparent 40%),
+    radial-gradient(circle at 70% 70%, hsla(var(--hue2), 42%, 70%, 0.32) 0%, transparent 35%),
+    radial-gradient(circle at 55% 35%, hsla(var(--hue3), 36%, 74%, 0.26) 0%, transparent 45%),
+    radial-gradient(circle at 40% 65%, hsla(var(--hue2), 34%, 72%, 0.22) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, hsla(var(--hue1), 32%, 76%, 0.18) 0%, hsla(var(--hue3), 28%, 72%, 0.10) 40%, transparent 65%);
   box-shadow:
-    0 0 80px hsla(var(--hue1), 30%, 70%, 0.12),
-    0 0 160px hsla(var(--hue2), 28%, 65%, 0.06),
-    inset 0 0 120px hsla(var(--hue3), 25%, 68%, 0.10),
-    inset 0 0 200px hsla(var(--hue1), 20%, 65%, 0.06);
+    0 0 100px hsla(var(--hue1), 35%, 72%, 0.18),
+    0 0 200px hsla(var(--hue2), 32%, 68%, 0.10),
+    inset 0 0 140px hsla(var(--hue3), 30%, 70%, 0.15),
+    inset 0 0 220px hsla(var(--hue1), 25%, 68%, 0.08);
   animation: auroraColors 16s ease-in-out infinite;
   transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s ease;
 }
@@ -254,12 +254,12 @@
   height: 240px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 40% 40%, hsla(var(--hue1), 32%, 78%, 0.25) 0%, hsla(var(--hue3), 28%, 72%, 0.14) 20%, transparent 50%),
-    radial-gradient(circle at 60% 55%, hsla(var(--hue2), 30%, 76%, 0.20) 0%, hsla(var(--hue1), 26%, 72%, 0.10) 25%, transparent 50%),
-    radial-gradient(circle, hsla(var(--hue3), 28%, 78%, 0.16) 0%, hsla(var(--hue2), 24%, 74%, 0.08) 35%, transparent 65%);
+    radial-gradient(circle at 40% 40%, hsla(var(--hue1), 38%, 80%, 0.38) 0%, hsla(var(--hue3), 32%, 74%, 0.20) 20%, transparent 50%),
+    radial-gradient(circle at 60% 55%, hsla(var(--hue2), 35%, 78%, 0.32) 0%, hsla(var(--hue1), 30%, 74%, 0.16) 25%, transparent 50%),
+    radial-gradient(circle, hsla(var(--hue3), 32%, 80%, 0.26) 0%, hsla(var(--hue2), 28%, 76%, 0.12) 35%, transparent 65%);
   box-shadow:
-    0 0 60px hsla(var(--hue1), 30%, 75%, 0.10),
-    0 0 120px hsla(var(--hue2), 28%, 70%, 0.05);
+    0 0 80px hsla(var(--hue1), 35%, 78%, 0.15),
+    0 0 140px hsla(var(--hue2), 30%, 72%, 0.08);
   animation: corePulse 6s ease-in-out infinite, auroraColors 16s ease-in-out infinite;
 }
 
@@ -273,8 +273,8 @@
   height: 80px;
   border-radius: 50%;
   background: radial-gradient(ellipse,
-    hsla(var(--hue1), 25%, 60%, 0.12) 0%,
-    hsla(var(--hue2), 22%, 55%, 0.06) 40%,
+    hsla(var(--hue1), 30%, 65%, 0.20) 0%,
+    hsla(var(--hue2), 26%, 60%, 0.10) 40%,
     transparent 70%
   );
   filter: blur(12px);
@@ -515,14 +515,15 @@
 }
 
 .moonlight:hover {
-  color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 18px rgba(232, 228, 223, 0.15);
-  border-color: hsla(var(--hue1), 28%, 65%, 0.15);
+  color: rgba(232, 228, 223, 0.95);
+  text-shadow: 0 0 22px rgba(232, 228, 223, 0.25);
+  border-color: hsla(var(--hue1), 30%, 68%, 0.20);
+  background: rgba(20, 18, 28, 0.85);
   box-shadow:
     4px 4px 18px rgba(0, 0, 0, 0.5),
-    -2px -2px 12px rgba(55, 50, 70, 0.06),
-    inset -3px 0 18px hsla(var(--hue1), 30%, 65%, 0.06),
-    0 0 24px hsla(var(--hue1), 25%, 70%, 0.04);
+    -2px -2px 12px rgba(55, 50, 70, 0.08),
+    inset -3px 0 20px hsla(var(--hue1), 32%, 68%, 0.10),
+    0 0 30px hsla(var(--hue1), 28%, 72%, 0.08);
 }
 
 .moonlightRight {
@@ -539,14 +540,15 @@
 }
 
 .moonlightRight:hover {
-  color: rgba(232, 228, 223, 0.92);
-  text-shadow: 0 0 18px rgba(232, 228, 223, 0.15);
-  border-color: hsla(var(--hue2), 28%, 65%, 0.15);
+  color: rgba(232, 228, 223, 0.95);
+  text-shadow: 0 0 22px rgba(232, 228, 223, 0.25);
+  border-color: hsla(var(--hue2), 30%, 68%, 0.20);
+  background: rgba(20, 18, 28, 0.85);
   box-shadow:
     4px 4px 18px rgba(0, 0, 0, 0.5),
-    -2px -2px 12px rgba(55, 50, 70, 0.06),
-    inset 3px 0 18px hsla(var(--hue2), 30%, 65%, 0.06),
-    0 0 24px hsla(var(--hue2), 25%, 70%, 0.04);
+    -2px -2px 12px rgba(55, 50, 70, 0.08),
+    inset 3px 0 20px hsla(var(--hue2), 32%, 68%, 0.10),
+    0 0 30px hsla(var(--hue2), 28%, 72%, 0.08);
 }
 
 /* ── Breathwork selected state ── */

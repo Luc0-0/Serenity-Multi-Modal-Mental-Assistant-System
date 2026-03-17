@@ -91,14 +91,37 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
   const auraColor = (dominantEmotion && emotionColors[dominantEmotion]?.base) 
     || emotionColors.neutral.base;
 
-  // Trend micro-icon
+  // Trend micro-icon SVGs
   const getTrendIcon = (t) => {
     switch (t.toLowerCase()) {
-      case "improving": return "📈";
-      case "declining": return "📉";
-      case "fluctuating": return "〰️";
+      case "improving": 
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#a5d4a7" }}>
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        );
+      case "declining": 
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#d4a5a5" }}>
+            <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+            <polyline points="16 17 22 17 22 11"></polyline>
+          </svg>
+        );
+      case "fluctuating": 
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#d4a574" }}>
+            <path d="M2 12h4l3-9 5 18 3-9h5"></path>
+          </svg>
+        );
       case "stable": 
-      default: return "➡️";
+      default: 
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#a5c4d4" }}>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        );
     }
   };
 

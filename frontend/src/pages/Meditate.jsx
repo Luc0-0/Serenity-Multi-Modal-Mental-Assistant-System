@@ -38,14 +38,14 @@ export function Meditate() {
   const [isDashboardHovered, setIsDashboardHovered] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
 
-  // Fetch stats when dashboard opens
+  // Fetch stats when dashboard opens or is hovered
   useEffect(() => {
-    if (isDashboardOpen && !dashboardStats) {
+    if ((isDashboardOpen || isDashboardHovered) && !dashboardStats) {
       getMeditationStats()
         .then(setDashboardStats)
         .catch((err) => console.error("Failed to load stats:", err));
     }
-  }, [isDashboardOpen, dashboardStats]);
+  }, [isDashboardOpen, isDashboardHovered, dashboardStats]);
 
   // Breathe tab
   const [selectedBreath, setSelectedBreath] = useState(null);
@@ -429,22 +429,44 @@ export function Meditate() {
 
       {/* ── Zenith Dashboard Overlay ── */}
       <div 
-        className={`${styles.cinematicOverlay} ${isDashboardHovered ? styles.cinematicHover : ""} ${isDashboardOpen ? styles.cinematicOpen : ""}`} 
+        className={`${styles.cinematicOverlay} ${isDashboardOpen ? styles.cinematicOpen : ""}`} 
         onClick={() => isDashboardOpen && setIsDashboardOpen(false)}
       />
 
-      <button 
-        className={`${styles.zenithButton} ${isDashboardOpen ? styles.hidden : ""}`}
+      <div 
+        className={`${styles.zenithTriggerArea} ${isDashboardOpen ? styles.hidden : ""}`}
         onMouseEnter={() => setIsDashboardHovered(true)}
         onMouseLeave={() => setIsDashboardHovered(false)}
-        onClick={() => {
-          setIsDashboardHovered(false);
-          setIsDashboardOpen(true);
-        }}
       >
-        <span className={styles.zenithIcon}>✦</span> 
-        <span className={styles.zenithLabel}>Insights</span>
-      </button>
+        <button 
+          className={styles.zenithButton}
+          onClick={() => {
+            setIsDashboardHovered(false);
+            setIsDashboardOpen(true);
+          }}
+        >
+          <span className={styles.zenithIcon}>✦</span> 
+          <span className={styles.zenithLabel}>Insights</span>
+        </button>
+
+        {/* Sneak Peek Card */}
+        <div className={`${styles.sneakPeekCard} ${isDashboardHovered ? styles.sneakPeekVisible : ""}`} onClick={() => { setIsDashboardHovered(false); setIsDashboardOpen(true); }}>
+           <div className={styles.sneakPeekHeader}>
+             <span className={styles.sneakPeekTitle}>Your Journey</span>
+           </div>
+           <div className={styles.sneakPeekBody}>
+             <div className={styles.sneakPeekStat}>
+               <span className={styles.sneakPeekValue}>{dashboardStats?.total_minutes || 0}</span>
+               <span className={styles.sneakPeekLabel}>Mins Total</span>
+             </div>
+             <div className={styles.sneakPeekStat}>
+               <span className={styles.sneakPeekValue}>{dashboardStats?.session_count || 0}</span>
+               <span className={styles.sneakPeekLabel}>Sessions</span>
+             </div>
+           </div>
+           <div className={styles.sneakPeekHint}>Click to expand full matrix</div>
+        </div>
+      </div>
 
       <div className={`${styles.zenithDashboard} ${isDashboardOpen ? styles.zenithDashboardOpen : ""}`}>
         {isDashboardOpen && (
@@ -479,7 +501,7 @@ export function Meditate() {
               <div className={styles.matrixScrollWrapper}>
                 <div className={styles.matrixGrid}>
                   {(() => {
-                    const daysToRender = 154; // 22 weeks * 7 days
+                    const daysToRender = 35; // 5 weeks * 7 days (1 month)
                     const today = new Date();
                     const cells = [];
                     for (let i = daysToRender - 1; i >= 0; i--) {

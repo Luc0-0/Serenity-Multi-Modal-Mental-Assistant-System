@@ -980,12 +980,6 @@
   transition: background 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), backdrop-filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), -webkit-backdrop-filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.cinematicHover {
-  background: rgba(5, 5, 8, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
 .cinematicOpen {
   background: rgba(5, 5, 8, 0.75);
   backdrop-filter: blur(24px);
@@ -993,37 +987,129 @@
   pointer-events: auto;
 }
 
-.zenithButton {
+.zenithTriggerArea {
   position: fixed;
   top: 90px;
   right: 50px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+}
+
+.zenithButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #111016; /* Deep dark base for neumorphism */
+  border: none;
   color: rgba(255, 255, 255, 0.7);
   font-family: var(--font-family-serif);
   font-size: 14px;
   cursor: pointer;
-  z-index: 45;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 
+    -4px -4px 10px rgba(255, 255, 255, 0.02), 
+    4px 4px 12px rgba(0, 0, 0, 0.6),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.01);
 }
 
 .zenithButton:hover {
-  transform: translateY(-4px) scale(1.02);
-  color: rgba(255, 255, 255, 0.95);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px hsla(var(--hue1), 30%, 70%, 0.2);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 
+    -5px -5px 15px rgba(255, 255, 255, 0.03), 
+    5px 5px 15px rgba(0, 0, 0, 0.8),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+}
+
+.zenithButton:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset -2px -2px 6px rgba(255, 255, 255, 0.02), 
+    inset 2px 2px 6px rgba(0, 0, 0, 0.7);
 }
 
 .zenithIcon {
   font-size: 16px;
   animation: hintPulse 4s ease-in-out infinite;
+}
+
+.sneakPeekCard {
+  width: 260px;
+  background: #121018; /* Sleek dark card */
+  border-radius: 20px;
+  padding: 20px;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 
+    -4px -4px 12px rgba(255, 255, 255, 0.02), 
+    8px 8px 24px rgba(0, 0, 0, 0.7),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sneakPeekVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.sneakPeekCard:hover {
+  background: #16141c;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sneakPeekHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.sneakPeekTitle {
+  font-family: var(--font-family-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sneakPeekBody {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.sneakPeekStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.sneakPeekValue {
+  font-family: var(--font-family-sans);
+  font-size: 28px;
+  font-weight: 200;
+  color: #fff;
+}
+
+.sneakPeekLabel {
+  font-family: var(--font-family-sans);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.sneakPeekHint {
+  font-family: var(--font-family-sans);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
 }
 
 /* Full Dashboard Screen */

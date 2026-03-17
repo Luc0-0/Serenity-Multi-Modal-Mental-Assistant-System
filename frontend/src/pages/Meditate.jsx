@@ -470,47 +470,40 @@ export function Meditate() {
 
       <div className={`${styles.zenithDashboard} ${isDashboardOpen ? styles.zenithDashboardOpen : ""}`}>
         {isDashboardOpen && (
-          <div className={styles.solarSystemWrapper}>
+          <div className={styles.dashboardContent}>
             <button className={styles.closeZenith} onClick={() => setIsDashboardOpen(false)}>
               <span className={styles.closeIcon}>✕</span>
             </button>
-            
-            <h2 className={styles.solarInsight}>
-              {dashboardStats?.insight || "Every mindful moment is a step toward clarity."}
-            </h2>
 
-            <div className={styles.solarSystem}>
-               {/* The Core: Total Volume */}
-               <div className={styles.solarCore}>
-                 <span className={styles.coreValue}>{dashboardStats?.total_minutes || 0}</span>
-                 <span className={styles.coreLabel}>MINS VOL</span>
-               </div>
+            <div className={styles.dashboardTopSection}>
+               <h2 className={styles.whisperingInsight}>
+                 {dashboardStats?.insight || "Every mindful moment is a step toward clarity."}
+               </h2>
 
-               {/* Inner Orbit: Sessions */}
-               <div className={styles.orbitRing} style={{ width: '340px', height: '340px' }}>
-                 <div className={`${styles.planetNode} ${styles.planetNode1}`}>
-                   <span className={styles.planetValue}>{dashboardStats?.session_count || 0}</span>
-                   <span className={styles.planetLabel}>SESSIONS</span>
+               <div className={styles.statsColumn}>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{dashboardStats?.total_minutes || 0}</span>
+                   <span className={styles.statLabel}>T O T A L   V O L U M E</span>
+                 </div>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{dashboardStats?.session_count || 0}</span>
+                   <span className={styles.statLabel}>S E S S I O N S</span>
+                 </div>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{PATTERN_LABELS[dashboardStats?.top_pattern] || "N/A"}</span>
+                   <span className={styles.statLabel}>T O P   R E S O N A N C E</span>
                  </div>
                </div>
+            </div>
 
-               {/* Mid Orbit: Top Resonance */}
-               <div className={styles.orbitRing} style={{ width: '500px', height: '500px' }}>
-                 <div className={`${styles.planetNode} ${styles.planetNode2}`}>
-                   <span className={styles.planetValueText}>{PATTERN_LABELS[dashboardStats?.top_pattern] || "N/A"}</span>
-                   <span className={styles.planetLabel}>RESONANCE</span>
-                 </div>
-               </div>
-
-               {/* Outer Orbit: The Mindful Matrix (35 Days) */}
-               <div className={styles.orbitRing} style={{ width: '660px', height: '660px' }}>
-                 {(() => {
-                    const daysToRender = 35; // 1 month
+            <div className={styles.mindfulMatrixContainer}>
+              <h3 className={styles.matrixTitle}>The Mindful Matrix</h3>
+              <div className={styles.matrixScrollWrapper}>
+                <div className={styles.matrixGrid}>
+                  {(() => {
+                    const daysToRender = 35; // 5 weeks * 7 days (1 month)
                     const today = new Date();
                     const cells = [];
-                    const angleStep = 360 / daysToRender;
-                    const radius = 330; 
-
                     for (let i = daysToRender - 1; i >= 0; i--) {
                        const d = new Date(today);
                        d.setDate(d.getDate() - i);
@@ -519,28 +512,19 @@ export function Meditate() {
                        const hueIdx = data ? BREATHWORK_KEYS.indexOf(data.pattern) : -1;
                        const intensity = data ? Math.min(data.duration / 600, 1) : 0;
                        
-                       const angle = (daysToRender - 1 - i) * angleStep; 
-                       const rad = angle * (Math.PI / 180);
-                       const x = Math.sin(rad) * radius;
-                       const y = -Math.cos(rad) * radius; // 0 straight up
-
                        cells.push(
                          <div 
                            key={dateStr}
-                           className={styles.starWrapper}
-                           style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
+                           className={`${styles.matrixCell} ${data ? styles.matrixCellActive : ""} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
+                           style={data ? { opacity: 0.3 + (intensity * 0.7) } : {}}
                            title={`${dateStr}: ${data ? Math.floor(data.duration / 60) + ' mins (' + PATTERN_LABELS[data.pattern] + ')' : 'Rest day'}`}
-                         >
-                           <div 
-                             className={`${styles.starCell} ${data ? styles.starCellActive : ""} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
-                             style={{ opacity: data ? 0.3 + (intensity * 0.7) : 0.05 }}
-                           />
-                         </div>
+                         />
                        );
                     }
                     return cells;
                   })()}
-               </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

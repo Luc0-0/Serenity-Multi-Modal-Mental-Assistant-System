@@ -966,3 +966,222 @@
     opacity: 0.8;
   }
 }
+
+/* ── Zenith Dashboard & Cinematic Overlay ── */
+
+.cinematicOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 8, 0.0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  pointer-events: none;
+  z-index: 40;
+  transition: background 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), backdrop-filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), -webkit-backdrop-filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cinematicHover {
+  background: rgba(5, 5, 8, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cinematicOpen {
+  background: rgba(5, 5, 8, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  pointer-events: auto;
+}
+
+.zenithButton {
+  position: fixed;
+  top: 90px;
+  right: 50px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-family-serif);
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 45;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.zenithButton:hover {
+  transform: translateY(-4px) scale(1.02);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px hsla(var(--hue1), 30%, 70%, 0.2);
+}
+
+.zenithIcon {
+  font-size: 16px;
+  animation: hintPulse 4s ease-in-out infinite;
+}
+
+/* Full Dashboard Screen */
+.zenithDashboard {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zenithDashboardOpen {
+  pointer-events: auto;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dashboardContent {
+  position: relative;
+  width: 90%;
+  max-width: 1000px;
+  padding: 60px 80px;
+  background: rgba(10, 8, 14, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.closeZenith {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 32px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.closeZenith:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.whisperingInsight {
+  font-family: var(--font-family-serif);
+  font-style: italic;
+  font-size: 32px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-width: 200px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 16px;
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.statValue {
+  font-family: var(--font-family-sans);
+  font-size: 48px;
+  font-weight: 200;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.auraLogContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.auraLogTitle {
+  font-family: var(--font-family-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 300;
+}
+
+.auraGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 800px;
+}
+
+.auraDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  cursor: crosshair;
+}
+
+.auraDot:hover {
+  transform: scale(1.5) !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
+  z-index: 10;
+}
+
+.auraEmpty {
+  font-family: var(--font-family-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  width: 100%;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .zenithDashboardOpen .dashboardContent {
+    width: 95%;
+    padding: 30px;
+    margin: auto;
+  }
+}

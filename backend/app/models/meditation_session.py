@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime
 from sqlalchemy.sql import func
-from app.db.session import Base
+from app.db.base import Base
 
 class MeditationSession(Base):
     __tablename__ = "meditation_sessions"

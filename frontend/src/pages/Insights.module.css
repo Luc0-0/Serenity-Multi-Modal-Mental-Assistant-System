@@ -301,6 +301,66 @@
   border-color: rgba(212, 165, 116, 0.5);
 }
 
+/* ── INTERACTIVE TIMELINE CHART ── */
+.chartInteractiveContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.fluidPath {
+  transition: d 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.interactivePointGroup {
+  cursor: pointer;
+}
+
+.glassTooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: rgba(18, 16, 22, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 12px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  animation: tooltipFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.tooltipDate {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.tooltipLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ── INSIGHTS CAROUSEL (MOBILE) ── */
 .insightsCarouselWrapper {
   position: relative;

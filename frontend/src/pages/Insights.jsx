@@ -575,12 +575,14 @@ function EmotionLegend({ distribution }) {
 }
 
 function MoodAreaChart({ moodTrends, period }) {
-  const W = 500;
-  const H = 200;
-  const PAD = { top: 28, right: 20, bottom: 38, left: 24 };
+  const W = 600;
+  const H = 240;
+  const PAD = { top: 30, right: 30, bottom: 40, left: 30 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
   const baselineY = PAD.top + chartH / 2;
+
+  const [hoverIdx, setHoverIdx] = useState(null);
 
   const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
 
@@ -595,96 +597,135 @@ function MoodAreaChart({ moodTrends, period }) {
 
   const activePts = pts.filter(p => p.y !== null);
   const linePath = activePts.length >= 2 ? buildSmoothPath(activePts) : "";
-  const areaPath = linePath
-    ? `${linePath} L ${activePts[activePts.length - 1].x},${PAD.top + chartH} L ${activePts[0].x},${PAD.top + chartH} Z`
-    : "";
 
-  // Gradient stops shift color at each active data point
+  // Gradient stops shift color seamlessly across the line
   const gradStops = activePts.map(p => ({
     offset: `${((p.x - PAD.left) / chartW * 100).toFixed(1)}%`,
-    color: EMOTION_COLORS[p.dominant[0]] || "#d4a574",
+    color: EMOTION_COLORS[p.dominant[0]] || "#8a8a8e",
   }));
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", flex: 1, overflow: "visible" }}>
+    <div 
+      className={styles.chartInteractiveContainer}
+      onMouseLeave={() => setHoverIdx(null)}
+    >
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", overflow: "visible" }}>
         <defs>
-          <linearGradient id="colorLine" x1={PAD.left} y1="0" x2={PAD.left + chartW} y2="0" gradientUnits="userSpaceOnUse">
+          <linearGradient id="fluidLineGrad" x1={PAD.left} y1="0" x2={PAD.left + chartW} y2="0" gradientUnits="userSpaceOnUse">
             {gradStops.length > 0
-              ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="0.95" />)
-              : <stop offset="0%" stopColor="#d4a574" stopOpacity="0.95" />}
+              ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="1" />)
+              : <stop offset="0%" stopColor="#8a8a8e" stopOpacity="1" />}
           </linearGradient>
-          <linearGradient id="colorArea" x1={PAD.left} y1="0" x2={PAD.left + chartW} y2="0" gradientUnits="userSpaceOnUse">
-            {gradStops.length > 0
-              ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="0.16" />)
-              : <stop offset="0%" stopColor="#d4a574" stopOpacity="0.16" />}
-          </linearGradient>
-          <filter id="lineGlow">
-            <feGaussianBlur stdDeviation="3" result="blur" />
+          <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur1" />
+            <feGaussianBlur stdDeviation="2" result="blur2" />
             <feMerge>
-              <feMergeNode in="blur" />
+              <feMergeNode in="blur1" />
+              <feMergeNode in="blur2" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        <text x={PAD.left - 6} y={PAD.top + 5} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">+</text>
-        <text x={PAD.left - 6} y={PAD.top + chartH + 4} fontSize="9" fill="rgba(255,255,255,0.18)" textAnchor="end">−</text>
-
+        {/* Subtle Baseline */}
         <line
           x1={PAD.left} y1={baselineY}
           x2={PAD.left + chartW} y2={baselineY}
-          stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 6"
+          stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4 4"
         />
 
-        {areaPath && <path d={areaPath} fill="url(#colorArea)" />}
+        {/* The Glowing Thread */}
         {linePath && (
           <path
+            className={styles.fluidPath}
             d={linePath}
             fill="none"
-            stroke="url(#colorLine)"
-            strokeWidth="2.5"
+            stroke="url(#fluidLineGrad)"
+            strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            filter="url(#lineGlow)"
+            filter="url(#neonGlow)"
           />
         )}
 
+        {/* Hover Interactions */}
         {activePts.map((p, i) => {
-          const color = EMOTION_COLORS[p.dominant[0]] || "#d4a574";
+          const color = EMOTION_COLORS[p.dominant[0]] || "#8a8a8e";
+          const isHovered = hoverIdx === i;
           return (
-            <g key={i}>
-              <circle cx={p.x} cy={p.y} r="9" fill={color} opacity="0.12" />
-              <circle cx={p.x} cy={p.y} r="4" fill={color} opacity="0.95" stroke="rgba(10,10,11,0.8)" strokeWidth="1.2">
-                <title>{`${p.day.date}: ${p.dominant[0]}`}</title>
-              </circle>
+            <g 
+              key={i} 
+              className={styles.interactivePointGroup}
+              onMouseEnter={() => setHoverIdx(i)}
+            >
+              {/* Invisible large hit area for easier scrubbing */}
+              <circle cx={p.x} cy={p.y} r="20" fill="transparent" />
+              
+              {/* Vertical indicator line (visible on hover) */}
+              {isHovered && (
+                <line 
+                  x1={p.x} y1={PAD.top} 
+                  x2={p.x} y2={PAD.top + chartH} 
+                  stroke="rgba(255,255,255,0.2)" 
+                  strokeWidth="1.5" 
+                  strokeDasharray="2 2"
+                />
+              )}
+
+              {/* The data point node */}
+              <circle 
+                cx={p.x} cy={p.y} 
+                r={isHovered ? "6" : "3.5"} 
+                fill={isHovered ? "#fff" : color} 
+                stroke={isHovered ? color : "rgba(10,10,12,0.8)"} 
+                strokeWidth={isHovered ? "2.5" : "1.5"}
+                style={{ transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)" }}
+              />
             </g>
           );
         })}
 
+        {/* X Axis Labels */}
         {pts.map((p, i) =>
           showLabel(i) ? (
-            <text key={i} x={p.x} y={H - 4} textAnchor="middle" fontSize={period <= 7 ? "10" : "8"} fill="#4a4a4a">
+            <text 
+              key={i} x={p.x} y={H - 5} 
+              textAnchor="middle" 
+              fontSize={period <= 7 ? "11" : "9"} 
+              fontWeight="500"
+              fill={hoverIdx === activePts.findIndex(ap => ap.day.date === p.day.date) ? "#fff" : "rgba(255,255,255,0.3)"}
+              style={{ transition: "fill 0.2s" }}
+            >
               {period <= 7 ? p.day.day : p.day.date.slice(5)}
             </text>
           ) : null
         )}
-
-        {activePts.length < 2 && (
-          <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill="#3a3a3a">
-            Not enough data yet
-          </text>
-        )}
       </svg>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.75rem" }}>
+      {/* Floating Glass Tooltip */}
+      {hoverIdx !== null && activePts[hoverIdx] && (
+        <div 
+          className={styles.glassTooltip}
+          style={{
+            left: `${((activePts[hoverIdx].x / W) * 100)}%`,
+            top: `${((activePts[hoverIdx].y / H) * 100) - 15}%`,
+            borderColor: EMOTION_COLORS[activePts[hoverIdx].dominant[0]] || "rgba(255,255,255,0.1)"
+          }}
+        >
+          <div className={styles.tooltipDate}>{activePts[hoverIdx].day.day}, {activePts[hoverIdx].day.date.slice(5)}</div>
+          <div className={styles.tooltipLabel} style={{ color: EMOTION_COLORS[activePts[hoverIdx].dominant[0]] || "#fff" }}>
+            <span style={{ textTransform: "capitalize" }}>{activePts[hoverIdx].dominant[0]}</span>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.8rem", marginTop: "1rem" }}>
         {Object.entries(EMOTION_COLORS)
           .filter(([e]) => moodTrends.some(d => d.emotions[e] > 0))
-          .slice(0, 6)
           .map(([emotion, color]) => (
-            <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "#6b6b6b" }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-              {EMOTION_LABELS[emotion] || emotion}
+            <div key={emotion} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", fontWeight: "500" }}>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0, boxShadow: `0 0 4px ${color}` }} />
+              <span style={{ textTransform: "capitalize" }}>{emotion}</span>
             </div>
           ))}
       </div>

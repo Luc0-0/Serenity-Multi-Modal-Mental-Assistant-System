@@ -107,6 +107,7 @@ export const EMOTION_COLORS = {
   trust: '#a8b89a',        // soft sage cream
   anticipation: '#7a9eb5', // muted teal
   neutral: '#8a8a7e',      // warm taupe gray
+  crisis: '#b81212',       // deep crimson red
 };
 
 /**

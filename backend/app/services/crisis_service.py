@@ -109,7 +109,29 @@ class CrisisService:
         
         "danger": [
             {
-                "name": "National Suicide Prevention Lifeline",
+                "name": "Kiran Mental Health Helpline (India)",
+                "phone": "1800-599-0019",
+                "type": "crisis",
+                "available": "24/7",
+                "description": "Toll-free mental health rehabilitation helpline by Govt of India"
+            },
+            {
+                "name": "AASRA (India)",
+                "phone": "+91-9820466726",
+                "type": "crisis",
+                "available": "24/7",
+                "description": "Professional crisis intervention and suicide prevention"
+            },
+            {
+                "name": "Vandrevala Foundation (India)",
+                "phone": "+91-9999666555",
+                "whatsapp": "+91-9999666555",
+                "type": "crisis",
+                "available": "24/7",
+                "description": "Free psychological counseling and crisis support"
+            },
+            {
+                "name": "National Suicide Prevention Lifeline (US)",
                 "phone": "988",
                 "text": "Text 'HELLO' to 741741",
                 "url": "https://suicidepreventionlifeline.org",
@@ -186,25 +208,23 @@ and I want to be direct: you need support from someone trained in crisis situati
 
 Please contact one of these resources RIGHT NOW:
 
-• National Suicide Prevention Lifeline: 988 (call or text)
-  Free, confidential, available 24/7
-  Trained counselors who specialize in crisis support
+• Kiran Mental Health Helpline (India): 1800-599-0019 (Govt toll-free, 24/7)
+• AASRA Crisis Line (India): +91-9820466726 (24/7)
+• Vandrevala Foundation (India): +91-9999666555 (Call or WhatsApp, 24/7)
 
-• Crisis Text Line: Text HOME to 741741
-  If you prefer texting over calling
-  Available 24/7
+• National Suicide Prevention Lifeline (US): 988 (call or text)
 
 • International resources: findahelpline.com
 
 If you're in immediate danger:
 - Tell a trusted friend or family member RIGHT NOW
 - Go to your nearest emergency room
-- Call 911 if you feel you might act on these thoughts
+- Call 911 (or local emergency services like 112) if you feel you might act on these thoughts
 
 Your life has value. These feelings can change with proper support. 
 Please reach out to one of these resources immediately. They're trained for exactly this situation.""",
             
-            "short": "This is serious. Please contact 988 (Suicide Prevention Lifeline) or go to your nearest ER. You don't have to face this alone."
+            "short": "This is serious. Please contact AASRA (+91-9820466726) / Kiran (1800-599-0019) in India, 988 in the US, or go to your nearest ER. You don't have to face this alone."
         },
         
         "emergency": {

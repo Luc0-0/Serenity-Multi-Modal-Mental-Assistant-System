@@ -118,7 +118,7 @@
   border: none;
   border-radius: 36px;
   background: transparent;
-  color: rgba(200, 195, 210, 0.35);
+  color: rgba(255, 255, 255, 0.7);
   font-family: var(--font-family-serif);
   font-size: 15px;
   font-weight: 400;
@@ -136,16 +136,16 @@
   transform: translateX(-50%) scaleX(0);
   width: 16px;
   height: 1px;
-  background: rgba(232, 228, 223, 0.4);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 1px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tabBtn:hover { color: rgba(220, 215, 230, 0.55); }
+.tabBtn:hover { color: rgba(255, 255, 255, 0.9); }
 
 .tabBtnActive {
-  background: rgba(255, 255, 255, 0.055);
-  color: rgba(232, 228, 223, 0.88);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 1);
   box-shadow: 0 0 24px rgba(200, 190, 220, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -350,21 +350,21 @@
   font-size: 18px;
   font-weight: 300;
   font-style: italic;
-  color: rgba(232, 228, 223, 0.3);
+  color: rgba(255, 255, 255, 0.7);
   letter-spacing: 1.5px;
   animation: hintPulse 3s ease-in-out infinite;
 }
 
 @keyframes hintPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.55; }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .phaseLabel {
   font-family: var(--font-family-serif);
   font-size: 20px;
   font-weight: 300;
-  color: rgba(232, 228, 223, 0.75);
+  color: rgba(255, 255, 255, 0.95);
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -373,7 +373,7 @@
   font-family: var(--font-family-serif);
   font-size: 42px;
   font-weight: 300;
-  color: rgba(232, 228, 223, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1;
 }
 
@@ -381,7 +381,7 @@
   font-family: var(--font-family-sans);
   font-size: 10px;
   font-weight: 400;
-  color: rgba(200, 195, 210, 0.25);
+  color: rgba(255, 255, 255, 0.6);
   letter-spacing: 2px;
   margin-top: 8px;
 }
@@ -417,7 +417,7 @@
 .progressTime {
   font-family: var(--font-family-sans);
   font-size: 10px;
-  color: rgba(200, 195, 210, 0.25);
+  color: rgba(255, 255, 255, 0.6);
   letter-spacing: 1.5px;
 }
 
@@ -459,7 +459,7 @@
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  color: rgba(180, 175, 190, 0.45);
+  color: rgba(255, 255, 255, 0.75);
   font-family: var(--font-family-serif);
   font-size: 15px;
   font-weight: 400;
@@ -495,7 +495,7 @@
     -2px -2px 12px hsla(var(--hue1), 22%, 55%, 0.06),
     0 0 24px hsla(var(--hue3), 20%, 60%, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  color: rgba(220, 215, 230, 0.75);
+  color: rgba(255, 255, 255, 1);
 }
 
 .gridButton:active {
@@ -504,8 +504,8 @@
 }
 
 .moonlight {
-  color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 14px rgba(232, 228, 223, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
   justify-content: flex-start;
   padding-left: 24px;
   border-color: hsla(var(--hue1), 25%, 65%, 0.10);
@@ -517,8 +517,8 @@
 }
 
 .moonlight:hover {
-  color: rgba(232, 228, 223, 0.95);
-  text-shadow: 0 0 22px rgba(232, 228, 223, 0.25);
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.4);
   border-color: hsla(var(--hue1), 30%, 68%, 0.20);
   background: rgba(20, 18, 28, 0.85);
   box-shadow:
@@ -529,8 +529,8 @@
 }
 
 .moonlightRight {
-  color: rgba(232, 228, 223, 0.62);
-  text-shadow: 0 0 14px rgba(232, 228, 223, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
   justify-content: flex-end;
   padding-right: 24px;
   border-color: hsla(var(--hue2), 25%, 65%, 0.10);
@@ -542,8 +542,8 @@
 }
 
 .moonlightRight:hover {
-  color: rgba(232, 228, 223, 0.95);
-  text-shadow: 0 0 22px rgba(232, 228, 223, 0.25);
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.4);
   border-color: hsla(var(--hue2), 30%, 68%, 0.20);
   background: rgba(20, 18, 28, 0.85);
   box-shadow:
@@ -560,7 +560,7 @@
 }
 
 .breathworkBtnSelected {
-  color: rgba(232, 228, 223, 0.95);
+  color: rgba(255, 255, 255, 1);
   border-color: hsla(var(--hue2), 32%, 70%, 0.18);
   background: rgba(18, 16, 26, 0.85);
   box-shadow:
@@ -568,7 +568,7 @@
     inset 3px 0 20px hsla(var(--hue2), 35%, 68%, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 28px hsla(var(--hue2), 28%, 65%, 0.05);
-  text-shadow: 0 0 18px rgba(232, 228, 223, 0.2);
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.3);
 }
 
 .breathworkBtnSelected::before {
@@ -594,7 +594,7 @@
 .columnGap { height: 12px; }
 
 .labelOnly {
-  color: rgba(200, 190, 215, 0.22);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 9.5px;
   letter-spacing: 3.5px;
   text-transform: uppercase;
@@ -610,7 +610,7 @@
 }
 
 .labelOnly:hover {
-  color: rgba(200, 190, 215, 0.22);
+  color: rgba(255, 255, 255, 0.5);
   border-color: transparent;
   box-shadow: none;
 }
@@ -677,7 +677,7 @@
   font-weight: 500;
   letter-spacing: 2.8px;
   text-transform: uppercase;
-  color: rgba(230, 220, 195, 0.32);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .insightText {
@@ -686,7 +686,7 @@
   font-weight: 300;
   font-style: italic;
   line-height: 1.8;
-  color: rgba(220, 215, 225, 0.62);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
 }
 
@@ -713,7 +713,7 @@
   font-size: 15.5px;
   font-weight: 300;
   font-style: italic;
-  color: rgba(200, 195, 210, 0.28);
+  color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.6px;
   margin-top: 4px;
   z-index: 10;
@@ -771,111 +771,196 @@
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* ── Mobile Responsive ── */
+/* ── Responsive Refinements ── */
 @media (max-width: 1024px) {
   .gridContainer {
     width: 100%;
-    max-width: 700px;
+    max-width: 800px;
     padding: 30px 20px;
+    mask-image: radial-gradient(circle at center, transparent 0%, transparent 45%, black 45.1%);
+    -webkit-mask-image: radial-gradient(circle at center, transparent 0%, transparent 45%, black 45.1%);
   }
 
   .orb {
-    width: 350px;
-    height: 350px;
+    width: 400px;
+    height: 400px;
   }
 
   .orbReflection {
-    width: 280px;
+    width: 300px;
   }
 
   .insightBox {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    width: 100%;
-    max-width: 320px;
-    margin-top: 20px;
-  }
-}
-
-@media (max-width: 640px) {
-  .app {
-    gap: 20px;
-    padding: 80px 16px 24px;
-  }
-
-  .gridContainer {
-    flex-direction: column;
-    align-items: center;
-    mask-image: none;
-    -webkit-mask-image: none;
-    gap: 12px;
-    padding: 20px 16px;
-  }
-
-  .column:nth-child(1),
-  .column:nth-child(2) {
-    height: auto;
-    align-self: stretch;
-  }
-
-  .gridButton {
-    min-width: unset;
-    width: 100%;
-  }
-
-  .orb {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    width: 260px;
-    height: 260px;
-    margin: 20px auto;
-  }
-
-  .orbReflection {
-    display: none;
-  }
-
-  .orbCenter {
+    /* Break out of crescent on smaller screens */
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .insightBox {
-    position: relative;
     top: auto;
-    left: auto;
-    transform: none;
-    width: 100%;
+    bottom: -160px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: auto;
+    min-height: 100px;
     clip-path: none;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .insightBox:hover {
     clip-path: none;
     height: auto;
+    min-height: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding-top: 30px;
+    gap: 10px;
+    justify-content: flex-start;
+    height: auto;
+    min-height: 100vh;
   }
 
-  .tabBtn {
-    padding: 8px 20px;
-    font-size: 13px;
+  .tabToggle {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    border-radius: 30px;
   }
 
-  .countdown {
-    font-size: 32px;
+  .gridWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-top: 340px; /* Allocate space for the absolute orb */
+    padding-bottom: 60px;
+  }
+
+  .orb {
+    top: 160px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 280px;
+  }
+
+  .orbReflection {
+    top: 290px;
+    bottom: auto;
+    display: block;
+    width: 220px;
+    opacity: 0.5;
+  }
+
+  .orbCenter {
+    top: 160px;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .progressWrap {
-    position: relative;
+    top: 310px;
     bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .gridContainer {
+    width: 100%;
+    max-width: 420px;
+    padding: 0 24px;
+    mask-image: none;
+    -webkit-mask-image: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .column {
+    width: 100%;
+  }
+
+  .column:nth-child(1) {
+    display: none; /* Hide empty column spacer */
+  }
+
+  .column:nth-child(2) {
+    height: auto;
+    gap: 14px;
+  }
+
+  .gridButton {
+    min-width: 100%;
+    height: 60px; /* Apple-like larger touch targets */
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .moonlight, .moonlightRight, .labelOnly {
+    justify-content: center;
+    padding: 0;
+  }
+  
+  .labelOnly {
+    height: 38px;
+    margin-bottom: -6px;
+    font-size: 10px;
+  }
+
+  .insightBox {
+    position: relative;
+    top: auto;
     left: auto;
     transform: none;
-    margin-top: 16px;
+    width: calc(100% - 48px);
+    max-width: 420px;
+    margin-top: 28px;
+    clip-path: none;
+    border-radius: 24px;
+    background: rgba(24, 22, 32, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    height: auto;
+    min-height: 100px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .insightBox:hover {
+    clip-path: none;
+    height: auto;
+    min-height: 100px;
+    background: rgba(28, 25, 36, 0.75);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.4);
+  }
+
+  .insightContent {
+    padding: 24px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .insightText {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .insightOverlay {
+    display: none;
+  }
+
+  .countdown {
+    font-size: 52px;
+  }
+
+  .tagline {
+    font-size: 16px;
+    margin-top: -10px;
+    margin-bottom: 40px;
+    text-align: center;
+    padding: 0 24px;
+    opacity: 0.8;
   }
 }

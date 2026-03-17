@@ -165,11 +165,11 @@ async def chat_endpoint(
             db, conversation_id, "user", body.message
         )
         try:
-            emotion = await main_app.emotion_service.detect_emotion(body.message)
+            # Override emotion logging to strictly record this as a "crisis"
             await main_app.emotion_service.log_emotion(
                 db=db, user_id=current_user.id, conversation_id=conversation_id,
-                message_id=user_message_id, label=emotion["label"],
-                confidence=emotion["confidence"]
+                message_id=user_message_id, label="crisis",
+                confidence=1.0
             )
         except Exception as e:
             logger.warning(f"Failed to log emotion in crisis response: {str(e)}")

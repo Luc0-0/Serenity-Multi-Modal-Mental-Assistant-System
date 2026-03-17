@@ -1,4 +1,4 @@
-VALID_EMOTIONS = {"sadness", "joy", "fear", "anger", "surprise", "disgust", "neutral"}
+VALID_EMOTIONS = {"sadness", "joy", "fear", "anger", "surprise", "disgust", "neutral", "crisis"}
 
 EMOTION_ALIASES = {
     # Fear / Anxiety
@@ -79,6 +79,14 @@ EMOTION_ALIASES = {
     "calm": "neutral",
     "trust": "neutral",
     "anticipation": "neutral",
+
+    # Crisis / Suicidal Ideation
+    "crisis": "crisis",
+    "suicide": "crisis",
+    "suicidal": "crisis",
+    "harm myself": "crisis",
+    "kill myself": "crisis",
+    "want to die": "crisis",
 }
 
 def normalize_emotion(raw_label: str) -> str:

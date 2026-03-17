@@ -203,9 +203,11 @@ class EmotionAnalyticsService:
             crisis_count = result.scalar() or 0
             
             high_risk = (
-                crisis_count >= 2 and
+                crisis_count >= 1 or
+                distribution.get("crisis", 0) > 0 or
+                (crisis_count >= 2 and
                 (distribution.get("sadness", 0) > 0.50 or 
-                 distribution.get("anger", 0) > 0.40)
+                 distribution.get("anger", 0) > 0.40))
             )
             
             return high_risk, crisis_count
@@ -231,7 +233,8 @@ class EmotionAnalyticsService:
             avg_confidence=0.5,
             emotion_distribution={
                 "sadness": 0.0, "joy": 0.0, "anger": 0.0,
-                "fear": 0.0, "neutral": 1.0, "surprise": 0.0, "disgust": 0.0
+                "fear": 0.0, "neutral": 1.0, "surprise": 0.0, "disgust": 0.0,
+                "crisis": 0.0
             },
             emotion_frequency={},
             daily_breakdown={},

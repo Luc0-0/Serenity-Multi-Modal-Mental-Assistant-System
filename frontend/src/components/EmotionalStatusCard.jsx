@@ -14,6 +14,7 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     surprise: { base: EMOTION_COLORS.surprise, light: "#9abead" },
     disgust: { base: EMOTION_COLORS.disgust, light: "#abb590" },
     neutral: { base: EMOTION_COLORS.neutral, light: "#8a8a7e" },
+    crisis: { base: EMOTION_COLORS.crisis, light: "#e33d3d" },
   };
 
   const currentDate = new Date().toLocaleDateString("en-US", {

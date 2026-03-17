@@ -1,155 +1,137 @@
 .card {
-  background: rgba(8, 6, 12, 0.82);
+  /* Frosted Glass Base */
+  background: rgba(18, 16, 22, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 0;
+  border-radius: 28px;
+  padding: 20px;
   width: 100%;
-  max-width: 300px;
-  color: rgba(255, 245, 230, 0.85);
-  font-family: "Inter", system-ui, sans-serif;
+  max-width: 320px;
+  color: rgba(255, 245, 230, 0.9);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   overflow: hidden;
   box-shadow:
-    0 8px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
+    0 24px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   height: fit-content;
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-}
-
-.headerImage {
-  height: 120px;
-  width: 100%;
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.headerImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
-  transition: transform 0.6s ease;
-}
-
-.headerImage:hover .headerImg {
-  transform: scale(1.04);
-}
-
-.headerOverlay {
+/* Base breathing gradient behind the frosted glass */
+.card::before {
+  content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 0) 40%,
-    rgba(8, 8, 16, 0.75) 100%
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--aura-color, rgba(138, 138, 126, 0.15)) 0%,
+    transparent 60%
   );
+  z-index: -1;
+  animation: breatheAura 8s ease-in-out infinite alternate;
   pointer-events: none;
+}
+
+@keyframes breatheAura {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.05); opacity: 1; }
 }
 
 .closeBtn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  width: 22px;
-  height: 22px;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 10;
+  backdrop-filter: blur(8px);
 }
 
 .closeBtn:hover {
-  background: rgba(212, 165, 116, 0.3);
-  border-color: rgba(212, 165, 116, 0.5);
-  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: scale(1.05);
 }
 
-.titleSection {
-  position: relative;
-  text-align: center;
-  padding: 0.6rem 0 0.3rem;
-}
-
-.title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.2rem;
-  color: #e5e5e5;
-  margin: 0;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+.headerSection {
+  text-align: left;
+  padding-top: 4px;
 }
 
 .date {
-  font-size: 0.72rem;
-  color: #888;
-  margin-top: 0.1rem;
-  font-weight: 400;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 4px 0;
 }
 
-.statsList {
-  padding: 0.6rem 1.2rem;
+.title {
+  /* Let the emotion be the hero */
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.8rem;
+  line-height: 1.1;
+  color: #fff;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 12px;
+}
+
+.platter {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-}
-
-.statItem {
-  display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.78rem;
-  white-space: nowrap;
-}
-
-.statDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #444;
-  flex-shrink: 0;
-}
-
-.statDot.gold {
-  background: #d4a574;
-  box-shadow: 0 0 6px rgba(212, 165, 116, 0.4);
-}
-
-.statDot.dim {
-  background: #665c50;
-}
-
-.statLabel {
-  color: #888;
-  flex-shrink: 0;
-}
-
-.statValue {
-  color: #e5e5e5;
-  margin-left: auto;
-  font-weight: 500;
 }
 
 .chartContainer {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0.6rem auto;
+  width: 140px;
+  height: 140px;
 }
 
 .chartContainer svg {
-  filter: drop-shadow(0 0 6px rgba(212, 165, 116, 0.12));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
   overflow: visible;
 }
 
@@ -163,155 +145,119 @@
 }
 
 .chartPercentage {
-  font-size: 1rem;
-  color: #e5e5e5;
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
   display: block;
-  line-height: 1.2;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .chartSubtext {
-  font-size: 0.6rem;
-  color: #888;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
 }
 
-.trendSection {
-  padding: 0.4rem 1.2rem 0.6rem;
+.bottomPlatterRow {
+  display: flex;
+  gap: 8px;
+}
+
+.trendPlatter {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #d4a574;
-  font-size: 0.78rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
 }
 
-.footer {
-  padding: 0.6rem 1rem;
-  text-align: center;
+.trendIcon {
+  font-size: 1rem;
+  opacity: 0.8;
 }
 
 .viewBtn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a0a0a0;
-  padding: 0.45rem 1rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-family: "Inter", sans-serif;
+  gap: 6px;
+  font-family: inherit;
 }
 
 .viewBtn:hover {
-  background: rgba(212, 165, 116, 0.1);
-  border-color: rgba(212, 165, 116, 0.3);
-  color: #d4a574;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .arrow {
-  font-size: 0.65rem;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.5;
   transition: transform 0.2s;
 }
 
 .viewBtn:hover .arrow {
-  transform: rotate(90deg);
+  transform: translateX(2px);
+  opacity: 1;
 }
 
 .loading {
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.85rem;
 }
 
-.legend {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.7rem;
-  color: #666;
-}
-
-.legendDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-@keyframes emotionEnter {
+/* Animations for Chart Rings */
+@keyframes ringFill {
   from {
-    stroke-dashoffset: 75.4;
-    opacity: 0;
+    stroke-dashoffset: var(--circumference);
   }
   to {
     stroke-dashoffset: var(--dash-offset, 0);
-    opacity: 0.9;
-  }
-}
-
-@keyframes dominantGlow {
-  0% {
-    filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
-  }
-  50% {
-    filter: url(#softGlow) drop-shadow(0 0 6px rgba(212, 165, 116, 0.25));
-  }
-  100% {
-    filter: url(#softGlow) drop-shadow(0 0 2px rgba(212, 165, 116, 0.1));
-  }
-}
-
-@keyframes innerCoreGlow {
-  0% {
-    opacity: 0.3;
-    filter: blur(0.5px);
-  }
-  50% {
-    opacity: 0.5;
-    filter: blur(1px);
-  }
-  100% {
-    opacity: 0.3;
-    filter: blur(0.5px);
   }
 }
 
 .emotionSegment {
-  animation: emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: ringFill 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  stroke-linecap: round;
 }
 
-.emotionSegment[data-index="0"] {
-  animation:
-    emotionEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-    dominantGlow 3s ease-in-out 0.8s infinite;
+.emptyTrack {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 12; /* Very thick ring */
+  fill: none;
 }
 
-.emotionSegment[data-index="1"] {
-  animation-delay: 0.1s;
-}
-.emotionSegment[data-index="2"] {
-  animation-delay: 0.15s;
-}
-.emotionSegment[data-index="3"] {
-  animation-delay: 0.2s;
+.emotionSegment {
+  stroke-width: 12;
 }
 
-.innerCore {
-  animation: innerCoreGlow 4s ease-in-out 1.2s infinite;
+/* Subtle inner shadow overlay for the ring to give it depth */
+.ringShadow {
+  stroke: rgba(0, 0, 0, 0.3);
+  stroke-width: 2;
+  fill: none;
+  pointer-events: none;
 }

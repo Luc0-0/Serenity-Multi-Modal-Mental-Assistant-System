@@ -85,151 +85,117 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
   const hasData = emotionData && emotionData.total_logs > 0;
   const dominantEmotion = hasData ? emotionData.dominant_emotion : "Neutral";
   const dominantPct = hasData ? Math.round(emotionData.dominance_pct * 100) : 0;
-  const trend = hasData ? emotionData.trend : "Stable";
+  const trend = hasData ? emotionData.trend : "stable";
+
+  // Derive an aura color from the dominant emotion for the background mesh
+  const auraColor = (dominantEmotion && emotionColors[dominantEmotion]?.base) 
+    || emotionColors.neutral.base;
+
+  // Trend micro-icon
+  const getTrendIcon = (t) => {
+    switch (t.toLowerCase()) {
+      case "improving": return "📈";
+      case "declining": return "📉";
+      case "fluctuating": return "〰️";
+      case "stable": 
+      default: return "➡️";
+    }
+  };
 
   return (
-    <div className={styles.card}>
-      <div className={styles.headerImage}>
-        <img
-          src="/images/nightsakura.png"
-          alt=""
-          className={styles.headerImg}
-          draggable={false}
-        />
-        <div className={styles.headerOverlay} />
-      </div>
-
-      <div className={styles.titleSection}>
-        <h3 className={styles.title}>Emotional Insights</h3>
-        <button
-          className={styles.closeBtn}
-          onClick={onClose}
-          title="Close insights"
-          aria-label="Close insights panel"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <p className={styles.date}>{currentDate}</p>
-      </div>
-
-      <div className={styles.statsList}>
-        <div className={styles.statItem}>
-          <span className={`${styles.statDot} ${styles.dim}`}></span>
-          <span className={styles.statLabel}>Mood Check-In:</span>
-          <span className={styles.statValue}>Completed</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={`${styles.statDot} ${styles.gold}`}></span>
-          <span className={styles.statLabel}>Emotion Detected:</span>
-          <span
-            className={styles.statValue}
-            style={{ textTransform: "capitalize" }}
-          >
-            {dominantEmotion}
-          </span>
-        </div>
-        <div className={styles.statItem}>
-          <span
-            className={`${styles.statDot} ${styles.dim}`}
-            style={{ background: "#333" }}
-          ></span>
-          <span className={styles.statLabel}>Emotion Distribution:</span>
-        </div>
-      </div>
-
-      <div className={styles.chartContainer}>
-        <svg viewBox="0 0 40 40" style={{ width: "100%", height: "100%" }}>
-          <defs>
-            <filter id="softGlow">
-              <feGaussianBlur stdDeviation="2" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            {donutSegments.map((seg, i) => (
-              <linearGradient
-                key={`grad-${i}`}
-                id={`emotionGradient-${i}`}
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop offset="0%" stopColor={seg.colorBase} stopOpacity="1" />
-                <stop
-                  offset="100%"
-                  stopColor={seg.colorLight}
-                  stopOpacity="0.95"
-                />
-              </linearGradient>
-            ))}
-          </defs>
-
-          <circle
-            cx="20"
-            cy="20"
-            r="12"
-            fill="none"
-            stroke="#2a2a2a"
-            strokeWidth="2.5"
-            opacity="0.4"
-          />
-
-          {donutSegments.map((seg, i) => {
-            const dashOffset = seg.rotationOffset || 0;
-            return (
-              <circle
-                key={i}
-                className={styles.emotionSegment}
-                data-index={i}
-                cx="20"
-                cy="20"
-                r={seg.radius}
-                fill="none"
-                stroke={`url(#emotionGradient-${i})`}
-                strokeWidth="2.5"
-                strokeDasharray={`${seg.dashLength} ${seg.circumference}`}
-                strokeDashoffset={-dashOffset}
-                strokeLinecap="round"
-                style={{
-                  transform: "rotate(-90deg)",
-                  transformOrigin: "20px 20px",
-                  "--dash-offset": -dashOffset,
-                }}
-              />
-            );
-          })}
-
-          <circle
-            className={styles.innerCore}
-            cx="20"
-            cy="20"
-            r="6"
-            fill="#1a1a1c"
-          />
+    <div 
+      className={styles.card}
+      style={{ "--aura-color": auraColor }}
+    >
+      <button
+        className={styles.closeBtn}
+        onClick={onClose}
+        title="Close insights"
+        aria-label="Close insights panel"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
+      </button>
 
-        <div className={styles.chartLabel}>
-          <span className={styles.chartPercentage}>{dominantPct}%</span>
-          <span
-            className={styles.chartSubtext}
-            style={{ textTransform: "capitalize" }}
-          >
-            {dominantEmotion}
-          </span>
+      <div className={styles.headerSection}>
+        <p className={styles.date}>{currentDate}</p>
+        <h3 className={styles.title}>
+          You're feeling <span style={{ textTransform: "capitalize" }}>{dominantEmotion}</span>.
+        </h3>
+        <div className={styles.statusPill}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Check-in complete
         </div>
       </div>
 
-      <div className={styles.trendSection}>
-        <span>Trend: {trend}</span>
+      <div className={styles.platter}>
+        <div className={styles.chartContainer}>
+          <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%" }}>
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              className={styles.emptyTrack}
+            />
+
+            {donutSegments.map((seg, i) => {
+              const dashOffset = seg.rotationOffset || 0;
+              // Recalculate radius and circumference for 100x100 SVG
+              const r = 40;
+              const circ = 2 * Math.PI * r;
+              const dLength = (seg.percentage / 100) * circ;
+              const dOffset = (dashOffset / seg.circumference) * circ;
+
+              return (
+                <circle
+                  key={i}
+                  className={styles.emotionSegment}
+                  cx="50"
+                  cy="50"
+                  r={r}
+                  fill="none"
+                  stroke={seg.colorBase}
+                  strokeDasharray={`${dLength} ${circ}`}
+                  style={{
+                    transform: "rotate(-90deg)",
+                    transformOrigin: "50px 50px",
+                    "--dash-offset": -dOffset,
+                    "--circumference": circ,
+                  }}
+                />
+              );
+            })}
+             {/* Inner shadow overlay for depth */}
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              className={styles.ringShadow}
+            />
+          </svg>
+
+          <div className={styles.chartLabel}>
+            <span className={styles.chartPercentage}>{dominantPct}%</span>
+            <span
+              className={styles.chartSubtext}
+            >
+              Distribution
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className={styles.footer}>
+      <div className={styles.bottomPlatterRow}>
+        <div className={styles.trendPlatter}>
+          <span className={styles.trendIcon}>{getTrendIcon(trend)}</span>
+          <span style={{ textTransform: "capitalize" }}>{trend}</span>
+        </div>
+        
         <button className={styles.viewBtn} onClick={() => navigate("/journal")}>
-          View Journal <span className={styles.arrow}>▼</span>
+          View Journal <span className={styles.arrow}>›</span>
         </button>
       </div>
     </div>

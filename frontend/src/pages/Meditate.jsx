@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Meditate.module.css";
 import { useBreathingTimer, PATTERNS } from "../hooks/useBreathingTimer";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
-import { getMeditationSuggestion } from "../services/api";
+import { getMeditationSuggestion, logMeditationSession, getMeditationStats } from "../services/api";
 
 const BREATHWORK_KEYS = ["box", "calm", "deep", "wim_hof", "coherent"];
 
@@ -33,6 +33,20 @@ export function Meditate() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
 
+  // Zenith Dashboard State
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isDashboardHovered, setIsDashboardHovered] = useState(false);
+  const [dashboardStats, setDashboardStats] = useState(null);
+
+  // Fetch stats when dashboard opens
+  useEffect(() => {
+    if (isDashboardOpen && !dashboardStats) {
+      getMeditationStats()
+        .then(setDashboardStats)
+        .catch((err) => console.error("Failed to load stats:", err));
+    }
+  }, [isDashboardOpen, dashboardStats]);
+
   // Breathe tab
   const [selectedBreath, setSelectedBreath] = useState(null);
   const breathing = useBreathingTimer(selectedBreath || "box");
@@ -57,6 +71,23 @@ export function Meditate() {
     };
   }, []);
 
+  // Save session helper
+  const saveSession = useCallback(async (pattern_used, duration_seconds, completed, emotion = null) => {
+    if (duration_seconds < 10) return; // Don't log trivial sessions
+    try {
+      await logMeditationSession({
+        pattern_used,
+        duration_seconds,
+        completed,
+        emotion
+      });
+      // Invalidate stats so they refresh next time dashboard opens
+      setDashboardStats(null);
+    } catch (err) {
+      console.error("Failed to save session", err);
+    }
+  }, []);
+
   // Generate meditation suggestion
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
@@ -76,14 +107,44 @@ export function Meditate() {
   // Guided play/pause
   const handleGuidedToggle = useCallback(() => {
     if (!suggestion) return;
+    if (guidedAudio.isPlaying) {
+      // User is pausing, let's log the accumulated session
+      saveSession(
+        suggestion.suggested_pattern, 
+        Math.floor(guidedAudio.audioProgress * guidedAudio.audioDuration), 
+        false, 
+        suggestion.emotion
+      );
+    }
     guidedAudio.togglePlayPause();
-  }, [suggestion, guidedAudio]);
+  }, [suggestion, guidedAudio, saveSession]);
 
   // Guided reset
   const handleGuidedReset = useCallback(() => {
+    if (guidedAudio.isPlaying || guidedAudio.audioProgress > 0) {
+       saveSession(
+        suggestion.suggested_pattern, 
+        Math.floor(guidedAudio.audioProgress * guidedAudio.audioDuration), 
+        false, 
+        suggestion.emotion
+      );
+    }
     guidedAudio.stop();
     setSuggestion(null);
-  }, [guidedAudio]);
+  }, [guidedAudio, suggestion, saveSession]);
+
+  // If guided completes naturally
+  useEffect(() => {
+    if (suggestion && guidedAudio.audioProgress >= 0.99 && !guidedAudio.isPlaying) {
+      saveSession(
+        suggestion.suggested_pattern, 
+        Math.floor(guidedAudio.audioDuration), 
+        true, 
+        suggestion.emotion
+      );
+    }
+  }, [guidedAudio.audioProgress, guidedAudio.isPlaying, guidedAudio.audioDuration, suggestion, saveSession]);
+
 
   // Breathe pattern select
   const handlePatternSelect = useCallback(
@@ -102,14 +163,20 @@ export function Meditate() {
   // Breathe play/pause
   const handleBreatheToggle = useCallback(() => {
     if (!selectedBreath) return;
+    if (breathing.isRunning && breathing.sessionSecs > 0) {
+      saveSession(selectedBreath, breathing.sessionSecs, false);
+    }
     breathing.setIsRunning((r) => !r);
-  }, [selectedBreath, breathing]);
+  }, [selectedBreath, breathing, saveSession]);
 
   // Breathe reset
   const handleBreatheReset = useCallback(() => {
+    if (breathing.sessionSecs > 0) {
+      saveSession(selectedBreath, breathing.sessionSecs, false);
+    }
     breathing.handleReset();
     setSelectedBreath(null);
-  }, [breathing]);
+  }, [breathing, selectedBreath, saveSession]);
 
   // Clear errors after 4s
   useEffect(() => {
@@ -355,12 +422,85 @@ export function Meditate() {
       </div>
 
       {/* Tagline */}
-      <p className={styles.tagline}>{tagline}</p>
+      <p className={`${styles.tagline} ${isDashboardHovered || isDashboardOpen ? styles.hidden : ""}`}>{tagline}</p>
 
       {/* Error toast */}
       {error && <div className={styles.errorToast}>{error}</div>}
+
+      {/* ── Zenith Dashboard Overlay ── */}
+      <div 
+        className={`${styles.cinematicOverlay} ${isDashboardHovered ? styles.cinematicHover : ""} ${isDashboardOpen ? styles.cinematicOpen : ""}`} 
+        onClick={() => isDashboardOpen && setIsDashboardOpen(false)}
+      />
+
+      <button 
+        className={`${styles.zenithButton} ${isDashboardOpen ? styles.hidden : ""}`}
+        onMouseEnter={() => setIsDashboardHovered(true)}
+        onMouseLeave={() => setIsDashboardHovered(false)}
+        onClick={() => {
+          setIsDashboardHovered(false);
+          setIsDashboardOpen(true);
+        }}
+      >
+        <span className={styles.zenithIcon}>✦</span> 
+        <span className={styles.zenithLabel}>Insights</span>
+      </button>
+
+      <div className={`${styles.zenithDashboard} ${isDashboardOpen ? styles.zenithDashboardOpen : ""}`}>
+        {isDashboardOpen && (
+          <div className={styles.dashboardContent}>
+            <button className={styles.closeZenith} onClick={() => setIsDashboardOpen(false)}>×</button>
+
+            <h2 className={styles.whisperingInsight}>
+              {dashboardStats?.insight || "Every mindful moment is a step toward clarity."}
+            </h2>
+
+            <div className={styles.statsRow}>
+              <div className={styles.statCard}>
+                <span className={styles.statValue}>{dashboardStats?.total_minutes || 0}</span>
+                <span className={styles.statLabel}>Total Vol. (mins)</span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.statValue}>{dashboardStats?.session_count || 0}</span>
+                <span className={styles.statLabel}>Sessions</span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.statValue}>{PATTERN_LABELS[dashboardStats?.top_pattern] || "N/A"}</span>
+                <span className={styles.statLabel}>Top Resonance</span>
+              </div>
+            </div>
+
+            <div className={styles.auraLogContainer}>
+              <h3 className={styles.auraLogTitle}>The Aura Log</h3>
+              <div className={styles.auraGrid}>
+                {dashboardStats?.history?.length > 0 ? (
+                  dashboardStats.history.map((day, idx) => {
+                     // Determine hue index from technique for the glow color
+                     const hueIdx = BREATHWORK_KEYS.indexOf(day.pattern);
+                     return (
+                      <div 
+                        key={idx} 
+                        className={`${styles.auraDot} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
+                        style={{ 
+                          opacity: Math.min(0.3 + (day.duration / 600), 1),
+                          transform: `scale(${Math.min(0.8 + (day.duration / 1200), 1.2)})`
+                        }}
+                        title={`${day.date}: ${Math.floor(day.duration/60)} mins (${day.pattern})`}
+                      />
+                     );
+                  })
+                ) : (
+                  <div className={styles.auraEmpty}>No recent aura logs. Begin your journey.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }
 
 export default Meditate;
+

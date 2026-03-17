@@ -244,6 +244,44 @@ export const getMeditationSuggestion = async () => {
   return response.json();
 };
 
+export const logMeditationSession = async (payload) => {
+  const token = localStorage.getItem('auth_token');
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/meditate/log`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    },
+    10000
+  );
+  if (!response.ok) {
+    throw { message: 'Failed to log meditation session', code: `HTTP_${response.status}` };
+  }
+  return response.json();
+};
+
+export const getMeditationStats = async () => {
+  const token = localStorage.getItem('auth_token');
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/meditate/stats`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    },
+    15000
+  );
+  if (!response.ok) {
+    throw { message: 'Failed to fetch meditation stats', code: `HTTP_${response.status}` };
+  }
+  return response.json();
+};
+
 export const sendChatMessageStream = async ({ message, conversation_id = null }, onChunk) => {
   if (!message || typeof message !== 'string') {
     throw {

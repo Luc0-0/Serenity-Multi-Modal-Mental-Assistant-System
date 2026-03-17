@@ -12,8 +12,11 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.models.emotion_log import EmotionLog
+from app.models.meditation_session import MeditationSession
 from app.routers.auth import get_current_user
 from app.services.engines.factory import get_llm_engine
+from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -157,3 +160,85 @@ Emotion rules (pick the single most dominant):
     except Exception as e:
         logger.error(f"Meditation suggest failed: {e}")
         return _fallback()
+
+
+class MeditationLogRequest(BaseModel):
+    pattern_used: str
+    duration_seconds: int
+    completed: bool
+    emotion: Optional[str] = None
+
+@router.post("/log")
+async def log_meditation_session(
+    request: MeditationLogRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Log a completed or paused meditation session."""
+    try:
+        session = MeditationSession(
+            user_id=current_user.id,
+            pattern_used=request.pattern_used,
+            duration_seconds=request.duration_seconds,
+            completed=request.completed,
+            emotion=request.emotion
+        )
+        db.add(session)
+        await db.commit()
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Failed to log meditation session: {e}")
+        await db.rollback()
+        return {"status": "error", "message": str(e)}
+
+@router.get("/stats")
+async def get_meditation_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get aggregated meditation stats for the dashboard."""
+    try:
+        # Get all sessions for the user
+        stmt = select(MeditationSession).where(MeditationSession.user_id == current_user.id).order_by(desc(MeditationSession.created_at))
+        all_sessions = (await db.execute(stmt)).scalars().all()
+
+        total_seconds = sum(session.duration_seconds for session in all_sessions)
+        
+        # Calculate pattern usage
+        patterns = [s.pattern_used for s in all_sessions if s.pattern_used]
+        top_pattern = Counter(patterns).most_common(1)[0][0] if patterns else "None"
+
+        # Group by day for the contribution graph (last 30 days)
+        # We need a format like: [{"date": "2026-03-16", "pattern": "deep", "duration": 600, "count": 2}, ...]
+        history_map: Dict[str, dict] = {}
+        for session in all_sessions:
+            date_str = session.created_at.strftime("%Y-%m-%d")
+            if date_str not in history_map:
+                history_map[date_str] = {
+                    "date": date_str,
+                    "pattern": session.pattern_used, # Use the most recent pattern for the color
+                    "duration": 0,
+                    "count": 0
+                }
+            history_map[date_str]["duration"] += session.duration_seconds
+            history_map[date_str]["count"] += 1
+
+        history_list = list(history_map.values())
+        
+        # Generate an AI insight based on recent activity
+        insight = "Consistency brings clarity. Take a deep breath and center yourself."
+        if len(all_sessions) > 5:
+             insight = "Your steady practice is building a lasting foundation of calm."
+        elif len(all_sessions) > 0:
+             insight = "Every mindful moment counts. You are on the right path."
+
+        return {
+            "total_minutes": total_seconds // 60,
+            "top_pattern": top_pattern,
+            "session_count": len(all_sessions),
+            "history": history_list[:30], # Return last 30 active days
+            "insight": insight
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch meditation stats: {e}")
+        return {"total_minutes": 0, "top_pattern": "None", "session_count": 0, "history": [], "insight": "Start your journey today."}

@@ -4,6 +4,7 @@ from app.models.message import Message, MessageRole
 from app.models.emotion_log import EmotionLog
 from app.models.journal_entry import JournalEntry
 from app.models.crisis_event import CrisisEvent
+from app.models.meditation_session import MeditationSession
 from app.models.memory import (
     ConversationContextCache,
     SemanticMemory,
@@ -19,6 +20,7 @@ __all__ = [
     "EmotionLog",
     "JournalEntry",
     "CrisisEvent",
+    "MeditationSession",
     "ConversationContextCache",
     "SemanticMemory",
     "EmotionalProfile",

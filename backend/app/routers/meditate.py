@@ -176,6 +176,9 @@ async def log_meditation_session(
 ):
     """Log a completed or paused meditation session."""
     try:
+        if request.duration_seconds < 60:
+            return {"status": "ignored", "message": "Session too short to log (under 60s)."}
+
         session = MeditationSession(
             user_id=current_user.id,
             pattern_used=request.pattern_used,
@@ -198,8 +201,11 @@ async def get_meditation_stats(
 ):
     """Get aggregated meditation stats for the dashboard."""
     try:
-        # Get all sessions for the user
-        stmt = select(MeditationSession).where(MeditationSession.user_id == current_user.id).order_by(desc(MeditationSession.created_at))
+        # Get all valid sessions for the user (60s or more)
+        stmt = select(MeditationSession).where(
+            MeditationSession.user_id == current_user.id,
+            MeditationSession.duration_seconds >= 60
+        ).order_by(desc(MeditationSession.created_at))
         all_sessions = (await db.execute(stmt)).scalars().all()
 
         total_seconds = sum(session.duration_seconds for session in all_sessions)
@@ -208,23 +214,21 @@ async def get_meditation_stats(
         patterns = [s.pattern_used for s in all_sessions if s.pattern_used]
         top_pattern = Counter(patterns).most_common(1)[0][0] if patterns else "None"
 
-        # Group by day for the contribution graph (last 30 days)
-        # We need a format like: [{"date": "2026-03-16", "pattern": "deep", "duration": 600, "count": 2}, ...]
-        history_map: Dict[str, dict] = {}
+        # Group by day for the Mindful Matrix (Contribution Graph)
+        # We will return a dictionary, where keys are dates "YYYY-MM-DD"
+        history_dict: Dict[str, dict] = {}
         for session in all_sessions:
             date_str = session.created_at.strftime("%Y-%m-%d")
-            if date_str not in history_map:
-                history_map[date_str] = {
+            if date_str not in history_dict:
+                history_dict[date_str] = {
                     "date": date_str,
                     "pattern": session.pattern_used, # Use the most recent pattern for the color
                     "duration": 0,
                     "count": 0
                 }
-            history_map[date_str]["duration"] += session.duration_seconds
-            history_map[date_str]["count"] += 1
-
-        history_list = list(history_map.values())
-        
+            history_dict[date_str]["duration"] += session.duration_seconds
+            history_dict[date_str]["count"] += 1
+            
         # Generate an AI insight based on recent activity
         insight = "Consistency brings clarity. Take a deep breath and center yourself."
         if len(all_sessions) > 5:
@@ -236,9 +240,9 @@ async def get_meditation_stats(
             "total_minutes": total_seconds // 60,
             "top_pattern": top_pattern,
             "session_count": len(all_sessions),
-            "history": history_list[:30], # Return last 30 active days
+            "history_dict": history_dict, # Pass as dict for O(1) matching on frontend grid
             "insight": insight
         }
     except Exception as e:
         logger.error(f"Failed to fetch meditation stats: {e}")
-        return {"total_minutes": 0, "top_pattern": "None", "session_count": 0, "history": [], "insight": "Start your journey today."}
+        return {"total_minutes": 0, "top_pattern": "None", "session_count": 0, "history_dict": {}, "insight": "Start your journey today."}

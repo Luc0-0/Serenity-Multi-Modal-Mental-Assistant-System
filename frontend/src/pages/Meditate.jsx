@@ -73,7 +73,7 @@ export function Meditate() {
 
   // Save session helper
   const saveSession = useCallback(async (pattern_used, duration_seconds, completed, emotion = null) => {
-    if (duration_seconds < 10) return; // Don't log trivial sessions
+    if (duration_seconds < 60) return; // STRICT 1 MINUTE RULE
     try {
       await logMeditationSession({
         pattern_used,
@@ -449,49 +449,59 @@ export function Meditate() {
       <div className={`${styles.zenithDashboard} ${isDashboardOpen ? styles.zenithDashboardOpen : ""}`}>
         {isDashboardOpen && (
           <div className={styles.dashboardContent}>
-            <button className={styles.closeZenith} onClick={() => setIsDashboardOpen(false)}>×</button>
+            <button className={styles.closeZenith} onClick={() => setIsDashboardOpen(false)}>
+              <span className={styles.closeIcon}>✕</span>
+            </button>
 
-            <h2 className={styles.whisperingInsight}>
-              {dashboardStats?.insight || "Every mindful moment is a step toward clarity."}
-            </h2>
+            <div className={styles.dashboardTopSection}>
+               <h2 className={styles.whisperingInsight}>
+                 {dashboardStats?.insight || "Every mindful moment is a step toward clarity."}
+               </h2>
 
-            <div className={styles.statsRow}>
-              <div className={styles.statCard}>
-                <span className={styles.statValue}>{dashboardStats?.total_minutes || 0}</span>
-                <span className={styles.statLabel}>Total Vol. (mins)</span>
-              </div>
-              <div className={styles.statCard}>
-                <span className={styles.statValue}>{dashboardStats?.session_count || 0}</span>
-                <span className={styles.statLabel}>Sessions</span>
-              </div>
-              <div className={styles.statCard}>
-                <span className={styles.statValue}>{PATTERN_LABELS[dashboardStats?.top_pattern] || "N/A"}</span>
-                <span className={styles.statLabel}>Top Resonance</span>
-              </div>
+               <div className={styles.statsColumn}>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{dashboardStats?.total_minutes || 0}</span>
+                   <span className={styles.statLabel}>T O T A L   V O L U M E</span>
+                 </div>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{dashboardStats?.session_count || 0}</span>
+                   <span className={styles.statLabel}>S E S S I O N S</span>
+                 </div>
+                 <div className={styles.statItem}>
+                   <span className={styles.statValue}>{PATTERN_LABELS[dashboardStats?.top_pattern] || "N/A"}</span>
+                   <span className={styles.statLabel}>T O P   R E S O N A N C E</span>
+                 </div>
+               </div>
             </div>
 
-            <div className={styles.auraLogContainer}>
-              <h3 className={styles.auraLogTitle}>The Aura Log</h3>
-              <div className={styles.auraGrid}>
-                {dashboardStats?.history?.length > 0 ? (
-                  dashboardStats.history.map((day, idx) => {
-                     // Determine hue index from technique for the glow color
-                     const hueIdx = BREATHWORK_KEYS.indexOf(day.pattern);
-                     return (
-                      <div 
-                        key={idx} 
-                        className={`${styles.auraDot} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
-                        style={{ 
-                          opacity: Math.min(0.3 + (day.duration / 600), 1),
-                          transform: `scale(${Math.min(0.8 + (day.duration / 1200), 1.2)})`
-                        }}
-                        title={`${day.date}: ${Math.floor(day.duration/60)} mins (${day.pattern})`}
-                      />
-                     );
-                  })
-                ) : (
-                  <div className={styles.auraEmpty}>No recent aura logs. Begin your journey.</div>
-                )}
+            <div className={styles.mindfulMatrixContainer}>
+              <h3 className={styles.matrixTitle}>The Mindful Matrix</h3>
+              <div className={styles.matrixScrollWrapper}>
+                <div className={styles.matrixGrid}>
+                  {(() => {
+                    const daysToRender = 154; // 22 weeks * 7 days
+                    const today = new Date();
+                    const cells = [];
+                    for (let i = daysToRender - 1; i >= 0; i--) {
+                       const d = new Date(today);
+                       d.setDate(d.getDate() - i);
+                       const dateStr = d.toISOString().split('T')[0];
+                       const data = dashboardStats?.history_dict?.[dateStr];
+                       const hueIdx = data ? BREATHWORK_KEYS.indexOf(data.pattern) : -1;
+                       const intensity = data ? Math.min(data.duration / 600, 1) : 0;
+                       
+                       cells.push(
+                         <div 
+                           key={dateStr}
+                           className={`${styles.matrixCell} ${data ? styles.matrixCellActive : ""} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
+                           style={data ? { opacity: 0.3 + (intensity * 0.7) } : {}}
+                           title={`${dateStr}: ${data ? Math.floor(data.duration / 60) + ' mins (' + PATTERN_LABELS[data.pattern] + ')' : 'Rest day'}`}
+                         />
+                       );
+                    }
+                    return cells;
+                  })()}
+                </div>
               </div>
             </div>
           </div>

@@ -43,35 +43,38 @@
 
 .glassCard {
   position: relative;
-  /* Layered Backgrounds for "Shader" Effect */
-  background:
-        /* 1. The Light Source: Warm glow from top-center */ radial-gradient(
-    80% 60% at 50% -10%,
-    rgba(212, 165, 116, 0.12) 0%,
+  background: rgba(18, 16, 22, 0.45);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 1.5rem;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.glassCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(
+    80% 80% at 50% -20%,
+    rgba(212, 165, 116, 0.08) 0%,
     transparent 100%
   );
+  pointer-events: none;
+  z-index: 0;
+}
 
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  /* Rim Light Borders */
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  /* Faint overall border */
-  border-top: 1px solid rgba(212, 165, 116, 0.3);
-
-  border-radius: 20px;
-  padding: 1.5rem;
-
-  /* Deep Shadow + Internal Reflection */
-  box-shadow:
-    0 16px 40px -10px rgba(0, 0, 0, 0.5),
-    /* Drop shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  /* Top inner edge highlight */
-
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-top-color 0.3s ease;
+.glassCard > * {
+  position: relative;
+  z-index: 1;
 }
 
 .glassNavbar {
@@ -99,18 +102,8 @@
 .glassCard:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 20px 50px -10px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(212, 165, 116, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-top-color: rgba(212, 165, 116, 0.5);
-  /* Brighter highlight on hover */
-
-  /* Intensify the light source on hover */
-  background: radial-gradient(
-    80% 60% at 50% -10%,
-    rgba(212, 165, 116, 0.18) 0%,
-    transparent 100%
-  );
+    0 32px 64px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
 /* ── HEADER ── */

@@ -616,7 +616,7 @@ function MoodAreaChart({ moodTrends, period }) {
               ? gradStops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity="1" />)
               : <stop offset="0%" stopColor="#8a8a8e" stopOpacity="1" />}
           </linearGradient>
-          <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id="neonGlow" filterUnits="userSpaceOnUse" x="-100" y="-100" width={W + 200} height={H + 200}>
             <feGaussianBlur stdDeviation="6" result="blur1" />
             <feGaussianBlur stdDeviation="2" result="blur2" />
             <feMerge>

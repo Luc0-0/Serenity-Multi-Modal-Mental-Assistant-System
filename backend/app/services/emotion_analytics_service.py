@@ -52,6 +52,16 @@ class EmotionAnalyticsService:
             dominant = max(distribution, key=distribution.get)
             dominance_pct = distribution[dominant]
             
+            emotion_frequency = {}
+            daily_breakdown = {}
+            for log in logs:
+                label = log["primary_emotion"]
+                emotion_frequency[label] = emotion_frequency.get(label, 0) + 1
+                day_key = str(log["created_date"]) if log["created_date"] else "unknown"
+                if day_key not in daily_breakdown:
+                    daily_breakdown[day_key] = {}
+                daily_breakdown[day_key][label] = daily_breakdown[day_key].get(label, 0) + 1
+            
             trend, trend_desc = self._detect_trend(logs)
             volatility = self._compute_volatility(logs)
             sustained_sadness = distribution.get("sadness", 0) >= 0.60
@@ -76,6 +86,8 @@ class EmotionAnalyticsService:
                 dominance_pct=dominance_pct,
                 avg_confidence=avg_confidence,
                 emotion_distribution=distribution,
+                emotion_frequency=emotion_frequency,
+                daily_breakdown=daily_breakdown,
                 trend=trend,
                 trend_description=trend_desc,
                 volatility_flag=volatility > 0.25,
@@ -85,7 +97,7 @@ class EmotionAnalyticsService:
                 suggested_tone=suggested_tone,
                 suggested_approach=suggested_approach,
                 avoid_triggers=avoid,
-                computed_at=datetime.now()
+                computed_at=datetime.utcnow()
             )
         
         except Exception as e:
@@ -100,7 +112,7 @@ class EmotionAnalyticsService:
     ) -> List[Dict]:
         """Fetch emotion logs for time window."""
         try:
-            cutoff = datetime.now() - timedelta(days=days)
+            cutoff = datetime.utcnow() - timedelta(days=days)
             
             query = select(
                 EmotionLog.id,
@@ -164,11 +176,14 @@ class EmotionAnalyticsService:
             return "changing", f"Shifted from {first_dominant} to {second_dominant}"
     
     def _compute_volatility(self, logs: List[Dict]) -> float:
-        """Calculate confidence score variance."""
-        confidences = [log["confidence"] for log in logs]
-        if len(confidences) < 2:
+        """Calculate emotion shift volatility rather than confidence variance."""
+        if len(logs) < 2:
             return 0.0
-        return stdev(confidences)
+        shifts = 0
+        for i in range(1, len(logs)):
+            if logs[i]["primary_emotion"] != logs[i-1]["primary_emotion"]:
+                shifts += 1
+        return shifts / len(logs)
     
     async def _assess_risk(
         self,
@@ -179,7 +194,7 @@ class EmotionAnalyticsService:
     ) -> Tuple[bool, int]:
         """Check for risk patterns in last 48h."""
         try:
-            cutoff = datetime.now() - timedelta(hours=48)
+            cutoff = datetime.utcnow() - timedelta(hours=48)
             query = select(func.count(CrisisEvent.id)).where(
                 CrisisEvent.user_id == user_id,
                 CrisisEvent.created_at >= cutoff
@@ -218,6 +233,8 @@ class EmotionAnalyticsService:
                 "sadness": 0.0, "joy": 0.0, "anger": 0.0,
                 "fear": 0.0, "neutral": 1.0, "surprise": 0.0, "disgust": 0.0
             },
+            emotion_frequency={},
+            daily_breakdown={},
             trend="unknown",
             trend_description="No emotional data available",
             volatility_flag=False,
@@ -227,5 +244,5 @@ class EmotionAnalyticsService:
             suggested_tone="neutral",
             suggested_approach="exploration",
             avoid_triggers=[],
-            computed_at=datetime.now()
+            computed_at=datetime.utcnow()
         )

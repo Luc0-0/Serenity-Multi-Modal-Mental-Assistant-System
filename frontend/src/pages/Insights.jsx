@@ -82,7 +82,7 @@ function computeStreak(dailyBreakdown) {
 function transformData(api) {
   if (!api || api.total_logs === 0) return null;
 
-  const { emotion_frequency, dominant_emotion, dominance_pct, total_logs, trend, volatility, high_risk, daily_breakdown = {} } = api;
+  const { emotion_frequency, dominant_emotion, dominance_pct, total_logs, trend, volatility, high_risk, daily_breakdown = {}, period_days } = api;
 
   const emotionDistribution = Object.entries(emotion_frequency)
     .map(([emotion, count]) => ({
@@ -96,7 +96,7 @@ function transformData(api) {
 
   return {
     emotionDistribution,
-    moodTrends: buildMoodTrends(daily_breakdown, 30),
+    moodTrends: buildMoodTrends(daily_breakdown, period_days || 30),
     streak: computeStreak(daily_breakdown),
     totalLogs: total_logs,
     dominantEmotion: dominant_emotion,

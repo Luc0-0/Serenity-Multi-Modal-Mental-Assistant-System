@@ -10,16 +10,10 @@ export function EmotionalStatusCard({ emotionData, isLoading, onClose }) {
     joy: { base: EMOTION_COLORS.joy, light: "#d4b89a" },
     sadness: { base: EMOTION_COLORS.sadness, light: "#8b9fae" },
     anger: { base: EMOTION_COLORS.anger, light: "#ae8b8b" },
-    anxiety: { base: EMOTION_COLORS.anxiety, light: "#c8a57a" },
     fear: { base: EMOTION_COLORS.fear, light: "#ab9bc8" },
     surprise: { base: EMOTION_COLORS.surprise, light: "#9abead" },
     disgust: { base: EMOTION_COLORS.disgust, light: "#abb590" },
-    trust: { base: EMOTION_COLORS.trust, light: "#c8d8ba" },
-    anticipation: { base: EMOTION_COLORS.anticipation, light: "#9abecf" },
     neutral: { base: EMOTION_COLORS.neutral, light: "#8a8a7e" },
-    happy: { base: EMOTION_COLORS.joy, light: "#d4b89a" },
-    grateful: { base: EMOTION_COLORS.trust, light: "#c8d8ba" },
-    calm: { base: EMOTION_COLORS.trust, light: "#c8d8ba" },
   };
 
   const currentDate = new Date().toLocaleDateString("en-US", {

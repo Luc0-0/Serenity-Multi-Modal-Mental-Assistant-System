@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/meditate", tags=["meditate"])
 
 VALID_PATTERNS = ("box", "calm", "deep", "wim_hof", "coherent")
-VALID_EMOTIONS = ("sadness", "fear", "anger", "joy", "neutral")
+VALID_EMOTIONS = ("sadness", "fear", "anger", "joy", "surprise", "disgust", "neutral")
 
 
 def _extract_json(text: str) -> str:
@@ -39,6 +39,8 @@ def _fallback(emotion: str = "neutral") -> dict:
         "sadness": "You've been feeling the heaviness of things recently. This session offers a moment of warmth and gentleness — just for you.",
         "anger":   "There's been a lot of friction and frustration in your days. This session is here to help you release that heat and return to yourself.",
         "joy":     "You're in a good place right now. This session will help you stay grounded in it and carry that warmth forward.",
+        "surprise": "Sometimes things catch us off guard. This session gives you space to pause, process, and recenter.",
+        "disgust": "It's natural to feel repelled or overwhelmed. This session will help you clear your mind and reset.",
         "neutral": "A quiet moment for yourself. This session brings you back to the present — nothing more, nothing less.",
     }
     patterns = {
@@ -46,6 +48,8 @@ def _fallback(emotion: str = "neutral") -> dict:
         "sadness": "calm",
         "anger":   "wim_hof",
         "joy":     "coherent",
+        "surprise": "box",
+        "disgust": "calm",
         "neutral": "box",
     }
     return {
@@ -124,6 +128,8 @@ Emotion rules (pick the single most dominant):
 - sadness: sad, depressed, lonely, hopeless
 - anger: angry, frustrated, irritated
 - joy: happy, grateful, excited
+- surprise: shocked, stunned
+- disgust: repulsed, revolted
 - neutral: calm, fine, mixed, or no data"""
 
         engine = get_llm_engine()

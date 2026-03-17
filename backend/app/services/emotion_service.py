@@ -5,6 +5,8 @@ from sqlalchemy import select
 from app.models.emotion_log import EmotionLog
 from app.models.message import Message
 from app.services.engines.factory import get_emotion_engine
+from app.services.engines.emotion.keywords import KeywordEmotionEngine
+from app.utils.emotion_constants import normalize_emotion
 
 logger = logging.getLogger(__name__)
 
@@ -14,18 +16,23 @@ class EmotionService:
     
     def __init__(self):
         self.engine = get_emotion_engine()
+        self.fallback_engine = KeywordEmotionEngine()
     
     async def detect_emotion(self, text: str) -> Dict[str, any]:
         """Detect emotion using configured engine."""
         try:
-            return await self.engine.analyze(text)
+            result = await self.engine.analyze(text)
+            result["label"] = normalize_emotion(result["label"])
+            return result
         except Exception as e:
-            logger.error(f"Emotion detection failed: {e}")
-            return {
-                "label": "neutral",
-                "confidence": 0.5,
-                "provider": "error_fallback"
-            }
+            logger.error(f"Primary emotion engine failed: {e}. Falling back to Keyword engine.")
+            try:
+                result = await self.fallback_engine.analyze(text)
+                result["label"] = normalize_emotion(result["label"])
+                return result
+            except Exception as fallback_e:
+                logger.error(f"Fallback emotion detection failed: {fallback_e}")
+                raise RuntimeError("All emotion engines failed") from fallback_e
     
     async def log_emotion(
         self,
@@ -38,12 +45,13 @@ class EmotionService:
     ) -> Optional[int]:
         """Log emotion."""
         try:
+            normalized_label = normalize_emotion(label)
             # Create ORM object
             emotion_log = EmotionLog(
                 user_id=user_id,
                 conversation_id=conversation_id,
                 message_id=message_id,
-                primary_emotion=label,
+                primary_emotion=normalized_label,
                 confidence=confidence,
                 intensity=None,  # Future intensity calculation
                 tags=None,

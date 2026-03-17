@@ -17,6 +17,8 @@ class EmotionInsight(BaseModel):
     avg_confidence: float
     
     emotion_distribution: Dict[str, float]
+    emotion_frequency: Dict[str, int]
+    daily_breakdown: Dict[str, Dict[str, int]]
     
     trend: str
     trend_description: str

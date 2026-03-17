@@ -22,73 +22,26 @@ async def get_emotion_insights(
     """Retrieve emotion insights."""
     if not current_user:
         return {
-            "user_id": None,
+            "total_logs": 0,
             "period_days": days,
             "emotion_frequency": {},
             "dominant_emotion": None,
-            "total_logs": 0,
             "trend": "no_data",
             "volatility": 0.0
         }
     
     try:
-        since_date = datetime.utcnow() - timedelta(days=days)
+        from app.services.emotion_analytics_service import EmotionAnalyticsService
+        service = EmotionAnalyticsService()
+        insight = await service.generate_user_insights(db, current_user.id, days)
         
-        stmt = select(EmotionLog).where(
-            (EmotionLog.user_id == current_user.id) &
-            (EmotionLog.created_at >= since_date)
-        ).order_by(EmotionLog.created_at.desc())
-        
-        result = await db.execute(stmt)
-        emotion_logs = result.scalars().all()
-        
-        if not emotion_logs:
-            return {
-                "user_id": current_user.id,
-                "period_days": days,
-                "emotion_frequency": {},
-                "dominant_emotion": None,
-                "total_logs": 0,
-                "trend": "no_data",
-                "volatility": 0.0
-            }
-        
-        emotion_counts = {}
-        emotion_confidence = {}
-        daily_breakdown = {}  # Daily emotion tracking
-        
-        for log in emotion_logs:
-            label = log.primary_emotion or "unknown"
-            emotion_counts[label] = emotion_counts.get(label, 0) + 1
-            if label not in emotion_confidence:
-                emotion_confidence[label] = []
-            emotion_confidence[label].append(log.confidence or 0.5)
+        data = insight.dict()
+        data["total_logs"] = data["log_count"]
+        # Map trend string to front-end expected 'fluctuating' if not stable
+        if data["trend"] in ("changing", "unknown"):
+            data["trend"] = "fluctuating"
             
-            # Track by day (YYYY-MM-DD)
-            day_key = log.created_at.date().isoformat() if log.created_at else "unknown"
-            if day_key not in daily_breakdown:
-                daily_breakdown[day_key] = {}
-            daily_breakdown[day_key][label] = daily_breakdown[day_key].get(label, 0) + 1
-        
-        dominant_emotion = max(emotion_counts, key=emotion_counts.get) if emotion_counts else None
-        dominance_pct = (emotion_counts.get(dominant_emotion, 0) / len(emotion_logs)) if emotion_logs else 0
-        
-        volatility = calculate_volatility([log.confidence or 0.5 for log in emotion_logs])
-        
-        return {
-            "user_id": current_user.id,
-            "period_days": days,
-            "emotion_frequency": emotion_counts,
-            "dominant_emotion": dominant_emotion,
-            "dominance_pct": dominance_pct,
-            "total_logs": len(emotion_logs),
-            "trend": "stable" if volatility < 0.2 else "fluctuating",
-            "volatility": volatility,
-            "suggested_tone": suggest_tone(dominant_emotion),
-            "suggested_approach": suggest_approach(dominant_emotion),
-            "high_risk": is_high_risk(emotion_counts),
-            "daily_breakdown": daily_breakdown  # Include daily breakdown
-        }
+        return data
     except Exception as e:
         logger.error(f"Failed to get emotion insights: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch insights")
@@ -244,13 +197,13 @@ def calculate_volatility(confidences: list) -> float:
 def suggest_tone(dominant_emotion: str) -> str:
     """Suggest tone."""
     tone_map = {
-        "happy": "uplifting",
-        "sad": "compassionate",
-        "anxious": "calming",
-        "angry": "supportive",
+        "joy": "affirming",
+        "sadness": "gentle",
+        "anger": "validating",
+        "fear": "reassuring",
+        "surprise": "curious",
+        "disgust": "validating",
         "neutral": "balanced",
-        "stressed": "reassuring",
-        "calm": "encouraging"
     }
     return tone_map.get(dominant_emotion, "balanced")
 
@@ -258,15 +211,15 @@ def suggest_tone(dominant_emotion: str) -> str:
 def suggest_approach(dominant_emotion: str) -> str:
     """Suggest approach."""
     approach_map = {
-        "happy": "reinforce_positive",
-        "sad": "provide_comfort",
-        "anxious": "grounding_techniques",
-        "angry": "validate_feelings",
-        "neutral": "open_exploration",
-        "stressed": "stress_management",
-        "calm": "deepen_reflection"
+        "joy": "affirmation",
+        "sadness": "grounding",
+        "anger": "cognitive_reframe",
+        "fear": "grounding",
+        "surprise": "exploration",
+        "disgust": "cognitive_reframe",
+        "neutral": "exploration",
     }
-    return approach_map.get(dominant_emotion, "balanced_exploration")
+    return approach_map.get(dominant_emotion, "exploration")
 
 
 def is_high_risk(emotion_counts: dict) -> bool:
@@ -274,7 +227,7 @@ def is_high_risk(emotion_counts: dict) -> bool:
     if not emotion_counts:
         return False
     
-    high_risk_emotions = {"sad", "anxious", "stressed", "angry", "suicidal", "hopeless"}
+    high_risk_emotions = {"sadness", "anger", "fear", "disgust"}
     total = sum(emotion_counts.values())
     
     for emotion, count in emotion_counts.items():

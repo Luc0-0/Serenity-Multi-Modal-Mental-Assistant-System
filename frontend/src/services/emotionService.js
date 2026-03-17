@@ -15,9 +15,9 @@ const validateEmotionResponse = (data) => {
     throw new Error('Invalid emotion response: expected object');
   }
 
-  if (!data.detected_emotions || typeof data.detected_emotions !== 'object') {
-    throw new Error('Invalid emotion response: missing detected_emotions');
-  }
+  // The backend API does not use `detected_emotions` anymore, 
+  // currently insights return `emotion_frequency` or `emotion_distribution`.
+  // Removed strict check.
 
   return data;
 };
@@ -33,24 +33,6 @@ export const fetchEmotionInsights = async (userId, days = 7) => {
     return data;
   } catch (error) {
     console.error('Emotion insights fetch error:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetch latest emotion snapshot.
- * @param {number} userId - User ID
- */
-export const fetchMiniEmotionSnapshot = async (userId) => {
-  if (!userId || !Number.isInteger(userId) || userId <= 0) {
-    throw new Error('Invalid user ID');
-  }
-
-  try {
-    const data = await apiClient.get(`/api/emotions/mini/?user_id=${userId}`);
-    return data;
-  } catch (error) {
-    console.error('Mini snapshot fetch error:', error);
     throw error;
   }
 };
@@ -72,7 +54,7 @@ export const fetchEmotionHistory = async (userId, timeRange = '7d') => {
 
   try {
     const data = await apiClient.get(`/api/emotions/history/?user_id=${userId}&range=${timeRange}`);
-    return Array.isArray(data) ? data : data.data || [];
+    return Array.isArray(data) ? data : data.emotions || [];
   } catch (error) {
     console.error('Emotion history fetch error:', error);
     throw error;

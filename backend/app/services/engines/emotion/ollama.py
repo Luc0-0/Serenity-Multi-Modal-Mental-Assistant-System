@@ -15,8 +15,9 @@ class OllamaEmotionEngine(EmotionEngine):
         "You are an emotion classifier for a mental health app. "
         "Given a user's message, analyze the emotional tone and classify it.\n\n"
         "Available emotions: sadness, joy, fear, anger, surprise, disgust, neutral\n\n"
-        "Think about what the user is expressing, then on your FINAL line, "
-        "write ONLY the single emotion word from the list above. Nothing else on that line."
+        "You may think about what the user is expressing and write out your reasoning. "
+        "When you are finished, you MUST output the final emotion word wrapped in XML tags "
+        "on a new line like this: <emotion>label</emotion>"
     )
 
     def __init__(self):
@@ -42,10 +43,10 @@ class OllamaEmotionEngine(EmotionEngine):
             "model": self.model,
             "messages": [
                 {"role": "system", "content": self.SYSTEM_PROMPT},
-                {"role": "user", "content": text[:500]},
+                {"role": "user", "content": text[:2000]},
             ],
             "temperature": 0.1,
-            "max_tokens": 10,
+            "max_tokens": 150,
         }
 
         try:
@@ -67,25 +68,19 @@ class OllamaEmotionEngine(EmotionEngine):
             raise
 
     def _parse_emotion(self, raw: str) -> str:
-        # Last line first (prompt asks model to put answer there)
-        lines = [l.strip().lower().rstrip(".") for l in raw.strip().split("\n") if l.strip()]
+        from app.utils.emotion_constants import normalize_emotion
+        import re
+        
+        # 1. Search for explicit XML tag
+        match = re.search(r"<emotion>\s*([a-zA-Z_]+)\s*</emotion>", raw, re.IGNORECASE)
+        if match:
+            return normalize_emotion(match.group(1))
+            
+        # 2. Fallback: Check the last line safely
+        lines = [l.strip().lower().rstrip(".,!") for l in raw.strip().split("\n") if l.strip()]
         if lines:
-            last_line = lines[-1]
-            if last_line in self.VALID_EMOTIONS:
-                return last_line
-
-        # Standalone match scan
-        for line in reversed(lines):
-            for emotion in self.VALID_EMOTIONS:
-                if line == emotion:
-                    return emotion
-
-        # Fallback: keyword scan (skip neutral to avoid false positives)
-        full_text = raw.lower()
-        for emotion in self.VALID_EMOTIONS - {"neutral"}:
-            if emotion in full_text:
-                return emotion
-
+            return normalize_emotion(lines[-1])
+            
         return "neutral"
 
     @property

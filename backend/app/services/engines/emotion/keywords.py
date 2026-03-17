@@ -12,17 +12,17 @@ class KeywordEmotionEngine(EmotionEngine):
         "sadness": [
             "sad", "depressed", "down", "hopeless", "blue", "miserable", "unhappy",
             "devastated", "heartbroken", "grief", "sorrowful", "melancholy", "gloomy",
-            "failing", "alone", "lonely", "nobody", "understand"
+            "failing", "alone", "lonely", "nobody"
         ],
         "joy": [
             "happy", "excited", "joyful", "delighted", "pleased", "wonderful", "good",
             "great", "awesome", "love", "grateful", "blessed", "thrilled", "proud",
-            "hope", "better", "helped", "acknowledged", "learning", "handle", "kinder"
+            "hope", "better", "helped", "acknowledged", "kinder"
         ],
         "fear": [
             "scared", "anxious", "afraid", "terrified", "nervous", "worried",
             "panic", "dread", "fearful", "stressed", "overwhelmed", "concerned",
-            "deadlines", "barely", "sleep", "thinking", "going back", "forth"
+            "deadlines", "barely"
         ],
         "anger": [
             "angry", "furious", "rage", "frustrated", "irritated", "annoyed",
@@ -43,15 +43,26 @@ class KeywordEmotionEngine(EmotionEngine):
         logger.info("✓ Keyword emotion engine initialized")
     
     async def analyze(self, text: str) -> Dict:
+        import re
+        from app.utils.emotion_constants import normalize_emotion
+        
         text_lower = text.lower()
+        scores = {emotion: 0 for emotion in self.EMOTION_KEYWORDS}
         
         for emotion, keywords in self.EMOTION_KEYWORDS.items():
-            if any(kw in text_lower for kw in keywords):
-                return {
-                    'label': emotion,
-                    'confidence': 0.65,
-                    'provider': 'keywords'
-                }
+            for kw in keywords:
+                # Use word boundaries to prevent substring matches (e.g. 'ad' in 'sad')
+                pattern = r'\b' + re.escape(kw) + r'\b'
+                matches = re.findall(pattern, text_lower)
+                scores[emotion] += len(matches)
+                
+        best_emotion = max(scores, key=scores.get)
+        if scores[best_emotion] > 0:
+            return {
+                'label': normalize_emotion(best_emotion),
+                'confidence': 0.65,
+                'provider': 'keywords'
+            }
         
         return {
             'label': 'neutral',

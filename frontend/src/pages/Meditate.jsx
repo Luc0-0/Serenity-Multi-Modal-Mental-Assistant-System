@@ -96,6 +96,7 @@ export function Meditate() {
 
   // Completion popup
   const [showCompletion, setShowCompletion] = useState(false);
+  const completionFiredRef = useRef(false);
 
   // Breathe tab — must be before voice session
   const [selectedBreath, setSelectedBreath] = useState(null);
@@ -105,12 +106,18 @@ export function Meditate() {
   const guidedAudio = useAudioPlayer();
 
   // Voice session — declared after its dependencies
-  const handleVoiceSessionStart = useCallback(({ track_id, pattern }) => {
+  const handleVoiceSessionStart = useCallback(({ track_id, pattern, emotion }) => {
     const track = TRACKS.find((t) => t.id === track_id) || TRACKS[0];
     setActiveTrackId(track.id);
     guidedAudio.loadAudio(track.file);
     setSelectedBreath(pattern);
-    setTimeout(() => guidedAudio.togglePlayPause(), 400);
+    completionFiredRef.current = false;
+    setSuggestion({
+      suggested_pattern: pattern || "box",
+      emotion: emotion || "neutral",
+      insight: "Serenity crafted this session based on your conversation.",
+    });
+    setTimeout(() => guidedAudio.play(), 600);
   }, [guidedAudio]);
 
   const handleBreathworkCue = useCallback(() => {}, []);
@@ -192,6 +199,7 @@ export function Meditate() {
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
+    completionFiredRef.current = false;
     try {
       const data = await getMeditationSuggestion();
       setSuggestion(data);
@@ -243,7 +251,13 @@ export function Meditate() {
 
   // Guided natural completion → show popup then auto-switch to breathe
   useEffect(() => {
-    if (suggestion && guidedAudio.audioProgress >= 0.99 && !guidedAudio.isPlaying) {
+    if (
+      suggestion &&
+      guidedAudio.audioProgress >= 0.99 &&
+      !guidedAudio.isPlaying &&
+      !completionFiredRef.current
+    ) {
+      completionFiredRef.current = true;
       saveSession(
         suggestion.suggested_pattern,
         Math.floor(guidedAudio.audioDuration),
@@ -251,10 +265,7 @@ export function Meditate() {
         suggestion.emotion
       );
       setShowCompletion(true);
-      // Auto-switch to breathe tab after popup delay
-      setTimeout(() => {
-        setActiveTab("breathe");
-      }, 3200);
+      setTimeout(() => setActiveTab("breathe"), 3200);
     }
   }, [guidedAudio.audioProgress, guidedAudio.isPlaying, guidedAudio.audioDuration, suggestion, saveSession]);
 
@@ -399,7 +410,7 @@ export function Meditate() {
           </div>
 
           {/* Voice Mic Button — orbital position (right of orb) */}
-          {!guidedAudio.isPlaying && (
+          {!guidedAudio.isPlaying && voice.status !== "session_ready" && (
             <button
               className={`${styles.voiceMicBtn} ${
                 voice.isListening ? styles.voiceMicListening :

@@ -12,6 +12,11 @@ export function useAudioPlayer() {
       audioRef.current.pause();
       audioRef.current = null;
     }
+    // Reset state so stale values from previous audio don't linger
+    setIsPlaying(false);
+    setAudioProgress(0);
+    setAudioDuration(0);
+
     const audio = new Audio(url);
     audio.preload = "auto";
     audio.ontimeupdate = () =>
@@ -19,7 +24,9 @@ export function useAudioPlayer() {
     audio.onloadedmetadata = () => setAudioDuration(audio.duration);
     audio.onended = () => {
       setIsPlaying(false);
-      setAudioProgress(0);
+      // Keep progress at 1.0 (not 0) so completion detection works.
+      // Consumer calls stop() or loadAudio() to reset when ready.
+      setAudioProgress(1);
     };
     audio.onerror = () => setIsPlaying(false);
     audioRef.current = audio;

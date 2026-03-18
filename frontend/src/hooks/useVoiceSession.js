@@ -200,6 +200,7 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
   const breathworkCheckIn = useCallback(() => {
     if (!SpeechRecognition) return;
     if (abortRef.current) return;
+    if (runningRef.current) return; // don't corrupt guided voice state
     setStatus('breathwork_listening');
     setTranscript('');
 

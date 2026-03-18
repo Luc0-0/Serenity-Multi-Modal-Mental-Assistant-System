@@ -1065,7 +1065,6 @@
   background: rgba(22,18,32,0.85);
   border-color: rgba(255,255,255,0.20);
   color: rgba(255,255,255,0.9);
-  transform: translate(-50%, -50%) scale(1.08);
   box-shadow: 0 6px 28px rgba(0,0,0,0.6), 0 0 30px hsla(var(--hue1),40%,65%,0.12);
 }
 
@@ -1085,7 +1084,12 @@
 
 .voiceMicProcessing {
   border-color: rgba(255,255,255,0.15);
-  animation: shimmer 1.8s ease-in-out infinite;
+  animation: micProcessing 1.8s ease-in-out infinite;
+}
+
+@keyframes micProcessing {
+  0%,100% { border-color: rgba(255,255,255,0.10); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  50%     { border-color: rgba(255,255,255,0.30); box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 18px rgba(255,255,255,0.06); }
 }
 
 @keyframes micPulse {

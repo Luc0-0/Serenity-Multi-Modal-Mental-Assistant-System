@@ -54,7 +54,7 @@
 
 .closeBtn {
   position: absolute;
-  top: 20px;
+  top: 64px;
   right: 20px;
   z-index: 10;
   width: 44px;
@@ -401,17 +401,45 @@
   display: none;
 }
 
-/* ─── Bottom Hint ─── */
+/* ─── Bottom Actions ─── */
+
+.bottomActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.openChatBtn {
+  background: none;
+  border: none;
+  font-family: 'Libre Baskerville', 'Georgia', serif;
+  font-size: 13px;
+  color: rgba(232, 168, 74, 0.5);
+  cursor: pointer;
+  padding: 6px 16px;
+  letter-spacing: 0.3px;
+  transition: color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  user-select: none;
+}
+
+.openChatBtn:hover {
+  color: rgba(232, 168, 74, 0.85);
+}
+
+.openChatBtn:active {
+  color: rgba(232, 168, 74, 1);
+}
 
 .hint {
   font-family: 'Libre Baskerville', 'Georgia', serif;
   font-size: 12px;
   color: rgba(255, 248, 235, 0.18);
   text-align: center;
-  padding: 16px 24px;
   margin: 0;
-  position: relative;
-  z-index: 1;
   user-select: none;
   letter-spacing: 0.3px;
 }
@@ -439,7 +467,7 @@
   }
 
   .closeBtn {
-    top: 16px;
+    top: 56px;
     right: 16px;
     width: 40px;
     height: 40px;

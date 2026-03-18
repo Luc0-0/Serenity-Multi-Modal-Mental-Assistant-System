@@ -17,6 +17,7 @@ export function EnhancedVoiceOverlay({
   onExit,
   onRetry,
   onInterrupt,
+  onOpenInChat,
 }) {
   const messagesEndRef = useRef(null);
   const overlayRef = useRef(null);
@@ -152,10 +153,17 @@ export function EnhancedVoiceOverlay({
         )}
       </div>
 
-      {/* Bottom hint */}
-      <p className={styles.hint}>
-        {status === 'speaking' ? 'Tap the orb to interrupt' : 'Swipe down to exit'}
-      </p>
+      {/* Bottom actions */}
+      <div className={styles.bottomActions}>
+        {onOpenInChat && (
+          <button className={styles.openChatBtn} onClick={onOpenInChat}>
+            Continue in chat
+          </button>
+        )}
+        <p className={styles.hint}>
+          {status === 'speaking' ? 'Tap the orb to interrupt' : 'Swipe down to exit'}
+        </p>
+      </div>
 
       {/* Error recovery */}
       {error && <VoiceErrorRecovery error={error} onRetry={onRetry} onClose={onExit} />}

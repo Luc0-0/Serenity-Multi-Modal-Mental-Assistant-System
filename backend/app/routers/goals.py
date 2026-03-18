@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from datetime import date, datetime, timedelta
 import json
 
-from app.db.connection import get_db
+from app.db.session import get_db
 from app.core.auth import get_current_user
 from app.models import User, Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, WeeklyReview, StreakFreeze
 from app.services.goal_service import GoalService

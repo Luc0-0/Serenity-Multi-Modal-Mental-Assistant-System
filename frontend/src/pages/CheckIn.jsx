@@ -962,6 +962,10 @@ export function CheckIn() {
             onExit={voice.exitVoiceMode}
             onRetry={voice.retryLastAction}
             onInterrupt={voice.interrupt}
+            onOpenInChat={() => {
+              voice.exitVoiceMode();
+              setIsInChat(true);
+            }}
           />
         )}
 

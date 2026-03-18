@@ -267,18 +267,26 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
     recognitionRef.current = recognition;
 
     let finalTranscript = '';
+    let lastHeardText = ''; // tracks ANY speech (interim or final)
     let silenceTimer = null;
     let dispatched = false;
+    let hasReceivedSpeech = false;
 
-    const SILENCE_TIMEOUT = 3000;
+    const SILENCE_TIMEOUT = 2500;
+
+    const dispatch = (text) => {
+      if (dispatched || !text) return;
+      dispatched = true;
+      try { recognition.stop(); } catch (_) {}
+      processRef.current(text);
+    };
 
     const resetSilenceTimer = () => {
       if (silenceTimer) clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => {
-        if (!dispatched && finalTranscript.trim()) {
-          dispatched = true;
-          try { recognition.stop(); } catch (_) {}
-        }
+        if (dispatched) return;
+        // Stop recognition — onend will dispatch with best available text
+        try { recognition.stop(); } catch (_) {}
       }, SILENCE_TIMEOUT);
     };
 
@@ -290,7 +298,12 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
         if (e.results[i].isFinal) finalTranscript += t;
         else interim += t;
       }
-      setTranscript(finalTranscript || interim);
+      const display = finalTranscript || interim;
+      if (display.trim()) {
+        lastHeardText = display.trim();
+        hasReceivedSpeech = true;
+      }
+      setTranscript(display);
       resetSilenceTimer();
     };
 
@@ -302,30 +315,31 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
         setVoiceStatus('idle');
         return;
       }
-      if (!dispatched && finalTranscript.trim()) {
-        dispatched = true;
-        processRef.current(finalTranscript.trim());
-      }
+      // Try to salvage any heard text
+      const text = finalTranscript.trim() || lastHeardText;
+      if (!dispatched && text) dispatch(text);
     };
 
     recognition.onend = () => {
       if (silenceTimer) clearTimeout(silenceTimer);
-      if (!dispatched && finalTranscript.trim()) {
-        dispatched = true;
-        processRef.current(finalTranscript.trim());
+      // Use finalTranscript first, fall back to any interim text we captured
+      const text = finalTranscript.trim() || lastHeardText;
+      if (!dispatched && text) {
+        dispatch(text);
       } else if (!dispatched && !abortRef.current) {
+        // No speech detected — restart listening
         setTimeout(() => listenRef.current?.(), 300);
       }
     };
 
     const absoluteTimeout = setTimeout(() => {
       if (!dispatched) {
-        dispatched = true;
-        try { recognition.stop(); } catch (_) {}
-        if (finalTranscript.trim()) {
-          processRef.current(finalTranscript.trim());
-        } else if (!abortRef.current) {
-          setTimeout(() => listenRef.current?.(), 300);
+        const text = finalTranscript.trim() || lastHeardText;
+        if (text) {
+          dispatch(text);
+        } else {
+          try { recognition.stop(); } catch (_) {}
+          if (!abortRef.current) setTimeout(() => listenRef.current?.(), 300);
         }
       }
     }, 60000);

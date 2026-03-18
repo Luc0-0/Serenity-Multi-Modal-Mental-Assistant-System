@@ -16,8 +16,52 @@ from app.core.auth import get_current_user
 from app.models import User, Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, WeeklyReview, StreakFreeze
 from app.services.goal_service import GoalService
 from app.services.llm_schedule_service import LLMScheduleService
+from app.services.ai_questions_service import AIQuestionsService
 
 router = APIRouter(prefix="/api/goals", tags=["goals"])
+
+
+# AI Question Generation
+@router.post("/generate-questions")
+async def generate_questions(
+    request_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate personalized AI questions for goal setup."""
+    ai_service = AIQuestionsService()
+
+    try:
+        questions = await ai_service.generate_questions(
+            goal_title=request_data.get("title", ""),
+            goal_description=request_data.get("description", ""),
+            theme=request_data.get("theme", "balanced")
+        )
+
+        return {"categories": questions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Question generation failed: {str(e)}")
+
+
+@router.post("/generate-schedule-from-answers")
+async def generate_schedule_from_answers(
+    request_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate daily schedule and phases from AI question answers."""
+    ai_service = AIQuestionsService()
+
+    try:
+        result = await ai_service.generate_schedule_and_phases(
+            goal_title=request_data.get("title", ""),
+            goal_description=request_data.get("description", ""),
+            theme=request_data.get("theme", "balanced"),
+            duration_days=request_data.get("duration_days", 180),
+            answers=request_data.get("answers", {})
+        )
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Schedule generation failed: {str(e)}")
 
 
 # Goal Management

@@ -7,12 +7,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeStep from './steps/WelcomeStep';
 import GoalStep from './steps/GoalStep';
+import AIQuestionsStep from './steps/AIQuestionsStep';
 import TimelineStep from './steps/TimelineStep';
 import ScheduleStep from './steps/ScheduleStep';
 import LaunchStep from './steps/LaunchStep';
 import styles from './OnboardingFlow.module.css';
 
-const steps = ['welcome', 'goal', 'timeline', 'schedule', 'launch'];
+const steps = ['welcome', 'goal', 'aiquestions', 'timeline', 'schedule', 'launch'];
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -22,6 +23,10 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       title: '',
       description: '',
       voice_input: false
+    },
+    aiQuestions: {
+      questions: [],
+      answers: {}
     },
     timeline: {
       duration_days: 180,
@@ -96,6 +101,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         return <WelcomeStep {...stepProps} />;
       case 'goal':
         return <GoalStep {...stepProps} />;
+      case 'aiquestions':
+        return <AIQuestionsStep {...stepProps} />;
       case 'timeline':
         return <TimelineStep {...stepProps} />;
       case 'schedule':

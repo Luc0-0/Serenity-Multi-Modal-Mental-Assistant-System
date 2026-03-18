@@ -189,7 +189,7 @@ export default function GoalBuilder() {
         className={styles.header}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
       >
         <div className={styles.headerContent}>
           <div className={styles.goalInfo}>
@@ -272,16 +272,24 @@ export default function GoalBuilder() {
         className={styles.tabNav}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
       >
         <div className={styles.tabContainer}>
-          {tabs.map((tab) => (
+          {tabs.map((tab, index) => (
             <motion.button
               key={tab.id}
               className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
               onClick={() => setActiveTab(tab.id)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 400,
+                damping: 30,
+                delay: 0.2 + (index * 0.05),
+              }}
             >
               <span className={styles.tabIcon}>{getSvgIcon(tab.icon, 16)}</span>
               <span className={styles.tabLabel}>{tab.label}</span>

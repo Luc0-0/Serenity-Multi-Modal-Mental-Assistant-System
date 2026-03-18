@@ -150,14 +150,24 @@ export default function GoalStep({ formData, updateFormData, nextStep, prevStep 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
       >
-        <div className={styles.stepTitle}>
+        <motion.div
+          className={styles.stepTitle}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+        >
           What's your ultimate goal?
-        </div>
-        <div className={styles.stepSubtitle}>
+        </motion.div>
+        <motion.div
+          className={styles.stepSubtitle}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+        >
           Describe your transformation vision. What do you want to achieve?
-        </div>
+        </motion.div>
 
         <div className={styles.glassCard}>
           {/* Goal Title Input */}

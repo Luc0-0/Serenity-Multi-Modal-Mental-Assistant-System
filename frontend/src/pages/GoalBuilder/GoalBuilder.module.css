@@ -120,11 +120,12 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 32px 0 24px;
-  background: rgba(10, 10, 15, 0.4);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 36px 0 28px;
+  background: linear-gradient(180deg, rgba(10, 10, 15, 0.6) 0%, rgba(10, 10, 15, 0.3) 100%);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .headerContent {
@@ -168,22 +169,33 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 12px 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.stat:hover {
+  background: rgba(200, 169, 110, 0.05);
+  border: 1px solid rgba(200, 169, 110, 0.15);
 }
 
 .statValue {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  color: #C8A96E;
+  background: linear-gradient(135deg, #C8A96E, rgba(200, 169, 110, 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 4px;
-  text-shadow: 0 0 10px rgba(200, 169, 110, 0.3);
+  text-shadow: 0 0 12px rgba(200, 169, 110, 0.2);
 }
 
 .statLabel {
   font-size: 11px;
-  color: rgba(245, 240, 232, 0.6);
+  color: rgba(245, 240, 232, 0.65);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 500;
+  letter-spacing: 1.2px;
+  font-weight: 600;
 }
 
 .progressRing {
@@ -219,16 +231,16 @@
   max-width: min(1400px, 90vw);
   margin: 0 auto;
   display: flex;
-  gap: 4px;
-  background: rgba(15, 15, 20, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  gap: 6px;
+  background: rgba(15, 15, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
   padding: 8px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .tab {
@@ -236,16 +248,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 12px 20px;
   background: transparent;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   color: rgba(245, 240, 232, 0.6);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -256,12 +268,13 @@
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.08) 0%,
     transparent 100%
   );
-  border-radius: 10px;
+  border-radius: 14px;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .tab:hover::before {
@@ -269,19 +282,20 @@
 }
 
 .tab:hover {
-  color: rgba(245, 240, 232, 0.8);
+  color: rgba(245, 240, 232, 0.85);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .tabActive {
   background: linear-gradient(
     135deg,
-    rgba(200, 169, 110, 0.15) 0%,
-    rgba(200, 169, 110, 0.08) 100%
+    rgba(200, 169, 110, 0.18) 0%,
+    rgba(200, 169, 110, 0.1) 100%
   );
   color: #C8A96E;
   box-shadow:
-    0 2px 8px rgba(200, 169, 110, 0.15),
-    inset 0 1px 2px rgba(200, 169, 110, 0.1);
+    0 4px 12px rgba(200, 169, 110, 0.2),
+    inset 0 1px 2px rgba(200, 169, 110, 0.12);
 }
 
 .tabActive::before {
@@ -290,12 +304,12 @@
 
 .tabIcon {
   font-size: 16px;
-  filter: grayscale(1);
-  transition: filter 0.2s ease;
+  filter: grayscale(1) opacity(0.7);
+  transition: filter 0.25s ease;
 }
 
 .tabActive .tabIcon {
-  filter: grayscale(0);
+  filter: grayscale(0) opacity(1);
 }
 
 .tabLabel {
@@ -306,25 +320,39 @@
 /* Content */
 .content {
   position: absolute;
-  top: 220px;
+  top: 225px;
   left: 0;
   right: 0;
   bottom: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 110, 0.3) rgba(255, 255, 255, 0.05);
+  -ms-overflow-style: thin-scrollbar;
   z-index: 10;
 }
 
 .content::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(200, 169, 110, 0.35);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 169, 110, 0.5);
 }
 
 .tabContent {
   max-width: min(1400px, 90vw);
   margin: 0 auto;
-  padding: 24px 32px 80px;
+  padding: 28px 32px 100px;
   position: relative;
 }
 

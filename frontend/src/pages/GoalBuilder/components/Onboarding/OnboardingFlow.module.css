@@ -45,7 +45,7 @@
 
 .progressBar {
   position: absolute;
-  top: 40px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
   width: min(480px, 90vw);
@@ -88,7 +88,7 @@
 }
 
 .progressText {
-  margin-top: 16px;
+  margin-top: 12px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -99,11 +99,14 @@
 
 .stepContainer {
   position: absolute;
-  inset: 0;
+  top: 80px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 120px 32px 80px;
+  padding: 32px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -320,8 +323,14 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .progressBar {
+    top: 16px;
+    width: calc(100vw - 32px);
+  }
+
   .stepContainer {
-    padding: 100px 20px 60px;
+    top: 70px;
+    padding: 20px;
   }
 
   .glassCard {
@@ -345,16 +354,16 @@
     left: 24px;
     text-align: center;
   }
-
-  .progressBar {
-    top: 24px;
-    width: calc(100vw - 32px);
-  }
 }
 
 @media (max-height: 700px) {
+  .progressBar {
+    top: 12px;
+  }
+
   .stepContainer {
-    padding: 80px 32px 60px;
+    top: 60px;
+    padding: 16px;
     align-items: flex-start;
   }
 

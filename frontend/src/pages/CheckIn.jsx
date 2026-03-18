@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../context/AuthContext";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
-import { useVoiceSession } from "../hooks/useVoiceSession";
 import { CrisisAlert } from "../components/CrisisAlert";
 import { SerenityDeck } from "../components/SerenityDeck";
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { CopyButton } from "../components/CopyButton";
 import { AnimatedTooltip } from "../components/AnimatedTooltip";
 import { exportConversationAsMarkdown } from "../services/exportService";
-import { sendChatMessage, getErrorDisplay } from "../services/api";
+import { sendChatMessage, getErrorDisplay, speakText } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
 import styles from "./CheckIn.module.css";
 
@@ -78,10 +77,22 @@ export function CheckIn() {
   // Voice mode state
   const [voiceMode, setVoiceMode] = useState(false);
   const [voiceExiting, setVoiceExiting] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('idle'); // idle | listening | processing | speaking
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [voiceError, setVoiceError] = useState(null);
+  const [voiceMessages, setVoiceMessages] = useState([]);
+  const voiceMessagesEndRef = useRef(null);
+  const voiceRecognitionRef = useRef(null);
+  const voiceAbortRef = useRef(false);
+  const voiceConvIdRef = useRef(null);
 
   // Inline mic state
   const [inlineMicActive, setInlineMicActive] = useState(false);
   const inlineRecognitionRef = useRef(null);
+
+  const SpeechRecognitionAPI = typeof window !== 'undefined'
+    ? (window.SpeechRecognition || window.webkitSpeechRecognition || null)
+    : null;
 
   useEffect(() => {
     const handleResize = () => {
@@ -95,26 +106,6 @@ export function CheckIn() {
 
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
-
-  // Voice session for dedicated voice mode
-  const {
-    status: voiceStatus,
-    transcript: voiceTranscript,
-    error: voiceError,
-    isActive: voiceIsActive,
-    startConversation: startVoiceConversation,
-    stopConversation: stopVoiceConversation,
-    isListening: voiceIsListening,
-    isSpeaking: voiceIsSpeaking,
-    isProcessing: voiceIsProcessing,
-  } = useVoiceSession({
-    onSessionStart: null,
-    onBreathworkCue: null,
-  });
-
-  // Voice mode messages (separate from chat messages for voice overlay display)
-  const [voiceMessages, setVoiceMessages] = useState([]);
-  const voiceMessagesEndRef = useRef(null);
 
   /* Transition state: orb shrinks before chat appears */
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -401,43 +392,249 @@ export function CheckIn() {
     finalizeAndReset(conversationId, messages.length);
   }, [finalizeAndReset, conversationId, messages.length]);
 
-  /* ── Voice Mode ── */
+  /* ── TTS: Kokoro with browser fallback ── */
+  const speakWithFallback = useCallback(async (text) => {
+    try {
+      const blob = await speakText(text);
+      if (blob && blob.size > 0) {
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        await new Promise((resolve) => {
+          audio.onended = resolve;
+          audio.onerror = resolve;
+          audio.play().catch(resolve);
+        });
+        URL.revokeObjectURL(url);
+        return;
+      }
+    } catch (_) { /* fall through */ }
+    // Browser TTS fallback
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      await new Promise((resolve) => {
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate = 0.9; utt.pitch = 0.95;
+        const voices = window.speechSynthesis.getVoices();
+        const calm = voices.find(v => /female|samantha|zira|karen|moira/i.test(v.name)) || voices[0];
+        if (calm) utt.voice = calm;
+        utt.onend = resolve; utt.onerror = resolve;
+        window.speechSynthesis.speak(utt);
+        setTimeout(resolve, 20000); // hard timeout
+      });
+    }
+  }, []);
+
+  /* ── Voice Mode: listen → send to chat API → speak response ── */
+  // Use refs to break circular dependency between listen ↔ process
+  const voiceListenRef = useRef(null);
+  const voiceProcessRef = useRef(null);
+
+  voiceListenRef.current = () => {
+    if (voiceAbortRef.current) return;
+    if (!SpeechRecognitionAPI) {
+      setVoiceError('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    setVoiceStatus('listening');
+    setVoiceTranscript('');
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+    voiceRecognitionRef.current = recognition;
+
+    let finalTranscript = '';
+    let silenceTimer = null;
+    let dispatched = false;
+
+    const resetSilenceTimer = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        if (!dispatched && finalTranscript.trim()) {
+          dispatched = true;
+          try { recognition.stop(); } catch (_) {}
+        }
+      }, 2500);
+    };
+
+    recognition.onresult = (e) => {
+      let interim = '';
+      finalTranscript = '';
+      for (let i = 0; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalTranscript += t;
+        else interim += t;
+      }
+      setVoiceTranscript(finalTranscript || interim);
+      resetSilenceTimer();
+    };
+
+    recognition.onerror = (e) => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setVoiceError('Microphone access denied. Please allow mic permission.');
+        setVoiceStatus('idle');
+        return;
+      }
+      if (!dispatched && finalTranscript.trim()) {
+        dispatched = true;
+        voiceProcessRef.current(finalTranscript.trim());
+      }
+    };
+
+    recognition.onend = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      if (!dispatched && finalTranscript.trim()) {
+        dispatched = true;
+        voiceProcessRef.current(finalTranscript.trim());
+      } else if (!dispatched && !voiceAbortRef.current) {
+        setTimeout(() => voiceListenRef.current(), 300);
+      }
+    };
+
+    const absoluteTimeout = setTimeout(() => {
+      if (!dispatched) {
+        dispatched = true;
+        try { recognition.stop(); } catch (_) {}
+        if (finalTranscript.trim()) {
+          voiceProcessRef.current(finalTranscript.trim());
+        } else if (!voiceAbortRef.current) {
+          setTimeout(() => voiceListenRef.current(), 300);
+        }
+      }
+    }, 60000);
+
+    recognition.addEventListener('end', () => clearTimeout(absoluteTimeout), { once: true });
+
+    try {
+      recognition.start();
+      resetSilenceTimer();
+    } catch (_) {
+      setVoiceError('Could not start microphone.');
+      setVoiceStatus('idle');
+    }
+  };
+
+  voiceProcessRef.current = async (userText) => {
+    if (voiceAbortRef.current) return;
+    setVoiceStatus('processing');
+    setVoiceTranscript('');
+
+    setVoiceMessages(prev => [...prev, { role: 'user', text: userText, id: Date.now() }]);
+
+    const userMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: userText,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+    if (!isInChat) enterChat();
+
+    try {
+      const response = await sendChatMessage({
+        message: userText,
+        conversation_id: voiceConvIdRef.current || conversationId,
+      });
+
+      if (voiceAbortRef.current) return;
+
+      if (!voiceConvIdRef.current && response.conversation_id) {
+        voiceConvIdRef.current = response.conversation_id;
+        setConversationId(response.conversation_id);
+        try {
+          localStorage.setItem('serenity_conversation_id', response.conversation_id.toString());
+          localStorage.setItem('serenity_user_id', userId.toString());
+        } catch (_) {}
+        triggerRefresh();
+      }
+
+      const aiText = response.reply;
+      setVoiceMessages(prev => [...prev, { role: 'assistant', text: aiText, id: Date.now() + 1 }]);
+
+      const assistantMessage = {
+        id: Date.now() + 1,
+        sender: 'assistant',
+        text: aiText,
+        timestamp: new Date(),
+        crisis: response.crisis_detected ? {
+          detected: true,
+          severity: response.crisis_severity,
+          resources: response.resources,
+        } : null,
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      setVoiceStatus('speaking');
+      await speakWithFallback(aiText);
+
+      if (voiceAbortRef.current) return;
+      setTimeout(() => voiceListenRef.current(), 400);
+    } catch (err) {
+      if (voiceAbortRef.current) return;
+      setVoiceError('Connection issue. Trying again...');
+      setTimeout(() => {
+        setVoiceError(null);
+        if (!voiceAbortRef.current) voiceListenRef.current();
+      }, 2000);
+    }
+  };
+
   const enterVoiceMode = useCallback(() => {
     setVoiceMode(true);
     setVoiceExiting(false);
     setVoiceMessages([]);
+    setVoiceError(null);
+    setVoiceTranscript('');
+    voiceAbortRef.current = false;
+    voiceConvIdRef.current = conversationId;
     if (!isInChat) enterChat();
-    startVoiceConversation();
-  }, [isInChat, enterChat, startVoiceConversation]);
+    // Start listening after overlay animation
+    setTimeout(() => {
+      if (!voiceAbortRef.current) voiceListenRef.current();
+    }, 600);
+  }, [isInChat, enterChat, conversationId]);
 
   const exitVoiceMode = useCallback(() => {
+    voiceAbortRef.current = true;
     setVoiceExiting(true);
-    stopVoiceConversation();
+    try { voiceRecognitionRef.current?.abort(); } catch (_) {}
+    voiceRecognitionRef.current = null;
+    window.speechSynthesis?.cancel();
     setTimeout(() => {
       setVoiceMode(false);
       setVoiceExiting(false);
+      setVoiceStatus('idle');
+      setVoiceTranscript('');
+      setVoiceError(null);
     }, 400);
-  }, [stopVoiceConversation]);
+  }, []);
 
-  // Sync voice session messages to voiceMessages for overlay display
+  // Auto-clear voice errors
   useEffect(() => {
-    if (voiceStatus === 'speaking' && voiceTranscript) {
-      setVoiceMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === 'user' && last?.text === voiceTranscript) return prev;
-        return [...prev, { role: 'user', text: voiceTranscript, id: Date.now() }];
-      });
-    }
-  }, [voiceStatus, voiceTranscript]);
+    if (!voiceError) return;
+    const t = setTimeout(() => setVoiceError(null), 5000);
+    return () => clearTimeout(t);
+  }, [voiceError]);
 
   // Scroll voice messages
   useEffect(() => {
     voiceMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [voiceMessages]);
 
-  /* ── Inline Mic (Speech-to-Text for chat input) ── */
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  // Cleanup voice on unmount
+  useEffect(() => {
+    return () => {
+      voiceAbortRef.current = true;
+      try { voiceRecognitionRef.current?.abort(); } catch (_) {}
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
+  /* ── Inline Mic (Speech-to-Text for chat input) ── */
   const toggleInlineMic = useCallback(() => {
     if (inlineMicActive) {
       try { inlineRecognitionRef.current?.stop(); } catch (_) {}
@@ -446,12 +643,12 @@ export function CheckIn() {
       return;
     }
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionAPI) {
       setError('Speech recognition is not supported in this browser.');
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionAPI();
     recognition.lang = 'en-US';
     recognition.interimResults = true;
     recognition.continuous = true;
@@ -459,17 +656,15 @@ export function CheckIn() {
     inlineRecognitionRef.current = recognition;
     setInlineMicActive(true);
 
-    let finalText = '';
-
     recognition.onresult = (e) => {
       let interim = '';
-      finalText = '';
+      let final = '';
       for (let i = 0; i < e.results.length; i++) {
         const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalText += t;
+        if (e.results[i].isFinal) final += t;
         else interim += t;
       }
-      setInputValue(finalText || interim);
+      setInputValue(final || interim);
     };
 
     recognition.onerror = (e) => {
@@ -491,7 +686,7 @@ export function CheckIn() {
       setInlineMicActive(false);
       inlineRecognitionRef.current = null;
     }
-  }, [inlineMicActive, SpeechRecognition]);
+  }, [inlineMicActive, SpeechRecognitionAPI]);
 
   // Cleanup inline mic on unmount
   useEffect(() => {
@@ -926,9 +1121,9 @@ export function CheckIn() {
           <div className={`${styles.voiceOverlay} ${voiceExiting ? styles.voiceOverlayExiting : ''}`}>
             {/* Voice Orb */}
             <div className={`${styles.voiceOrb} ${
-              voiceIsListening ? styles.voiceOrbListening :
-              voiceIsProcessing ? styles.voiceOrbProcessing :
-              voiceIsSpeaking ? styles.voiceOrbSpeaking : ''
+              voiceStatus === 'listening' ? styles.voiceOrbListening :
+              voiceStatus === 'processing' ? styles.voiceOrbProcessing :
+              voiceStatus === 'speaking' ? styles.voiceOrbSpeaking : ''
             }`}>
               <div className={styles.voiceOrbRing} />
               <div className={styles.voiceOrbRing} />
@@ -938,18 +1133,18 @@ export function CheckIn() {
 
             {/* Status */}
             <div className={`${styles.voiceStatus} ${
-              voiceIsListening ? styles.voiceStatusListening :
-              voiceIsSpeaking ? styles.voiceStatusSpeaking : ''
+              voiceStatus === 'listening' ? styles.voiceStatusListening :
+              voiceStatus === 'speaking' ? styles.voiceStatusSpeaking : ''
             }`}>
-              {voiceIsListening ? 'Listening...' :
-               voiceIsProcessing ? 'Thinking...' :
-               voiceIsSpeaking ? 'Speaking...' :
+              {voiceStatus === 'listening' ? 'Listening...' :
+               voiceStatus === 'processing' ? 'Thinking...' :
+               voiceStatus === 'speaking' ? 'Speaking...' :
                voiceStatus === 'idle' ? 'Starting...' : ''}
             </div>
 
             {/* Live transcript */}
             <div className={styles.voiceTranscript}>
-              {voiceTranscript || (voiceIsListening ? 'Speak now...' : '')}
+              {voiceTranscript || (voiceStatus === 'listening' ? 'Speak now...' : '')}
             </div>
 
             {/* Voice conversation history */}

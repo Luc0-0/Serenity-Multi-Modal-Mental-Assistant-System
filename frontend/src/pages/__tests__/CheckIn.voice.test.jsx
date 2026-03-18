@@ -16,10 +16,9 @@ vi.mock('../../contexts/ConversationRefreshContext', () => ({
 
 // Mock API services
 vi.mock('../../services/api', () => ({
-  sendChatMessage: vi.fn().mockResolvedValue({ reply: 'Hello there', conversation_id: 'conv-1' }),
-  getErrorDisplay: vi.fn((e) => e?.message || 'Error'),
-  voiceChat: vi.fn(),
-  speakText: vi.fn(),
+  sendChatMessage: vi.fn().mockResolvedValue({ reply: 'Hello there', conversation_id: 1, message_id: 1 }),
+  getErrorDisplay: vi.fn((e) => ({ message: e?.message || 'Error', isRetryable: false })),
+  speakText: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('../../services/emotionService', () => ({
@@ -49,28 +48,6 @@ vi.mock('../../components/CopyButton', () => ({
 
 vi.mock('../../components/AnimatedTooltip', () => ({
   AnimatedTooltip: ({ children }) => <>{children}</>,
-}));
-
-// Track voice session mock state
-let mockVoiceState = {};
-const mockStartConversation = vi.fn();
-const mockStopConversation = vi.fn();
-const mockBreathworkCheckIn = vi.fn();
-
-vi.mock('../../hooks/useVoiceSession', () => ({
-  useVoiceSession: () => ({
-    status: mockVoiceState.status || 'idle',
-    transcript: mockVoiceState.transcript || '',
-    turn: mockVoiceState.turn || 0,
-    error: mockVoiceState.error || null,
-    isActive: mockVoiceState.isActive || false,
-    startConversation: mockStartConversation,
-    stopConversation: mockStopConversation,
-    breathworkCheckIn: mockBreathworkCheckIn,
-    isListening: mockVoiceState.isListening || false,
-    isSpeaking: mockVoiceState.isSpeaking || false,
-    isProcessing: mockVoiceState.isProcessing || false,
-  }),
 }));
 
 // Mock CSS modules — return identity proxy
@@ -111,18 +88,6 @@ function enterChatMode() {
 describe('CheckIn Voice Features', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    mockVoiceState = {
-      status: 'idle',
-      transcript: '',
-      turn: 0,
-      error: null,
-      isActive: false,
-      isListening: false,
-      isSpeaking: false,
-      isProcessing: false,
-    };
-    mockStartConversation.mockClear();
-    mockStopConversation.mockClear();
   });
 
   afterEach(() => {
@@ -153,7 +118,7 @@ describe('CheckIn Voice Features', () => {
       expect(voiceModeBtn).toBeTruthy();
     });
 
-    it('calls startConversation when entering voice mode', async () => {
+    it('enters voice mode when clicking voice button', async () => {
       renderCheckIn();
       enterChatMode();
       await vi.advanceTimersByTimeAsync(700);
@@ -161,7 +126,9 @@ describe('CheckIn Voice Features', () => {
       const voiceModeBtn = screen.queryByLabelText(/enter voice conversation mode/i);
       if (voiceModeBtn) {
         fireEvent.click(voiceModeBtn);
-        expect(mockStartConversation).toHaveBeenCalled();
+        // Voice overlay should now be rendered
+        const endBtn = screen.queryByLabelText(/end voice conversation/i);
+        expect(endBtn).toBeTruthy();
       }
     });
   });
@@ -209,22 +176,22 @@ describe('CheckIn Voice Features', () => {
   // ── Voice orb CSS classes ────────────────────────────────────────────
 
   describe('Voice Orb CSS States', () => {
-    it('maps isListening to voiceOrbListening class', () => {
-      // The orb className logic is:
-      // voiceIsListening ? styles.voiceOrbListening :
-      // voiceIsProcessing ? styles.voiceOrbProcessing :
-      // voiceIsSpeaking ? styles.voiceOrbSpeaking : ''
-      const getOrbClass = (isListening, isProcessing, isSpeaking) => {
-        if (isListening) return 'voiceOrbListening';
-        if (isProcessing) return 'voiceOrbProcessing';
-        if (isSpeaking) return 'voiceOrbSpeaking';
+    it('maps voiceStatus to correct orb CSS class', () => {
+      // The orb className logic uses voiceStatus string comparison:
+      // voiceStatus === 'listening' ? styles.voiceOrbListening :
+      // voiceStatus === 'processing' ? styles.voiceOrbProcessing :
+      // voiceStatus === 'speaking' ? styles.voiceOrbSpeaking : ''
+      const getOrbClass = (status) => {
+        if (status === 'listening') return 'voiceOrbListening';
+        if (status === 'processing') return 'voiceOrbProcessing';
+        if (status === 'speaking') return 'voiceOrbSpeaking';
         return '';
       };
 
-      expect(getOrbClass(true, false, false)).toBe('voiceOrbListening');
-      expect(getOrbClass(false, true, false)).toBe('voiceOrbProcessing');
-      expect(getOrbClass(false, false, true)).toBe('voiceOrbSpeaking');
-      expect(getOrbClass(false, false, false)).toBe('');
+      expect(getOrbClass('listening')).toBe('voiceOrbListening');
+      expect(getOrbClass('processing')).toBe('voiceOrbProcessing');
+      expect(getOrbClass('speaking')).toBe('voiceOrbSpeaking');
+      expect(getOrbClass('idle')).toBe('');
     });
   });
 

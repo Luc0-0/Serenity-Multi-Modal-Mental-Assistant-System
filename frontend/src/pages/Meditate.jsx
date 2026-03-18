@@ -23,7 +23,13 @@ const PATTERN_TIMING = {
 };
 
 const TRACKS = [
-  { id: "fear", label: "Fear", file: "/audio/meditations/fear.mp3", duration: "~8 min", emotion: "fear" },
+  { id: "fear",     label: "Fear",     file: "/audio/meditations/fear.mp3", duration: "~8 min",  emotion: "fear",     comingSoon: false },
+  { id: "sadness",  label: "Sadness",  file: "/audio/meditations/fear.mp3", duration: "~10 min", emotion: "sadness",  comingSoon: true  },
+  { id: "anger",    label: "Anger",    file: "/audio/meditations/fear.mp3", duration: "~7 min",  emotion: "anger",    comingSoon: true  },
+  { id: "joy",      label: "Joy",      file: "/audio/meditations/fear.mp3", duration: "~12 min", emotion: "joy",      comingSoon: true  },
+  { id: "surprise", label: "Surprise", file: "/audio/meditations/fear.mp3", duration: "~6 min",  emotion: "surprise", comingSoon: true  },
+  { id: "disgust",  label: "Disgust",  file: "/audio/meditations/fear.mp3", duration: "~9 min",  emotion: "disgust",  comingSoon: true  },
+  { id: "neutral",  label: "Neutral",  file: "/audio/meditations/fear.mp3", duration: "~15 min", emotion: "neutral",  comingSoon: true  },
 ];
 
 const EMOTION_COLORS = {
@@ -83,14 +89,21 @@ export function Meditate() {
   // Matrix tooltip
   const [hoveredCell, setHoveredCell] = useState(null);
 
-  // Fetch stats when dashboard opens or hovered
+  // Carousel
+  const [isCarouselOpen, setIsCarouselOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  // Completion popup
+  const [showCompletion, setShowCompletion] = useState(false);
+
+  // Fetch stats whenever nulled (on load + after each session save)
   useEffect(() => {
-    if ((isDashboardOpen || isDashboardHovered) && !dashboardStats) {
+    if (!dashboardStats) {
       getMeditationStats()
         .then(setDashboardStats)
         .catch((err) => console.error("Failed to load stats:", err));
     }
-  }, [isDashboardOpen, isDashboardHovered, dashboardStats]);
+  }, [dashboardStats]);
 
   // Breathe tab
   const [selectedBreath, setSelectedBreath] = useState(null);
@@ -220,6 +233,7 @@ export function Meditate() {
         true,
         suggestion.emotion
       );
+      setShowCompletion(true);
     }
   }, [guidedAudio.audioProgress, guidedAudio.isPlaying, guidedAudio.audioDuration, suggestion, saveSession]);
 
@@ -423,39 +437,28 @@ export function Meditate() {
           </div>
         </div>
 
-        {/* Track Library */}
-        {TRACKS.length > 0 && (
-          <div className={styles.trackShelf}>
-            {TRACKS.map((track) => {
-              const isActive = activeTrackId === track.id;
-              const isPlaying = isActive && guidedAudio.isPlaying;
-              return (
-                <div
-                  key={track.id}
-                  className={`${styles.trackCard} ${isActive ? styles.trackCardActive : ""}`}
-                  style={
-                    isActive
-                      ? { boxShadow: `0 0 28px ${EMOTION_GLOW[track.emotion] || EMOTION_GLOW.neutral}, 0 4px 24px rgba(0,0,0,0.5)` }
-                      : undefined
-                  }
-                  onClick={() => handleTrackSelect(track)}
-                >
-                  <span className={styles.trackEmotion}>{track.label}</span>
-                  <span className={styles.trackDuration}>{track.duration}</span>
-                  <div className={styles.waveform}>
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className={`${styles.waveBar} ${isPlaying ? styles.waveBarActive : ""}`}
-                        style={{ animationDelay: `${i * 0.13}s` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {/* Library Trigger */}
+        <button
+          className={styles.libraryBtn}
+          onClick={() => {
+            setCarouselIndex(Math.max(0, TRACKS.findIndex((t) => t.id === activeTrackId)));
+            setIsCarouselOpen(true);
+          }}
+        >
+          <span className={styles.libraryBtnWaves}>
+            {[...Array(5)].map((_, i) => (
+              <span
+                key={i}
+                className={`${styles.libraryBtnBar} ${guidedAudio.isPlaying ? styles.libraryBtnBarActive : ""}`}
+                style={{ animationDelay: `${i * 0.12}s` }}
+              />
+            ))}
+          </span>
+          <span className={styles.libraryBtnLabel}>
+            {TRACKS.find((t) => t.id === activeTrackId)?.label || "Fear"}
+          </span>
+          <span className={styles.libraryBtnHint}>change session</span>
+        </button>
       </div>
 
       {/* ── Breathe Tab ── */}
@@ -616,6 +619,105 @@ export function Meditate() {
         </div>
       </div>
 
+      {/* ── Track Carousel ── */}
+      {isCarouselOpen && (
+        <div className={styles.carouselOverlay} onClick={() => setIsCarouselOpen(false)}>
+          <div className={styles.carouselModal} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.carouselClose} onClick={() => setIsCarouselOpen(false)}>✕</button>
+            <p className={styles.carouselTitle}>Choose Your Session</p>
+            <div className={styles.carouselStage}>
+              <button
+                className={styles.carouselNav}
+                onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))}
+                disabled={carouselIndex === 0}
+              >‹</button>
+              <div className={styles.carouselTrack}>
+                {TRACKS.map((track, i) => {
+                  const offset = i - carouselIndex;
+                  const absOff = Math.abs(offset);
+                  if (absOff > 2) return null;
+                  const isCenter = offset === 0;
+                  return (
+                    <div
+                      key={track.id}
+                      className={`${styles.carouselCard} ${isCenter ? styles.carouselCardCenter : ""}`}
+                      style={{
+                        transform: `rotateY(${offset * 42}deg) translateZ(${absOff === 0 ? 300 : absOff === 1 ? 200 : 80}px) scale(${isCenter ? 1 : absOff === 1 ? 0.82 : 0.65})`,
+                        opacity: absOff === 0 ? 1 : absOff === 1 ? 0.65 : 0.3,
+                        zIndex: 10 - absOff,
+                      }}
+                      onClick={() => {
+                        if (!isCenter) { setCarouselIndex(i); return; }
+                        if (!track.comingSoon) {
+                          handleTrackSelect(track);
+                          setIsCarouselOpen(false);
+                        }
+                      }}
+                    >
+                      <div
+                        className={styles.carouselCardInner}
+                        style={{
+                          background: `linear-gradient(145deg, ${EMOTION_COLORS[track.emotion]}, rgba(14,12,22,0.8))`,
+                          boxShadow: isCenter ? `0 0 60px ${EMOTION_GLOW[track.emotion]}, 0 20px 60px rgba(0,0,0,0.6)` : undefined,
+                        }}
+                      >
+                        <span className={styles.carouselEmotion}>{track.label}</span>
+                        <span className={styles.carouselDuration}>{track.duration}</span>
+                        {track.comingSoon ? (
+                          <span className={styles.comingSoonBadge}>coming soon</span>
+                        ) : (
+                          <>
+                            <div className={styles.carouselWave}>
+                              {[...Array(5)].map((_, wi) => (
+                                <span
+                                  key={wi}
+                                  className={`${styles.waveBar} ${isCenter && activeTrackId === track.id && guidedAudio.isPlaying ? styles.waveBarActive : ""}`}
+                                  style={{ animationDelay: `${wi * 0.13}s` }}
+                                />
+                              ))}
+                            </div>
+                            {isCenter && <span className={styles.carouselSelectHint}>tap to select</span>}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                className={styles.carouselNav}
+                onClick={() => setCarouselIndex((i) => Math.min(TRACKS.length - 1, i + 1))}
+                disabled={carouselIndex === TRACKS.length - 1}
+              >›</button>
+            </div>
+            <div className={styles.carouselDots}>
+              {TRACKS.map((_, i) => (
+                <span
+                  key={i}
+                  className={`${styles.carouselDot} ${i === carouselIndex ? styles.carouselDotActive : ""}`}
+                  onClick={() => setCarouselIndex(i)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Completion Popup ── */}
+      {showCompletion && (
+        <div className={styles.completionOverlay}>
+          <div className={styles.completionCard}>
+            <div className={styles.completionGlow} />
+            <div className={styles.completionOrb} />
+            <h2 className={styles.completionTitle}>Session Complete</h2>
+            <p className={styles.completionText}>Your mind finds its stillness.</p>
+            <button className={styles.completionBtn} onClick={() => setShowCompletion(false)}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Zenith Dashboard ── */}
       <div className={`${styles.zenithDashboard} ${isDashboardOpen ? styles.zenithDashboardOpen : ""}`}>
         {isDashboardOpen && (
@@ -706,7 +808,7 @@ export function Meditate() {
                     <div key={i} className={styles.chartBarWrap}>
                       <div
                         className={`${styles.chartBar} ${hueIdx >= 0 ? styles[`orbHue${hueIdx}`] : ""}`}
-                        style={{ height: `${Math.max((d.dayMins / maxMins) * 80, 4)}px` }}
+                        style={{ height: `${Math.max((d.dayMins / maxMins) * 120, 4)}px` }}
                         title={`${d.dayMins}min${d.pattern ? ` · ${PATTERN_LABELS[d.pattern]}` : ""}`}
                       />
                       <span className={styles.chartLabel}>{d.label}</span>

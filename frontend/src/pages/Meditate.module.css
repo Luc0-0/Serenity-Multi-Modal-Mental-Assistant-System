@@ -1055,10 +1055,17 @@
   justify-content: center;
   cursor: pointer;
   z-index: 20;
-  transition: all 0.35s cubic-bezier(0.2,0.8,0.2,1);
+  /* Only transition visual properties — never transform/position */
+  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
   box-shadow:
     0 4px 20px rgba(0,0,0,0.5),
     inset 0 1px 0 rgba(255,255,255,0.04);
+  /* Prevent browser focus/active shifting */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  padding: 0;
+  margin: 0;
 }
 
 .voiceMicBtn:hover {
@@ -1124,6 +1131,22 @@
 @keyframes micWaveDance {
   0%,100% { transform: scaleY(1); }
   50%     { transform: scaleY(1.6); }
+}
+
+/* Voice status label — anchored below mic button */
+.voiceStatusLabel {
+  position: absolute;
+  top: calc(50% + 38px);
+  left: calc(50% + 270px);
+  transform: translateX(-50%);
+  font-family: var(--font-family-serif);
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(255,255,255,0.45);
+  white-space: nowrap;
+  z-index: 20;
+  animation: fadeIn 0.3s ease forwards;
+  pointer-events: none;
 }
 
 /* Transcript bubble */
@@ -2260,6 +2283,7 @@
   .progressWrap { top: 310px; bottom: auto; left: 50%; transform: translateX(-50%); }
   /* On mobile, place mic below the orb ring instead of beside it (ring bottom ≈ 330px) */
   .voiceMicBtn { top: 345px; left: 50%; width: 44px; height: 44px; }
+  .voiceStatusLabel { top: 375px; left: 50%; }
 
   .gridContainer {
     width: 100%;

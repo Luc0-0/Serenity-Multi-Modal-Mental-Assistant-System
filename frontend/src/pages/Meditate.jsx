@@ -301,7 +301,7 @@ export function Meditate() {
     setSelectedBreath(null);
   }, [breathing, selectedBreath, saveSession]);
 
-  // Clear errors
+  // Clear component errors (voice.error auto-clears inside the hook)
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(() => setError(null), 4000);
@@ -438,6 +438,15 @@ export function Meditate() {
                 </svg>
               )}
             </button>
+          )}
+
+          {/* Voice status label */}
+          {voice.isActive && (
+            <div className={styles.voiceStatusLabel}>
+              {voice.isProcessing && "thinking..."}
+              {voice.isSpeaking && "speaking..."}
+              {voice.isListening && "listening..."}
+            </div>
           )}
 
           {/* Voice transcript bubble */}
@@ -651,7 +660,9 @@ export function Meditate() {
       </p>
 
       {/* Error toast */}
-      {error && <div className={styles.errorToast}>{error}</div>}
+      {(error || voice.error) && (
+        <div className={styles.errorToast}>{error || voice.error}</div>
+      )}
 
       {/* Cinematic overlay */}
       <div

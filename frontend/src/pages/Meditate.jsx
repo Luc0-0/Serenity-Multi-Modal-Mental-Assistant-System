@@ -97,18 +97,27 @@ export function Meditate() {
   // Completion popup
   const [showCompletion, setShowCompletion] = useState(false);
 
-  // Voice session
+  // Breathe tab — must be before voice session
+  const [selectedBreath, setSelectedBreath] = useState(null);
+  const breathing = useBreathingTimer(selectedBreath || "box");
+
+  // Guided audio — must be before voice session
+  const guidedAudio = useAudioPlayer();
+
+  // Voice session — declared after its dependencies
+  const handleVoiceSessionStart = useCallback(({ track_id, pattern }) => {
+    const track = TRACKS.find((t) => t.id === track_id) || TRACKS[0];
+    setActiveTrackId(track.id);
+    guidedAudio.loadAudio(track.file);
+    setSelectedBreath(pattern);
+    setTimeout(() => guidedAudio.togglePlayPause(), 400);
+  }, [guidedAudio]);
+
+  const handleBreathworkCue = useCallback(() => {}, []);
+
   const voice = useVoiceSession({
-    onSessionStart: useCallback(({ track_id, pattern, emotion }) => {
-      const track = TRACKS.find((t) => t.id === track_id) || TRACKS[0];
-      setActiveTrackId(track.id);
-      guidedAudio.loadAudio(track.file);
-      // Pre-select the breathwork pattern for after the session
-      setSelectedBreath(pattern);
-      // Auto-play after short delay
-      setTimeout(() => guidedAudio.togglePlayPause(), 400);
-    }, [guidedAudio]),
-    onBreathworkCue: useCallback(() => {}, []),
+    onSessionStart: handleVoiceSessionStart,
+    onBreathworkCue: handleBreathworkCue,
   });
 
   // Fetch stats whenever nulled (on load + after each session save)
@@ -119,13 +128,6 @@ export function Meditate() {
         .catch((err) => console.error("Failed to load stats:", err));
     }
   }, [dashboardStats]);
-
-  // Breathe tab
-  const [selectedBreath, setSelectedBreath] = useState(null);
-  const breathing = useBreathingTimer(selectedBreath || "box");
-
-  // Guided audio
-  const guidedAudio = useAudioPlayer();
 
   // Background ambient
   const bgAudioRef = useRef(null);

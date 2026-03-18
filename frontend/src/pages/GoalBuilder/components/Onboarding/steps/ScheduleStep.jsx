@@ -6,6 +6,41 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import styles from '../OnboardingFlow.module.css';
 
+const getSvgIcon = (iconType, size = 16) => {
+  const iconMap = {
+    robot: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 8V4H8"/>
+        <rect x="6" y="4" width="12" height="8" rx="2"/>
+        <circle cx="9" cy="9" r="1"/>
+        <circle cx="15" cy="9" r="1"/>
+        <path d="M9 16a5 5 0 0 0 6 0"/>
+        <path d="M6 13h4"/>
+        <path d="M14 13h4"/>
+      </svg>
+    ),
+    clipboard: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      </svg>
+    ),
+    lightbulb: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 21h6"/>
+        <path d="M12 17h0a3 3 0 0 0 3-3v-3a5 5 0 1 0-10 0v3a3 3 0 0 0 3 3z"/>
+      </svg>
+    ),
+    edit: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    )
+  };
+  return iconMap[iconType] || iconMap.robot;
+};
+
 export default function ScheduleStep({ formData, updateFormData, nextStep, prevStep }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSchedule, setGeneratedSchedule] = useState([]);
@@ -237,7 +272,10 @@ export default function ScheduleStep({ formData, updateFormData, nextStep, prevS
                     Generating AI Schedule...
                   </div>
                 ) : (
-                  '🤖 Generate AI Schedule'
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ display: 'flex', color: '#C8A96E' }}>{getSvgIcon('robot', 16)}</span>
+                    Generate AI Schedule
+                  </div>
                 )}
               </motion.button>
 
@@ -255,7 +293,10 @@ export default function ScheduleStep({ formData, updateFormData, nextStep, prevS
                   cursor: 'pointer'
                 }}
               >
-                📋 Browse Templates
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ display: 'flex', color: 'inherit' }}>{getSvgIcon('clipboard', 16)}</span>
+                  Browse Templates
+                </div>
               </button>
             </div>
 
@@ -347,7 +388,10 @@ export default function ScheduleStep({ formData, updateFormData, nextStep, prevS
                     cursor: 'pointer'
                   }}
                 >
-                  ✏️ Customize
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ display: 'flex', color: 'inherit' }}>{getSvgIcon('edit', 12)}</span>
+                    Customize
+                  </div>
                 </button>
               </div>
 
@@ -420,9 +464,14 @@ export default function ScheduleStep({ formData, updateFormData, nextStep, prevS
                 <div style={{
                   fontSize: 13,
                   color: '#6EE7B7',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8
                 }}>
-                  💡 This schedule is optimized for your "{formData.goal.title}" goal
+                  <span style={{ display: 'flex', color: '#6EE7B7' }}>{getSvgIcon('lightbulb', 14)}</span>
+                  This schedule is optimized for your "{formData.goal.title}" goal
                   using a {formData.theme} approach
                 </div>
               </motion.div>

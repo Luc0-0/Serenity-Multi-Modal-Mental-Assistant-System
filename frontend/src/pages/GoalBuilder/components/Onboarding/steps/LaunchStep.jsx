@@ -6,6 +6,74 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from '../OnboardingFlow.module.css';
 
+const getSvgIcon = (iconType, size = 20) => {
+  const iconMap = {
+    lightning: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+    ),
+    balance: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 12l2 2 4-4"/>
+        <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+        <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+        <path d="M3 12h6m6 0h6"/>
+      </svg>
+    ),
+    sprout: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M7 20h10"/>
+        <path d="M10 20c5.5-2.5.8-6.4 3-10"/>
+        <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/>
+        <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.7 4.3-1.4 1-1.1 1.6-2.7 1.7-4.9-2.7.1-4 1-4.9 2.3z"/>
+      </svg>
+    ),
+    robot: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 8V4H8"/>
+        <rect x="6" y="4" width="12" height="8" rx="2"/>
+        <circle cx="9" cy="9" r="1"/>
+        <circle cx="15" cy="9" r="1"/>
+        <path d="M9 16a5 5 0 0 0 6 0"/>
+        <path d="M6 13h4"/>
+        <path d="M14 13h4"/>
+      </svg>
+    ),
+    microphone: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+    ),
+    chart: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    ),
+    sparkles: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l0-1.093 2-2-2-2 0-1.093A2 2 0 0 0 9.937 6.5l1.093 0 2-2 2 2 1.093 0a2 2 0 0 0 1.437 1.437L18 9.967l2 2-2 2-.44 1.093a2 2 0 0 0-1.437 1.437L15.03 18l-2 2-2-2-1.093-.44z"/>
+        <path d="M2 8h2.5L5 5.5 5.5 8H8"/>
+        <path d="M18 16h2.5l.5-2.5.5 2.5H24"/>
+      </svg>
+    ),
+    rocket: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+        <path d="M12 15l-3 3 8.5 8.5"/>
+        <path d="M9 12l3-3-8.5-8.5"/>
+        <path d="M9 21v-4.8L12 15l1.3 1.3"/>
+        <path d="M3 9h4.8L9 12 7.7 10.7"/>
+        <circle cx="12" cy="8" r="6"/>
+      </svg>
+    )
+  };
+  return iconMap[iconType] || iconMap.lightning;
+};
+
 export default function LaunchStep({ formData, onComplete, prevStep }) {
   const [isCreating, setIsCreating] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -26,9 +94,9 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
   };
 
   const themeImages = {
-    tactical: '⚡',
-    balanced: '⚖️',
-    gentle: '🌱'
+    tactical: 'lightning',
+    balanced: 'balance',
+    gentle: 'sprout'
   };
 
   const themeMessages = {
@@ -103,11 +171,13 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <div style={{
-            fontSize: 64,
+            display: 'flex',
+            justifyContent: 'center',
             marginBottom: 16,
-            filter: 'drop-shadow(0 0 20px rgba(200, 169, 110, 0.4))'
+            filter: 'drop-shadow(0 0 20px rgba(200, 169, 110, 0.4))',
+            color: '#C8A96E'
           }}>
-            {themeImages[formData.theme]}
+            {getSvgIcon(themeImages[formData.theme], 64)}
           </div>
           <div className={styles.stepTitle} style={{
             background: 'linear-gradient(135deg, #C8A96E, #F5F0E8, #C8A96E)',
@@ -250,7 +320,9 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
                   borderRadius: 8,
                   textAlign: 'center'
                 }}>
-                  <div style={{ fontSize: 16, marginBottom: 4 }}>🤖</div>
+                  <div style={{ marginBottom: 4, display: 'flex', justifyContent: 'center', color: '#C8A96E' }}>
+                    {getSvgIcon('robot', 16)}
+                  </div>
                   <div style={{
                     fontSize: 12,
                     color: '#C8A96E',
@@ -269,7 +341,9 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
                   borderRadius: 8,
                   textAlign: 'center'
                 }}>
-                  <div style={{ fontSize: 16, marginBottom: 4 }}>🎤</div>
+                  <div style={{ marginBottom: 4, display: 'flex', justifyContent: 'center', color: '#6EE7B7' }}>
+                    {getSvgIcon('microphone', 16)}
+                  </div>
                   <div style={{
                     fontSize: 12,
                     color: '#6EE7B7',
@@ -287,7 +361,9 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
                 borderRadius: 8,
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: 16, marginBottom: 4 }}>📈</div>
+                <div style={{ marginBottom: 4, display: 'flex', justifyContent: 'center', color: '#7EB8F7' }}>
+                  {getSvgIcon('chart', 16)}
+                </div>
                 <div style={{
                   fontSize: 12,
                   color: '#7EB8F7',
@@ -316,9 +392,14 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
               fontSize: 16,
               fontWeight: 700,
               color: '#C8A96E',
-              marginBottom: 8
+              marginBottom: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8
             }}>
-              ✨ Success Projection
+              <span style={{ display: 'flex', color: '#C8A96E' }}>{getSvgIcon('sparkles', 16)}</span>
+              Success Projection
             </div>
             <div style={{
               fontSize: 14,
@@ -393,7 +474,10 @@ export default function LaunchStep({ formData, onComplete, prevStep }) {
                   Creating Your Journey...
                 </div>
               ) : (
-                '🚀 Launch Your Transformation!'
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ display: 'flex', color: 'inherit' }}>{getSvgIcon('rocket', 18)}</span>
+                  Launch Your Transformation!
+                </div>
               )}
             </motion.button>
           </div>

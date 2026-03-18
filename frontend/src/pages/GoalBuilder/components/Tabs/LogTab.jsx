@@ -5,6 +5,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+const getSvgIcon = (iconType, size = 24) => {
+  const iconMap = {
+    chart: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    ),
+    snowflake: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <line x1="12" y1="2" x2="12" y2="22"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        <path d="M20 9l-3 3 3 3"/>
+        <path d="M4 15l3-3-3-3"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+    )
+  };
+  return iconMap[iconType] || iconMap.chart;
+};
+
 export default function LogTab({ goalData }) {
   const logs = goalData?.recent_logs || [];
   const goal = goalData?.goal;
@@ -183,7 +203,15 @@ export default function LogTab({ goalData }) {
               padding: '40px 20px',
               color: 'rgba(245, 240, 232, 0.6)'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📈</div>
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '16px',
+                color: '#C8A96E',
+                display: 'flex',
+                justifyContent: 'center'
+              }}>
+                {getSvgIcon('chart', 48)}
+              </div>
               <div>No activity logged yet. Start your journey today!</div>
             </div>
           ) : (
@@ -210,8 +238,9 @@ export default function LogTab({ goalData }) {
                       })}
                     </div>
                     {log.is_frozen && (
-                      <div style={{ fontSize: '12px', color: '#7EB8F7' }}>
-                        ❄️ Freeze used
+                      <div style={{ fontSize: '12px', color: '#7EB8F7', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ display: 'flex' }}>{getSvgIcon('snowflake', 12)}</span>
+                        Freeze used
                       </div>
                     )}
                   </div>

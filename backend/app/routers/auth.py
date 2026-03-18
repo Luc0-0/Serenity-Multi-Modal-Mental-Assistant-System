@@ -25,17 +25,17 @@ async def get_current_user(db: AsyncSession = Depends(get_db), authorization: Op
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     if not authorization:
         raise credentials_exception
-    
+
     try:
         scheme, token = authorization.split(" ")
         if scheme.lower() != "bearer":
             raise credentials_exception
     except ValueError:
         raise credentials_exception
-    
+
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         user_id_str: str = payload.get("sub")
@@ -46,15 +46,46 @@ async def get_current_user(db: AsyncSession = Depends(get_db), authorization: Op
         raise credentials_exception
     except Exception:
         raise credentials_exception
-    
+
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if user is None:
         raise credentials_exception
-    
+
     return user
+
+
+async def get_current_user_ws(token: str) -> Optional[User]:
+    """
+    Retrieve current user from JWT token for WebSocket connections.
+
+    Args:
+        token: JWT token string (without 'Bearer' prefix)
+
+    Returns:
+        User object or None if authentication fails
+    """
+    try:
+        from app.db.session import SessionLocal
+
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        user_id_str: str = payload.get("sub")
+        user_id: int = int(user_id_str)
+
+        if user_id is None:
+            return None
+
+        async with SessionLocal() as db:
+            stmt = select(User).where(User.id == user_id)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            return user
+
+    except Exception as e:
+        logger.warning(f"WebSocket authentication failed: {e}")
+        return None
 
 
 @router.post("/login/", response_model=dict)

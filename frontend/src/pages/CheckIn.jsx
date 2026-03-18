@@ -9,12 +9,10 @@ import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { CopyButton } from "../components/CopyButton";
 import { AnimatedTooltip } from "../components/AnimatedTooltip";
 import { exportConversationAsMarkdown } from "../services/exportService";
-import { sendChatMessage, getErrorDisplay, speakText } from "../services/api";
+import { sendChatMessage, getErrorDisplay } from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
-import {
-  useHapticFeedback,
-  useAudioVisualizer,
-} from "../hooks/useVoiceEnhancements";
+import { useVoiceMode } from "../hooks/useVoiceMode";
+import { EnhancedVoiceOverlay } from "../components/EnhancedVoiceOverlay";
 import styles from "./CheckIn.module.css";
 import "../styles/voice-design.css";
 
@@ -79,31 +77,41 @@ export function CheckIn() {
   const [showInsights, setShowInsights] = useState(window.innerWidth > 768);
   const [isDeckPinned, setIsDeckPinned] = useState(false);
 
-  // Voice mode state
-  const [voiceMode, setVoiceMode] = useState(false);
-  const [voiceExiting, setVoiceExiting] = useState(false);
-  const [voiceStatus, setVoiceStatus] = useState("idle"); // idle | listening | processing | speaking
-  const [voiceTranscript, setVoiceTranscript] = useState("");
-  const [voiceError, setVoiceError] = useState(null);
-  const [voiceMessages, setVoiceMessages] = useState([]);
-  const voiceMessagesEndRef = useRef(null);
-  const voiceRecognitionRef = useRef(null);
-  const voiceAbortRef = useRef(false);
-  const voiceConvIdRef = useRef(null);
-
   // Inline mic state
   const [inlineMicActive, setInlineMicActive] = useState(false);
   const inlineRecognitionRef = useRef(null);
-
-  // Haptic feedback & audio visualizer hooks
-  const haptic = useHapticFeedback();
-  const { analyzeAudio } = useAudioVisualizer();
-  const [voiceWaveformData, setVoiceWaveformData] = useState([]);
 
   const SpeechRecognitionAPI =
     typeof window !== "undefined"
       ? window.SpeechRecognition || window.webkitSpeechRecognition || null
       : null;
+
+  // Voice mode — all logic in hook
+  const voice = useVoiceMode({
+    sendChatMessage,
+    conversationId,
+    onConversationCreated: (newConvId) => {
+      setConversationId(newConvId);
+      try {
+        localStorage.setItem("serenity_conversation_id", newConvId.toString());
+        localStorage.setItem("serenity_user_id", userId.toString());
+      } catch (_) {}
+      triggerRefresh();
+    },
+    onMessageAdded: (msg) => {
+      const newMsg = {
+        id: Date.now(),
+        sender: msg.sender,
+        text: msg.text,
+        timestamp: new Date(),
+        crisis: msg.crisis
+          ? { detected: true, severity: msg.crisis.severity, resources: msg.crisis.resources }
+          : null,
+      };
+      setMessages((prev) => [...prev, newMsg]);
+      if (!isInChat) enterChat();
+    },
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -406,287 +414,6 @@ export function CheckIn() {
     finalizeAndReset(conversationId, messages.length);
   }, [finalizeAndReset, conversationId, messages.length]);
 
-  /* ── TTS: Kokoro with browser fallback ── */
-  const speakWithFallback = useCallback(async (text) => {
-    try {
-      const blob = await speakText(text);
-      if (blob && blob.size > 0) {
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        await new Promise((resolve) => {
-          audio.onended = resolve;
-          audio.onerror = resolve;
-          audio.play().catch(resolve);
-        });
-        URL.revokeObjectURL(url);
-        return;
-      }
-    } catch (_) {
-      /* fall through */
-    }
-    // Browser TTS fallback
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      await new Promise((resolve) => {
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.rate = 0.9;
-        utt.pitch = 0.95;
-        const voices = window.speechSynthesis.getVoices();
-        const calm =
-          voices.find((v) =>
-            /female|samantha|zira|karen|moira/i.test(v.name),
-          ) || voices[0];
-        if (calm) utt.voice = calm;
-        utt.onend = resolve;
-        utt.onerror = resolve;
-        window.speechSynthesis.speak(utt);
-        setTimeout(resolve, 20000); // hard timeout
-      });
-    }
-  }, []);
-
-  /* ── Voice Mode: listen → send to chat API → speak response ── */
-  // Use refs to break circular dependency between listen ↔ process
-  const voiceListenRef = useRef(null);
-  const voiceProcessRef = useRef(null);
-
-  voiceListenRef.current = () => {
-    if (voiceAbortRef.current) return;
-    if (!SpeechRecognitionAPI) {
-      setVoiceError("Speech recognition not supported in this browser.");
-      haptic.warning(); // Haptic warning for unsupported browser
-      return;
-    }
-
-    haptic.tap(); // Mic activation haptic burst
-    setVoiceStatus("listening");
-    setVoiceTranscript("");
-
-    const recognition = new SpeechRecognitionAPI();
-    recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 1;
-    voiceRecognitionRef.current = recognition;
-
-    let finalTranscript = "";
-    let silenceTimer = null;
-    let dispatched = false;
-    let hapticPulseInterval = null;
-
-    const resetSilenceTimer = () => {
-      if (silenceTimer) clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(() => {
-        if (!dispatched && finalTranscript.trim()) {
-          dispatched = true;
-          try {
-            recognition.stop();
-          } catch (_) {}
-        }
-      }, 2500);
-    };
-
-    recognition.onresult = (e) => {
-      let interim = "";
-      finalTranscript = "";
-      for (let i = 0; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalTranscript += t;
-        else interim += t;
-      }
-      setVoiceTranscript(finalTranscript || interim);
-      resetSilenceTimer();
-    };
-
-    recognition.onerror = (e) => {
-      if (silenceTimer) clearTimeout(silenceTimer);
-      if (hapticPulseInterval) clearInterval(hapticPulseInterval);
-      haptic.warning(); // Error haptic pattern
-      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-        setVoiceError("Microphone access denied. Please allow mic permission.");
-        setVoiceStatus("idle");
-        return;
-      }
-      if (!dispatched && finalTranscript.trim()) {
-        dispatched = true;
-        voiceProcessRef.current(finalTranscript.trim());
-      }
-    };
-
-    recognition.onend = () => {
-      if (silenceTimer) clearTimeout(silenceTimer);
-      if (!dispatched && finalTranscript.trim()) {
-        dispatched = true;
-        voiceProcessRef.current(finalTranscript.trim());
-      } else if (!dispatched && !voiceAbortRef.current) {
-        setTimeout(() => voiceListenRef.current(), 300);
-      }
-    };
-
-    const absoluteTimeout = setTimeout(() => {
-      if (!dispatched) {
-        dispatched = true;
-        try {
-          recognition.stop();
-        } catch (_) {}
-        if (finalTranscript.trim()) {
-          voiceProcessRef.current(finalTranscript.trim());
-        } else if (!voiceAbortRef.current) {
-          setTimeout(() => voiceListenRef.current(), 300);
-        }
-      }
-    }, 60000);
-
-    recognition.addEventListener("end", () => clearTimeout(absoluteTimeout), {
-      once: true,
-    });
-
-    try {
-      recognition.start();
-      resetSilenceTimer();
-    } catch (_) {
-      setVoiceError("Could not start microphone.");
-      setVoiceStatus("idle");
-    }
-  };
-
-  voiceProcessRef.current = async (userText) => {
-    if (voiceAbortRef.current) return;
-    haptic.tap(); // Confirm transcript captured
-    setVoiceStatus("processing");
-    setVoiceTranscript("");
-
-    setVoiceMessages((prev) => [
-      ...prev,
-      { role: "user", text: userText, id: Date.now() },
-    ]);
-
-    const userMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: userText,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    if (!isInChat) enterChat();
-
-    try {
-      const response = await sendChatMessage({
-        message: userText,
-        conversation_id: voiceConvIdRef.current || conversationId,
-      });
-
-      if (voiceAbortRef.current) return;
-
-      if (!voiceConvIdRef.current && response.conversation_id) {
-        voiceConvIdRef.current = response.conversation_id;
-        setConversationId(response.conversation_id);
-        try {
-          localStorage.setItem(
-            "serenity_conversation_id",
-            response.conversation_id.toString(),
-          );
-          localStorage.setItem("serenity_user_id", userId.toString());
-        } catch (_) {}
-        triggerRefresh();
-      }
-
-      const aiText = response.reply;
-      setVoiceMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: aiText, id: Date.now() + 1 },
-      ]);
-
-      const assistantMessage = {
-        id: Date.now() + 1,
-        sender: "assistant",
-        text: aiText,
-        timestamp: new Date(),
-        crisis: response.crisis_detected
-          ? {
-              detected: true,
-              severity: response.crisis_severity,
-              resources: response.resources,
-            }
-          : null,
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      haptic.double(); // Double confirm on response received
-      setVoiceStatus("speaking");
-      await speakWithFallback(aiText);
-
-      if (voiceAbortRef.current) return;
-      haptic.processing(); // Gentle pulse before listening again
-      setTimeout(() => voiceListenRef.current(), 400);
-    } catch (err) {
-      if (voiceAbortRef.current) return;
-      haptic.warning(); // Error haptic pattern
-      setVoiceError("Connection issue. Trying again...");
-      setTimeout(() => {
-        setVoiceError(null);
-        if (!voiceAbortRef.current) voiceListenRef.current();
-      }, 2000);
-    }
-  };
-
-  const enterVoiceMode = useCallback(() => {
-    haptic.tap(); // Haptic feedback on voice mode entry
-    setVoiceMode(true);
-    setVoiceExiting(false);
-    setVoiceMessages([]);
-    setVoiceError(null);
-    setVoiceTranscript("");
-    voiceAbortRef.current = false;
-    voiceConvIdRef.current = conversationId;
-    if (!isInChat) enterChat();
-    // Start listening after overlay animation
-    setTimeout(() => {
-      if (!voiceAbortRef.current) voiceListenRef.current();
-    }, 600);
-  }, [isInChat, enterChat, conversationId]);
-
-  const exitVoiceMode = useCallback(() => {
-    haptic.tap(); // Confirm exit
-    voiceAbortRef.current = true;
-    setVoiceExiting(true);
-    try {
-      voiceRecognitionRef.current?.abort();
-    } catch (_) {}
-    voiceRecognitionRef.current = null;
-    window.speechSynthesis?.cancel();
-    setTimeout(() => {
-      setVoiceMode(false);
-      setVoiceExiting(false);
-      setVoiceStatus("idle");
-      setVoiceTranscript("");
-      setVoiceError(null);
-    }, 400);
-  }, []);
-
-  // Auto-clear voice errors
-  useEffect(() => {
-    if (!voiceError) return;
-    const t = setTimeout(() => setVoiceError(null), 5000);
-    return () => clearTimeout(t);
-  }, [voiceError]);
-
-  // Scroll voice messages
-  useEffect(() => {
-    voiceMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [voiceMessages]);
-
-  // Cleanup voice on unmount
-  useEffect(() => {
-    return () => {
-      voiceAbortRef.current = true;
-      try {
-        voiceRecognitionRef.current?.abort();
-      } catch (_) {}
-      window.speechSynthesis?.cancel();
-    };
-  }, []);
-
   /* ── Inline Mic (Speech-to-Text for chat input) ── */
   const toggleInlineMic = useCallback(() => {
     if (inlineMicActive) {
@@ -896,7 +623,7 @@ export function CheckIn() {
                     </button>
                     <button
                       className={styles.actionBtn}
-                      onClick={enterVoiceMode}
+                      onClick={voice.enterVoiceMode}
                     >
                       <span className={styles.actionBtnBar} />
                       Voice
@@ -1113,7 +840,7 @@ export function CheckIn() {
                 <AnimatedTooltip content="Voice conversation" placement="top">
                   <button
                     className={styles.voiceModeBtn}
-                    onClick={enterVoiceMode}
+                    onClick={voice.enterVoiceMode}
                     aria-label="Enter voice conversation mode"
                   >
                     <svg
@@ -1224,121 +951,18 @@ export function CheckIn() {
           </>
         )}
 
-        {/* ── Voice Overlay ── */}
-        {voiceMode && (
-          <div
-            className={`${styles.voiceOverlay} ${voiceExiting ? styles.voiceOverlayExiting : ""}`}
-          >
-            {/* Voice Orb with state-based animations */}
-            <div
-              className={`${styles.voiceOrb} ${
-                voiceStatus === "listening"
-                  ? styles.voiceOrbListening
-                  : voiceStatus === "processing"
-                    ? styles.voiceOrbProcessing
-                    : voiceStatus === "speaking"
-                      ? styles.voiceOrbSpeaking
-                      : styles.voiceOrbBreathing /* Breathing when idle */
-              }`}
-            >
-              <div className={styles.voiceOrbRing} />
-              <div className={styles.voiceOrbRing} />
-              <div className={styles.voiceOrbRing} />
-              <div className={styles.voiceOrbCore} />
-            </div>
-
-            {/* Status Label — High contrast, animated */}
-            <div
-              className={`${styles.voiceStatus} ${
-                voiceStatus === "listening"
-                  ? styles.voiceStatusListening
-                  : voiceStatus === "speaking"
-                    ? styles.voiceStatusSpeaking
-                    : ""
-              }`}
-            >
-              {voiceStatus === "listening"
-                ? "Listening..."
-                : voiceStatus === "processing"
-                  ? "Thinking..."
-                  : voiceStatus === "speaking"
-                    ? "Speaking..."
-                    : voiceStatus === "idle"
-                      ? "Starting..."
-                      : ""}
-            </div>
-
-            {/* Live transcript — Fades in with cursor pulse */}
-            <div className={styles.voiceTranscript}>
-              {voiceTranscript ||
-                (voiceStatus === "listening" ? "Speak now..." : "")}
-            </div>
-
-            {/* Voice conversation history — Smooth scroll, staggered messages */}
-            {voiceMessages.length > 0 && (
-              <div className={styles.voiceMessages}>
-                {voiceMessages.map((msg, idx) => (
-                  <div
-                    key={msg.id}
-                    className={`${styles.voiceMsg} ${
-                      msg.role === "user"
-                        ? styles.voiceMsgUser
-                        : styles.voiceMsgAssistant
-                    }`}
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                  >
-                    {msg.text}
-                  </div>
-                ))}
-                <div ref={voiceMessagesEndRef} />
-              </div>
-            )}
-
-            {/* Error State — Graceful recovery */}
-            {voiceError && (
-              <div className={styles.voiceError}>
-                {voiceError}
-                <button
-                  onClick={() => voiceListenRef.current?.()}
-                  style={{
-                    marginTop: "8px",
-                    padding: "6px 12px",
-                    background: "rgba(220, 80, 60, 0.15)",
-                    border: "1px solid rgba(220, 100, 90, 0.3)",
-                    borderRadius: "4px",
-                    color: "rgba(230, 170, 170, 0.9)",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontFamily: '"Cormorant Garamond", serif',
-                  }}
-                  aria-label="Retry voice input"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-
-            {/* End call button */}
-            <button
-              className={styles.voiceEndBtn}
-              onClick={exitVoiceMode}
-              aria-label="End voice conversation"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 2.59 3.4Z" />
-                <line x1="1" y1="1" x2="23" y2="23" />
-              </svg>
-            </button>
-          </div>
+        {/* Voice Mode Overlay */}
+        {voice.voiceMode && (
+          <EnhancedVoiceOverlay
+            status={voice.voiceStatus}
+            messages={voice.voiceMessages}
+            transcript={voice.transcript}
+            error={voice.error}
+            frequencyData={voice.frequencyData}
+            onExit={voice.exitVoiceMode}
+            onRetry={voice.retryLastAction}
+            onInterrupt={voice.interrupt}
+          />
         )}
 
         {!isInChat && (

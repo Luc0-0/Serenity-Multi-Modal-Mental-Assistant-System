@@ -322,3 +322,189 @@
 .haptic-warning-visual {
   animation: errorShake var(--haptic-warning) var(--ease-in-out-smooth);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TIER S ENHANCEMENTS - ADVANCED ANIMATIONS & PARTICLE EFFECTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Advanced orb glow with state-based color */
+@keyframes orbGlowIdle {
+  0%, 100% {
+    box-shadow:
+      0 0 30px rgba(232, 168, 74, 0.3),
+      0 0 60px rgba(232, 168, 74, 0.15),
+      inset 0 0 30px rgba(232, 168, 74, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 40px rgba(232, 168, 74, 0.4),
+      0 0 80px rgba(232, 168, 74, 0.2),
+      inset 0 0 40px rgba(232, 168, 74, 0.15);
+  }
+}
+
+@keyframes orbGlowListening {
+  0%, 100% {
+    box-shadow:
+      0 0 40px rgba(232, 168, 74, 0.5),
+      0 0 80px rgba(232, 168, 74, 0.3),
+      inset 0 0 40px rgba(232, 168, 74, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(232, 168, 74, 0.6),
+      0 0 100px rgba(232, 168, 74, 0.4),
+      inset 0 0 50px rgba(232, 168, 74, 0.25);
+  }
+}
+
+@keyframes orbGlowSpeaking {
+  0%, 100% {
+    box-shadow:
+      0 0 40px rgba(255, 255, 255, 0.4),
+      0 0 80px rgba(255, 255, 255, 0.2),
+      inset 0 0 40px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 60px rgba(255, 255, 255, 0.5),
+      0 0 120px rgba(255, 255, 255, 0.3),
+      inset 0 0 60px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Gradient color transitions */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Text shimmer effect for status labels */
+@keyframes textShimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.voiceStatusShimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(232, 168, 74, 0.5),
+    rgba(245, 200, 122, 0.8),
+    rgba(232, 168, 74, 0.5)
+  );
+  background-size: 1000px 100%;
+  animation: textShimmer 2s infinite;
+}
+
+/* Smooth state transition with scale */
+@keyframes stateTransitionScale {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Advanced ripple with multiple rings */
+@keyframes advancedRipple {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(255, 255, 255, 0.7),
+      0 0 0 8px rgba(255, 255, 255, 0.5),
+      0 0 0 16px rgba(255, 255, 255, 0.3),
+      0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 30px rgba(255, 255, 255, 0),
+      0 0 0 40px rgba(255, 255, 255, 0),
+      0 0 0 50px rgba(255, 255, 255, 0),
+      0 0 40px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    box-shadow:
+      0 0 0 80px rgba(255, 255, 255, 0),
+      0 0 0 90px rgba(255, 255, 255, 0),
+      0 0 0 100px rgba(255, 255, 255, 0),
+      0 0 20px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Voice activity pulse indicator */
+@keyframes activityPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Error recovery slide-up */
+@keyframes errorRecoverySlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Confidence indicator pulse */
+@keyframes confidencePulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Utility classes for tier S */
+.voiceOrbGlowIdle {
+  animation: orbGlowIdle 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.voiceOrbGlowListening {
+  animation: orbGlowListening 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.voiceOrbGlowSpeaking {
+  animation: orbGlowSpeaking 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.voiceActivityIndicator {
+  animation: activityPulse 1.2s ease-in-out infinite;
+}
+
+.voiceErrorRecovery {
+  animation: errorRecoverySlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Accessibility: Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .voiceOrbGlowIdle,
+  .voiceOrbGlowListening,
+  .voiceOrbGlowSpeaking,
+  .voiceActivityIndicator,
+  .voiceErrorRecovery,
+  .voiceStatusShimmer {
+    animation: none;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,156 @@
+/* Premium Voice Message Bubble Design */
+
+.messageBubble {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  animation: messageFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+  align-items: flex-end;
+}
+
+@keyframes messageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.messageBubble.user {
+  flex-direction: row-reverse;
+}
+
+/* Avatar styles */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.messageBubble.user .avatar {
+  background: linear-gradient(135deg, rgba(232, 168, 74, 0.8), rgba(245, 200, 122, 0.8));
+  color: rgba(50, 40, 30, 0.8);
+}
+
+.messageBubble.assistant .avatar {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+  color: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Content wrapper */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 70%;
+}
+
+.messageBubble.user .content {
+  align-items: flex-end;
+}
+
+.messageBubble.assistant .content {
+  align-items: flex-start;
+}
+
+/* Bubble wrapper for content + confidence */
+.bubbleWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.messageBubble.user .bubbleWrapper {
+  flex-direction: row-reverse;
+}
+
+/* Message bubble */
+.bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  word-wrap: break-word;
+  line-height: 1.4;
+  font-size: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.messageBubble.user .bubble {
+  background: linear-gradient(135deg, rgba(232, 168, 74, 0.85), rgba(245, 200, 122, 0.8));
+  color: rgba(50, 40, 30, 0.95);
+  border-bottom-right-radius: 4px;
+}
+
+.messageBubble.assistant .bubble {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border-bottom-left-radius: 4px;
+}
+
+/* Confidence indicator */
+.confidence {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.3s ease;
+}
+
+.messageBubble.user .confidence {
+  color: rgba(50, 40, 30, 0.5);
+}
+
+.confidence:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.messageBubble.user .confidence:hover {
+  color: rgba(50, 40, 30, 0.8);
+}
+
+/* Metadata (timestamp) */
+.metadata {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 0 4px;
+}
+
+.messageBubble.user .metadata {
+  color: rgba(50, 40, 30, 0.4);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .messageBubble {
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .content {
+    max-width: 80%;
+  }
+
+  .bubble {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

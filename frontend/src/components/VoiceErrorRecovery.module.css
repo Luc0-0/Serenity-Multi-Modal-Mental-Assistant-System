@@ -1,0 +1,232 @@
+/* Voice Error Recovery Styles */
+
+.errorContainer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: errorFadeIn 0.3s ease-out;
+  padding: 20px;
+}
+
+@keyframes errorFadeIn {
+  from {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+  }
+  to {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.errorContent {
+  background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(30, 30, 45, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 420px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  animation: errorSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes errorSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iconContainer {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 107, 107, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.icon {
+  color: #ff6b6b;
+  animation: errorShake 0.5s ease;
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.errorMessage {
+  margin-bottom: 24px;
+}
+
+.errorMessage h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 8px 0;
+}
+
+.errorMessage p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Suggestions list */
+.suggestionsList {
+  background: rgba(232, 168, 74, 0.08);
+  border: 1px solid rgba(232, 168, 74, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.suggestionsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(232, 168, 74, 0.8);
+  text-transform: uppercase;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.suggestionsList ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggestionsList li {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.bullet {
+  color: rgba(232, 168, 74, 0.6);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Button group */
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.retryButton,
+.closeButton {
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.retryButton {
+  background: linear-gradient(135deg, rgba(232, 168, 74, 0.8), rgba(245, 200, 122, 0.7));
+  color: rgba(50, 40, 30, 0.95);
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(232, 168, 74, 0.3);
+}
+
+.retryButton:hover {
+  background: linear-gradient(135deg, rgba(232, 168, 74, 0.95), rgba(245, 200, 122, 0.85));
+  box-shadow: 0 6px 24px rgba(232, 168, 74, 0.4);
+  transform: translateY(-2px);
+}
+
+.retryButton:active {
+  transform: translateY(0);
+}
+
+.closeButton {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.closeButton:active {
+  transform: scale(0.98);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .errorContainer {
+    padding: 16px;
+  }
+
+  .errorContent {
+    padding: 24px;
+    max-width: 100%;
+  }
+
+  .errorMessage h3 {
+    font-size: 16px;
+  }
+
+  .buttonGroup {
+    flex-direction: row;
+  }
+
+  .retryButton,
+  .closeButton {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .errorContainer,
+  .errorContent,
+  .icon {
+    animation: none;
+  }
+
+  .retryButton:hover {
+    transform: none;
+  }
+}

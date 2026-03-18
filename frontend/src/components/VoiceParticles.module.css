@@ -1,0 +1,67 @@
+/* Voice Particle Effects */
+
+.particleContainer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--color, #e8a84a), transparent);
+  top: 50%;
+  left: 50%;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color, #e8a84a) 60%, transparent);
+  animation: particleFloat var(--duration) ease-out var(--delay) forwards;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(
+        calc(cos(var(--angle) * 0.01745) * 120px),
+        calc(sin(var(--angle) * 0.01745) * 120px)
+      )
+      scale(0);
+  }
+}
+
+/* Alternative: JavaScript-driven particle using CSS variables */
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + cos(180deg * var(--angle)) * 100px),
+        calc(-50% + sin(180deg * var(--angle)) * 100px)
+      )
+      scale(0);
+    filter: blur(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particle {
+    animation: none;
+    opacity: 0;
+  }
+}

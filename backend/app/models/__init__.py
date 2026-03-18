@@ -11,6 +11,15 @@ from app.models.memory import (
     EmotionalProfile,
     MetaReflection,
 )
+from app.models.goal import (
+    Goal,
+    GoalPhase,
+    DailySchedule,
+    DailyLog,
+    PhaseTask,
+    WeeklyReview,
+    StreakFreeze,
+)
 
 __all__ = [
     "User",
@@ -25,4 +34,11 @@ __all__ = [
     "SemanticMemory",
     "EmotionalProfile",
     "MetaReflection",
+    "Goal",
+    "GoalPhase",
+    "DailySchedule",
+    "DailyLog",
+    "PhaseTask",
+    "WeeklyReview",
+    "StreakFreeze",
 ]

@@ -1,0 +1,299 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #F5F0E8;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 0%,
+    rgba(15, 15, 25, 0.95) 0%,
+    rgba(8, 8, 12, 0.98) 60%,
+    #050508 100%
+  );
+}
+
+.gradientOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(200, 169, 110, 0.03) 0%,
+    rgba(110, 231, 183, 0.02) 35%,
+    rgba(123, 121, 232, 0.02) 70%,
+    rgba(200, 169, 110, 0.01) 100%
+  );
+  opacity: 0;
+  animation: gradientPulse 8s ease-in-out infinite;
+}
+
+.noiseTexture {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+}
+
+.progressBar {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, 80vw);
+  z-index: 10;
+}
+
+.progressTrack {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 1px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(200, 169, 110, 0.8) 0%,
+    rgba(200, 169, 110, 1) 50%,
+    rgba(220, 189, 130, 0.9) 100%
+  );
+  border-radius: 1px;
+  box-shadow:
+    0 0 8px rgba(200, 169, 110, 0.4),
+    0 0 16px rgba(200, 169, 110, 0.2);
+}
+
+.progressText {
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(245, 240, 232, 0.6);
+}
+
+.stepContainer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.skipButton {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(245, 240, 232, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(20px);
+}
+
+.skipButton:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(245, 240, 232, 0.8);
+  background: rgba(255, 255, 255, 0.02);
+  transform: translateY(-1px);
+}
+
+.skipButton:active {
+  transform: translateY(0);
+}
+
+/* Step-specific container styles */
+.stepContent {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.stepTitle {
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  background: linear-gradient(
+    135deg,
+    #F5F0E8 0%,
+    rgba(200, 169, 110, 0.9) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stepSubtitle {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(245, 240, 232, 0.7);
+  margin-bottom: 48px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Glass morphism card for form elements */
+.glassCard {
+  background: rgba(15, 15, 20, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Navigation buttons */
+.buttonContainer {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.button {
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.buttonPrimary {
+  background: linear-gradient(
+    135deg,
+    rgba(200, 169, 110, 0.9) 0%,
+    rgba(200, 169, 110, 1) 100%
+  );
+  color: #0A0A0F;
+  box-shadow:
+    0 4px 20px rgba(200, 169, 110, 0.25),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.buttonPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 25px rgba(200, 169, 110, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.buttonSecondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(245, 240, 232, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.buttonSecondary:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.buttonSecondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Animations */
+@keyframes gradientPulse {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes goldGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(200, 169, 110, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(200, 169, 110, 0.6);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .stepContainer {
+    padding: 20px 16px;
+  }
+
+  .glassCard {
+    padding: 24px 20px;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .button {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .skipButton {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .progressBar {
+    top: 20px;
+    width: calc(100vw - 32px);
+  }
+}
+
+@media (max-height: 600px) {
+  .stepContainer {
+    padding: 20px;
+  }
+
+  .stepSubtitle {
+    margin-bottom: 24px;
+  }
+
+  .buttonContainer {
+    margin-top: 24px;
+  }
+}

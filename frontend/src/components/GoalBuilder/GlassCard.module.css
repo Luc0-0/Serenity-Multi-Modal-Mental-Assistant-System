@@ -1,0 +1,112 @@
+.glassCard {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(15, 15, 20, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  isolation: isolate;
+}
+
+.glassEffect {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+}
+
+/* Variants */
+.gold {
+  border-color: rgba(200, 169, 110, 0.2);
+}
+
+.gold .glassEffect {
+  background: linear-gradient(
+    135deg,
+    rgba(200, 169, 110, 0.05) 0%,
+    rgba(200, 169, 110, 0.01) 100%
+  );
+}
+
+.success {
+  border-color: rgba(110, 231, 183, 0.2);
+}
+
+.success .glassEffect {
+  background: linear-gradient(
+    135deg,
+    rgba(110, 231, 183, 0.05) 0%,
+    rgba(110, 231, 183, 0.01) 100%
+  );
+}
+
+.danger {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.danger .glassEffect {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.05) 0%,
+    rgba(239, 68, 68, 0.01) 100%
+  );
+}
+
+/* Glow effect */
+.glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    rgba(200, 169, 110, 0.4),
+    rgba(200, 169, 110, 0.1)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Hover state */
+.hover {
+  transition: all 0.2s ease;
+}
+
+.hover:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.hover:hover .glassEffect {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}

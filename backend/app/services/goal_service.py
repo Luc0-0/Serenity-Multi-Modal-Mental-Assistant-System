@@ -1,0 +1,421 @@
+#
+# Copyright (c) 2026 Nipun Sujesh. All rights reserved.
+# Licensed under the AGPLv3. See LICENSE file in the project root for details.
+#
+# This software is the confidential and proprietary information of Nipun Sujesh.
+#
+
+import json
+from datetime import date, datetime, timedelta
+from typing import List, Dict, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import and_, func
+
+from app.models import Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, WeeklyReview, StreakFreeze
+
+
+class GoalService:
+    """Business logic for goal management."""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def create_goal(
+        self,
+        user_id: int,
+        title: str,
+        description: str,
+        theme: str,
+        duration_days: int,
+        start_date: date,
+        schedule_items: List[Dict]
+    ) -> Goal:
+        """Create a new goal with schedule and default phases."""
+
+        # Create goal
+        goal = Goal(
+            user_id=user_id,
+            title=title,
+            description=description,
+            theme=theme,
+            duration_days=duration_days,
+            start_date=start_date
+        )
+        self.db.add(goal)
+        self.db.flush()  # Get goal.id
+
+        # Create schedule items
+        for item in schedule_items:
+            schedule_item = DailySchedule(
+                goal_id=goal.id,
+                time=item["time"],
+                activity=item["activity"],
+                description=item.get("description", ""),
+                tags=json.dumps(item.get("tags", [])),
+                sort_order=item.get("sort_order", 0)
+            )
+            self.db.add(schedule_item)
+
+        # Create default phases
+        self._create_default_phases(goal.id, theme)
+
+        self.db.commit()
+        return goal
+
+    def _create_default_phases(self, goal_id: int, theme: str):
+        """Create 3 default phases for the goal."""
+
+        phase_configs = {
+            "tactical": [
+                {
+                    "phase_number": 0,
+                    "title": "Foundation Phase",
+                    "description": "Establish core disciplines and tactical routines",
+                    "unlock_streak_required": 0,
+                    "is_unlocked": True,
+                    "domains": [
+                        {"name": "Physical", "color": "#E53E3E"},
+                        {"name": "Mental", "color": "#3182CE"},
+                        {"name": "Tactical", "color": "#38A169"}
+                    ]
+                },
+                {
+                    "phase_number": 1,
+                    "title": "Acceleration Phase",
+                    "description": "Intensify operations and expand capabilities",
+                    "unlock_streak_required": 14,
+                    "is_unlocked": False,
+                    "domains": [
+                        {"name": "Advanced Skills", "color": "#D69E2E"},
+                        {"name": "Leadership", "color": "#9F7AEA"},
+                        {"name": "Strategic", "color": "#F56565"}
+                    ]
+                },
+                {
+                    "phase_number": 2,
+                    "title": "Mastery Phase",
+                    "description": "Elite performance and mission completion",
+                    "unlock_streak_required": 42,
+                    "is_unlocked": False,
+                    "domains": [
+                        {"name": "Mastery", "color": "#C53030"},
+                        {"name": "Innovation", "color": "#2B6CB0"},
+                        {"name": "Legacy", "color": "#2F855A"}
+                    ]
+                }
+            ],
+            "balanced": [
+                {
+                    "phase_number": 0,
+                    "title": "Foundation",
+                    "description": "Build sustainable habits and gentle progress",
+                    "unlock_streak_required": 0,
+                    "is_unlocked": True,
+                    "domains": [
+                        {"name": "Wellness", "color": "#48BB78"},
+                        {"name": "Growth", "color": "#4299E1"},
+                        {"name": "Connection", "color": "#ED8936"}
+                    ]
+                },
+                {
+                    "phase_number": 1,
+                    "title": "Expansion",
+                    "description": "Deepen practice and broaden impact",
+                    "unlock_streak_required": 14,
+                    "is_unlocked": False,
+                    "domains": [
+                        {"name": "Mastery", "color": "#9F7AEA"},
+                        {"name": "Service", "color": "#38B2AC"},
+                        {"name": "Expression", "color": "#F687B3"}
+                    ]
+                },
+                {
+                    "phase_number": 2,
+                    "title": "Integration",
+                    "description": "Embody transformation and inspire others",
+                    "unlock_streak_required": 42,
+                    "is_unlocked": False,
+                    "domains": [
+                        {"name": "Wisdom", "color": "#805AD5"},
+                        {"name": "Impact", "color": "#D53F8C"},
+                        {"name": "Legacy", "color": "#319795"}
+                    ]
+                }
+            ]
+        }
+
+        config = phase_configs.get(theme, phase_configs["balanced"])
+
+        for phase_config in config:
+            phase = GoalPhase(
+                goal_id=goal_id,
+                phase_number=phase_config["phase_number"],
+                title=phase_config["title"],
+                description=phase_config["description"],
+                unlock_streak_required=phase_config["unlock_streak_required"],
+                is_unlocked=phase_config["is_unlocked"]
+            )
+            self.db.add(phase)
+            self.db.flush()
+
+            # Create sample tasks for each domain
+            for domain in phase_config["domains"]:
+                for i in range(2):  # 2 tasks per domain
+                    task = PhaseTask(
+                        phase_id=phase.id,
+                        domain_name=domain["name"],
+                        task_title=f"Complete {domain['name'].lower()} milestone {i+1}",
+                        subtasks=json.dumps([
+                            f"Research and plan approach",
+                            f"Execute primary action",
+                            f"Document and reflect"
+                        ])
+                    )
+                    self.db.add(task)
+
+    def update_streak(self, goal_id: int, user_id: int):
+        """Update goal streak based on completion."""
+
+        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        if not goal:
+            return
+
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+
+        # Get today's log
+        today_log = self.db.query(DailyLog).filter(
+            and_(
+                DailyLog.goal_id == goal_id,
+                DailyLog.user_id == user_id,
+                DailyLog.date == today
+            )
+        ).first()
+
+        # Get yesterday's log or freeze
+        yesterday_log = self.db.query(DailyLog).filter(
+            and_(
+                DailyLog.goal_id == goal_id,
+                DailyLog.user_id == user_id,
+                DailyLog.date == yesterday
+            )
+        ).first()
+
+        yesterday_freeze = self.db.query(StreakFreeze).filter(
+            and_(
+                StreakFreeze.goal_id == goal_id,
+                StreakFreeze.user_id == user_id,
+                StreakFreeze.used_date == yesterday
+            )
+        ).first()
+
+        # Calculate completion percentage for today
+        is_today_complete = (
+            today_log and today_log.completion_percentage >= 80
+        ) or self._has_freeze_today(goal_id, user_id)
+
+        # Check if yesterday was complete (either logged or frozen)
+        was_yesterday_complete = (
+            yesterday_log and yesterday_log.completion_percentage >= 80
+        ) or yesterday_freeze is not None
+
+        # Update streak
+        if is_today_complete:
+            if was_yesterday_complete:
+                goal.current_streak += 1
+            else:
+                goal.current_streak = 1
+
+            # Update longest streak
+            goal.longest_streak = max(goal.longest_streak, goal.current_streak)
+
+            # Update freeze availability
+            goal.freezes_available = goal.current_streak // 14
+
+            # Check phase unlocks
+            self._check_phase_unlocks(goal_id, goal.current_streak)
+
+        self.db.commit()
+
+    def _has_freeze_today(self, goal_id: int, user_id: int) -> bool:
+        """Check if user used freeze today."""
+        today = date.today()
+        freeze = self.db.query(StreakFreeze).filter(
+            and_(
+                StreakFreeze.goal_id == goal_id,
+                StreakFreeze.user_id == user_id,
+                StreakFreeze.used_date == today
+            )
+        ).first()
+        return freeze is not None
+
+    def _check_phase_unlocks(self, goal_id: int, current_streak: int):
+        """Check and unlock phases based on streak."""
+        phases = self.db.query(GoalPhase).filter(
+            and_(
+                GoalPhase.goal_id == goal_id,
+                GoalPhase.unlock_streak_required <= current_streak,
+                GoalPhase.is_unlocked == False
+            )
+        ).all()
+
+        for phase in phases:
+            phase.is_unlocked = True
+
+    def use_streak_freeze(self, goal_id: int, user_id: int) -> bool:
+        """Use a streak freeze for today."""
+
+        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        if not goal or goal.freezes_available <= 0:
+            return False
+
+        # Check if already used freeze today
+        today = date.today()
+        existing_freeze = self.db.query(StreakFreeze).filter(
+            and_(
+                StreakFreeze.goal_id == goal_id,
+                StreakFreeze.user_id == user_id,
+                StreakFreeze.used_date == today
+            )
+        ).first()
+
+        if existing_freeze:
+            return False
+
+        # Create freeze record
+        freeze = StreakFreeze(
+            user_id=user_id,
+            goal_id=goal_id,
+            used_date=today
+        )
+        self.db.add(freeze)
+
+        # Decrease available freezes
+        goal.freezes_available -= 1
+
+        # Create or update today's log to mark as frozen
+        today_log = self.db.query(DailyLog).filter(
+            and_(
+                DailyLog.goal_id == goal_id,
+                DailyLog.user_id == user_id,
+                DailyLog.date == today
+            )
+        ).first()
+
+        if today_log:
+            today_log.is_frozen = True
+        else:
+            today_log = DailyLog(
+                user_id=user_id,
+                goal_id=goal_id,
+                date=today,
+                is_frozen=True,
+                completion_percentage=100  # Frozen counts as complete
+            )
+            self.db.add(today_log)
+
+        self.db.commit()
+        return True
+
+    def get_goal_with_details(self, goal_id: int, user_id: int) -> Optional[Dict]:
+        """Get goal with all related data."""
+
+        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        if not goal:
+            return None
+
+        # Get schedule
+        schedule = self.db.query(DailySchedule).filter(
+            DailySchedule.goal_id == goal_id
+        ).order_by(DailySchedule.sort_order).all()
+
+        # Get phases with tasks
+        phases = self.db.query(GoalPhase).filter(
+            GoalPhase.goal_id == goal_id
+        ).order_by(GoalPhase.phase_number).all()
+
+        # Get recent logs
+        recent_logs = self.db.query(DailyLog).filter(
+            and_(
+                DailyLog.goal_id == goal_id,
+                DailyLog.user_id == user_id,
+                DailyLog.date >= date.today() - timedelta(days=30)
+            )
+        ).order_by(DailyLog.date.desc()).all()
+
+        return {
+            "goal": goal,
+            "schedule": schedule,
+            "phases": phases,
+            "recent_logs": recent_logs,
+            "freeze_used_today": self._has_freeze_today(goal_id, user_id)
+        }
+
+    def get_analytics(self, goal_id: int, user_id: int) -> Dict:
+        """Get goal analytics and insights."""
+
+        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        if not goal:
+            return {}
+
+        # Calculate analytics
+        total_days = (date.today() - goal.start_date).days + 1
+        logs = self.db.query(DailyLog).filter(
+            and_(
+                DailyLog.goal_id == goal_id,
+                DailyLog.user_id == user_id
+            )
+        ).all()
+
+        completed_days = len([log for log in logs if log.completion_percentage >= 80])
+        avg_completion = sum(log.completion_percentage for log in logs) / len(logs) if logs else 0
+
+        return {
+            "total_days": total_days,
+            "completed_days": completed_days,
+            "completion_rate": completed_days / total_days if total_days > 0 else 0,
+            "average_completion": avg_completion,
+            "current_streak": goal.current_streak,
+            "longest_streak": goal.longest_streak,
+            "days_to_next_phase": self._days_to_next_phase(goal_id, goal.current_streak),
+            "consistency_score": self._calculate_consistency_score(logs)
+        }
+
+    def _days_to_next_phase(self, goal_id: int, current_streak: int) -> Optional[int]:
+        """Calculate days needed to unlock next phase."""
+
+        next_phase = self.db.query(GoalPhase).filter(
+            and_(
+                GoalPhase.goal_id == goal_id,
+                GoalPhase.unlock_streak_required > current_streak,
+                GoalPhase.is_unlocked == False
+            )
+        ).order_by(GoalPhase.unlock_streak_required).first()
+
+        if next_phase:
+            return next_phase.unlock_streak_required - current_streak
+        return None
+
+    def _calculate_consistency_score(self, logs: List[DailyLog]) -> float:
+        """Calculate consistency score (0-100) based on recent performance."""
+
+        if not logs:
+            return 0
+
+        # Get last 14 days of logs
+        recent_logs = sorted(logs, key=lambda x: x.date, reverse=True)[:14]
+
+        if not recent_logs:
+            return 0
+
+        # Calculate weighted score (recent days matter more)
+        total_score = 0
+        total_weight = 0
+
+        for i, log in enumerate(recent_logs):
+            weight = 1.0 - (i * 0.05)  # Recent days get higher weight
+            score = min(log.completion_percentage / 100.0, 1.0)
+            total_score += score * weight
+            total_weight += weight
+
+        return (total_score / total_weight * 100) if total_weight > 0 else 0

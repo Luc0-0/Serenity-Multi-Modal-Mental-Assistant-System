@@ -23,6 +23,7 @@ import {
   Meditate,
   Onboarding,
 } from "./pages";
+import GoalBuilder from "./pages/GoalBuilder/GoalBuilder";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ChatProvider } from "./contexts/ChatContext";
 import { ConversationRefreshProvider } from "./contexts/ConversationRefreshContext";
@@ -127,6 +128,14 @@ function AppRoutes() {
             <ProtectedRoute>
               <Meditate />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goals"
+          element={
+            <ProtectedRouteNaked>
+              <GoalBuilder />
+            </ProtectedRouteNaked>
           }
         />
 

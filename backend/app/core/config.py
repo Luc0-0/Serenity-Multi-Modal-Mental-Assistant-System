@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     ollama_model: Optional[str] = "gpt-oss:120b-cloud"
     ollama_max_tokens: Optional[int] = 2000
     
+    # Kokoro TTS
+    kokoro_url: Optional[str] = None
+    kokoro_voice: str = "af_heart"
+
     # CORS
     cors_origins: list = ["http://localhost:5173", "http://localhost:3000"]
     

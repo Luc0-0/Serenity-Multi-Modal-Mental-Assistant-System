@@ -282,6 +282,46 @@ export const getMeditationStats = async () => {
   return response.json();
 };
 
+export const voiceChat = async ({ messages, turn, context = 'guided' }) => {
+  const token = localStorage.getItem('auth_token');
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/meditate/voice-chat`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ messages, turn, context }),
+    },
+    20000
+  );
+  if (!response.ok) {
+    throw { message: 'Voice chat failed', code: `HTTP_${response.status}` };
+  }
+  return response.json();
+};
+
+export const speakText = async (text) => {
+  const token = localStorage.getItem('auth_token');
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/meditate/speak`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ text }),
+    },
+    30000
+  );
+  // 204 = no Kokoro configured, caller falls back to browser TTS
+  if (response.status === 204) return null;
+  if (!response.ok) throw { message: 'TTS failed', code: `HTTP_${response.status}` };
+  return response.blob();
+};
+
 export const sendChatMessageStream = async ({ message, conversation_id = null }, onChunk) => {
   if (!message || typeof message !== 'string') {
     throw {

@@ -1,10 +1,12 @@
 import json
 import re
 import logging
+import httpx
 from collections import Counter
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
@@ -15,6 +17,7 @@ from app.models.emotion_log import EmotionLog
 from app.models.meditation_session import MeditationSession
 from app.routers.auth import get_current_user
 from app.services.engines.factory import get_llm_engine
+from app.core.config import settings
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
@@ -246,3 +249,185 @@ async def get_meditation_stats(
     except Exception as e:
         logger.error(f"Failed to fetch meditation stats: {e}")
         return {"total_minutes": 0, "top_pattern": "None", "session_count": 0, "history_dict": {}, "insight": "Start your journey today."}
+
+
+# ── Voice Chat ────────────────────────────────────────────────────────────────
+
+class VoiceChatMessage(BaseModel):
+    role: str   # "user" | "assistant"
+    content: str
+
+class VoiceChatRequest(BaseModel):
+    messages: List[VoiceChatMessage]
+    turn: int           # 1, 2, or 3
+    context: str = "guided"  # "guided" | "breathwork"
+
+EMOTION_TO_PATTERN = {
+    "fear": "box", "anxiety": "box", "stress": "box",
+    "sadness": "calm", "grief": "calm", "depression": "calm",
+    "anger": "wim_hof", "frustration": "wim_hof",
+    "joy": "coherent", "happiness": "coherent", "gratitude": "coherent",
+    "neutral": "box", "tired": "deep", "exhausted": "deep",
+}
+
+EMOTION_TO_TRACK = {
+    "fear": "fear", "anxiety": "fear", "stress": "fear",
+    "sadness": "fear", "grief": "fear", "anger": "fear",
+    "joy": "fear", "neutral": "fear", "tired": "fear",
+}
+
+def _detect_emotion_from_text(text: str) -> Optional[str]:
+    text_lower = text.lower()
+    keywords = {
+        "fear": ["scared", "afraid", "fear", "anxious", "anxiety", "worry", "worried", "panic", "nervous", "overwhelm"],
+        "sadness": ["sad", "depressed", "down", "low", "grief", "cry", "hopeless", "empty", "lonely", "lost"],
+        "anger": ["angry", "frustrated", "annoyed", "irritated", "rage", "mad", "furious", "upset"],
+        "joy": ["happy", "great", "good", "excited", "grateful", "joyful", "amazing", "wonderful", "calm"],
+        "tired": ["tired", "exhausted", "drained", "fatigue", "sleepy", "worn"],
+    }
+    for emotion, words in keywords.items():
+        if any(w in text_lower for w in words):
+            return emotion
+    return None
+
+
+@router.post("/voice-chat")
+async def voice_chat(
+    request: VoiceChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Multi-turn voice conversation that guides user into a meditation session.
+    Max 3 user turns — always resolves to start_session by turn 3.
+    Falls back to journal/emotion log data if emotion is unclear.
+    """
+    try:
+        # For breathwork context: short single-turn guidance only
+        if request.context == "breathwork":
+            user_msg = request.messages[-1].content if request.messages else ""
+            system = "You are a calm meditation guide. Respond in ONE sentence only. Be grounding and reassuring. Never mention specific technique names."
+            prompt = f'The user is mid-breathwork session and says: "{user_msg}". Give a brief reassuring cue.'
+            engine = get_llm_engine()
+            text = await engine.generate(system, [{"role": "user", "content": prompt}], max_tokens=80, temperature=0.6)
+            return {"text": text.strip(), "action": None}
+
+        # Build conversation history for LLM
+        history = [{"role": m.role, "content": m.content} for m in request.messages]
+
+        # Try to detect emotion from conversation so far
+        user_messages = [m.content for m in request.messages if m.role == "user"]
+        combined_user_text = " ".join(user_messages)
+        detected_emotion = _detect_emotion_from_text(combined_user_text)
+
+        # Fallback to DB emotion/journal data if unclear
+        if not detected_emotion:
+            try:
+                since = datetime.utcnow() - timedelta(days=30)
+                emotion_stmt = (
+                    select(EmotionLog)
+                    .where(EmotionLog.user_id == current_user.id)
+                    .where(EmotionLog.created_at >= since)
+                    .order_by(desc(EmotionLog.created_at))
+                    .limit(10)
+                )
+                logs = (await db.execute(emotion_stmt)).scalars().all()
+                if logs:
+                    counts = Counter(log.primary_emotion for log in logs)
+                    detected_emotion = counts.most_common(1)[0][0]
+            except Exception:
+                detected_emotion = "neutral"
+
+        pattern = EMOTION_TO_PATTERN.get(detected_emotion or "neutral", "box")
+        track_id = EMOTION_TO_TRACK.get(detected_emotion or "neutral", "fear")
+
+        # Turn 3 or emotion clearly detected after turn 2 → resolve immediately
+        should_resolve = request.turn >= 3 or (request.turn == 2 and detected_emotion is not None)
+
+        if should_resolve:
+            system = (
+                "You are Serenity, a warm meditation guide. "
+                "Write ONE to TWO sentences that acknowledge what the user shared and signal "
+                "their session is ready. Never mention breathing technique names or pattern names. "
+                "Be warm, human, and poetic. End with something like 'your session is ready' or "
+                "'let it carry you' — but vary the phrasing naturally."
+            )
+            history_for_llm = history + [{
+                "role": "user",
+                "content": f"[Internal: emotion={detected_emotion}, resolve now, start session]"
+            }]
+            engine = get_llm_engine()
+            text = await engine.generate(system, history_for_llm, max_tokens=100, temperature=0.75)
+            return {
+                "text": text.strip(),
+                "action": "start_session",
+                "track_id": track_id,
+                "pattern": pattern,
+                "emotion": detected_emotion or "neutral",
+            }
+
+        # Turn 1 with no user messages yet → opening line
+        if not user_messages:
+            return {"text": "Take a breath. How are you feeling right now?", "action": None}
+
+        # Turn 2 → follow-up if emotion not yet clear, or gentle confirmation
+        system = (
+            "You are Serenity, a warm meditation guide having a short voice conversation. "
+            "Ask ONE gentle follow-up question to understand the user better. "
+            "Keep it under 20 words. Never mention technique or pattern names. "
+            "Be warm and human — like a trusted friend, not a therapist."
+        )
+        engine = get_llm_engine()
+        text = await engine.generate(system, history, max_tokens=60, temperature=0.7)
+        return {"text": text.strip(), "action": None}
+
+    except Exception as e:
+        logger.error(f"Voice chat failed: {e}")
+        return {
+            "text": "I've prepared your session. Let it carry you.",
+            "action": "start_session",
+            "track_id": "fear",
+            "pattern": "box",
+            "emotion": "neutral",
+        }
+
+
+# ── Kokoro TTS Speak ──────────────────────────────────────────────────────────
+
+class SpeakRequest(BaseModel):
+    text: str
+
+@router.post("/speak")
+async def speak(
+    request: SpeakRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Proxy text to Kokoro TTS and stream audio back to client."""
+    if not settings.kokoro_url:
+        # No Kokoro configured — return 204 so frontend falls back to browser TTS
+        return Response(status_code=204)
+
+    text = request.text.strip()[:500]  # cap length for safety
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                f"{settings.kokoro_url}/v1/audio/speech",
+                json={
+                    "model": "kokoro",
+                    "input": text,
+                    "voice": settings.kokoro_voice,
+                    "response_format": "mp3",
+                },
+            )
+            resp.raise_for_status()
+            audio_bytes = resp.content
+
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={"Cache-Control": "no-cache"},
+        )
+    except Exception as e:
+        logger.error(f"Kokoro TTS failed: {e}")
+        return Response(status_code=204)

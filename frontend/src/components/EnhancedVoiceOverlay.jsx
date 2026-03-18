@@ -1,15 +1,12 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { VoiceWaveform } from './VoiceWaveform';
+import { useRef, useEffect, useState } from 'react';
 import { VoiceMessageBubble } from './VoiceMessageBubble';
-import { VoiceActivityIndicator } from './VoiceActivityIndicator';
 import { VoiceParticles } from './VoiceParticles';
 import { VoiceErrorRecovery } from './VoiceErrorRecovery';
 import styles from './EnhancedVoiceOverlay.module.css';
-import '../styles/voice-design.css';
 
 /**
- * EnhancedVoiceOverlay - Tier S voice mode interface
- * Composes all voice sub-components. Parent controls visibility via conditional rendering.
+ * EnhancedVoiceOverlay - Full-screen immersive voice mode
+ * Cinematic dark canvas with reactive orb, waveform bars, and ambient effects
  */
 export function EnhancedVoiceOverlay({
   status = 'idle',
@@ -22,16 +19,16 @@ export function EnhancedVoiceOverlay({
   onInterrupt,
 }) {
   const messagesEndRef = useRef(null);
-  const [particleTrigger, setParticleTrigger] = useState(0);
-  const previousStatusRef = useRef(status);
   const overlayRef = useRef(null);
   const touchStartY = useRef(null);
+  const [particleTrigger, setParticleTrigger] = useState(0);
+  const prevStatus = useRef(status);
 
   // Trigger particles on state transitions
   useEffect(() => {
-    if (status !== previousStatusRef.current) {
+    if (status !== prevStatus.current) {
       setParticleTrigger((t) => t + 1);
-      previousStatusRef.current = status;
+      prevStatus.current = status;
     }
   }, [status]);
 
@@ -40,116 +37,128 @@ export function EnhancedVoiceOverlay({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Swipe-down to exit (mobile)
+  // Swipe-down to exit on mobile
   useEffect(() => {
     const el = overlayRef.current;
     if (!el) return;
-
-    const onTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
-    const onTouchEnd = (e) => {
-      if (touchStartY.current === null) return;
-      const delta = e.changedTouches[0].clientY - touchStartY.current;
-      if (delta > 100) onExit?.();
-      touchStartY.current = null;
+    const onStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
     };
-
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    const onEnd = (e) => {
+      if (touchStartY.current !== null) {
+        if (e.changedTouches[0].clientY - touchStartY.current > 120) onExit?.();
+        touchStartY.current = null;
+      }
+    };
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchend', onEnd, { passive: true });
     return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchend', onEnd);
     };
   }, [onExit]);
 
-  const waveformActive = status === 'listening' || status === 'speaking';
+  // Lock body scroll while overlay is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
-  const getOrbClass = () => {
-    switch (status) {
-      case 'listening': return styles.orbListening;
-      case 'processing': return styles.orbProcessing;
-      case 'speaking': return styles.orbSpeaking;
-      default: return styles.orbIdle;
-    }
-  };
+  const statusLabel = {
+    idle: 'Ready',
+    listening: 'Listening\u2026',
+    processing: 'Thinking\u2026',
+    speaking: 'Speaking\u2026',
+  }[status] || 'Ready';
 
-  const getGlowClass = () => {
-    switch (status) {
-      case 'listening': return 'voiceOrbGlowListening';
-      case 'processing': return 'voiceOrbGlowListening';
-      case 'speaking': return 'voiceOrbGlowSpeaking';
-      default: return 'voiceOrbGlowIdle';
-    }
-  };
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const orbStateClass = styles[`orb${cap(status)}`] || styles.orbIdle;
+  const statusClass = styles[`status${cap(status)}`] || '';
+  const barClass = styles[`bar${cap(status)}`] || '';
 
   return (
-    <div className={styles.overlayContainer} ref={overlayRef}>
-      <VoiceParticles trigger={particleTrigger} count={12} status={status} />
+    <div className={styles.overlay} ref={overlayRef}>
+      {/* Ambient particle effects */}
+      <VoiceParticles trigger={particleTrigger} count={10} status={status} />
 
-      {/* Header */}
-      <div className={styles.header}>
-        <button className={styles.closeButton} onClick={onExit} aria-label="Exit voice mode">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
-        <h2>Voice Session</h2>
-        <div style={{ width: '20px' }} />
-      </div>
+      {/* Close button — glassmorphism circle */}
+      <button className={styles.closeBtn} onClick={onExit} aria-label="Exit voice mode">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M14 4L4 14M4 4l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </button>
 
-      <div className={styles.content}>
-        {/* Orb — tap to interrupt when speaking */}
-        <div className={styles.orbSection}>
+      {/* Central content */}
+      <div className={styles.center}>
+        {/* The Orb */}
+        <div className={styles.orbWrap}>
           <div
-            className={`${styles.orb} ${getOrbClass()} ${getGlowClass()}`}
+            className={`${styles.orb} ${orbStateClass}`}
             onClick={status === 'speaking' ? onInterrupt : undefined}
             role={status === 'speaking' ? 'button' : undefined}
             aria-label={status === 'speaking' ? 'Tap to interrupt' : undefined}
-            style={{ cursor: status === 'speaking' ? 'pointer' : 'default' }}
           />
-          <VoiceActivityIndicator status={status} />
+          <div className={`${styles.orbRing} ${status === 'listening' ? styles.ringActive : ''}`} />
         </div>
 
-        {/* Waveform */}
-        {waveformActive && (
-          <VoiceWaveform
-            isActive={waveformActive}
-            status={status}
-            audioData={Array.from(frequencyData)}
-          />
+        {/* Status label */}
+        <p className={`${styles.statusText} ${statusClass}`}>{statusLabel}</p>
+
+        {/* Waveform / Processing dots */}
+        {status === 'processing' ? (
+          <div className={styles.processingDots}>
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+          </div>
+        ) : (
+          <div className={styles.waveform}>
+            {Array.from(frequencyData).map((val, i) => (
+              <div
+                key={i}
+                className={`${styles.bar} ${barClass}`}
+                style={{ height: `${Math.max(3, (val / 100) * 44)}px` }}
+              />
+            ))}
+          </div>
         )}
 
         {/* Live transcript */}
         {transcript && (
-          <div className={styles.transcriptBox}>
+          <div className={styles.transcript}>
             <p className={styles.transcriptText}>{transcript}</p>
-            <div className={styles.cursor} />
+            <span className={styles.cursor} />
           </div>
         )}
 
-        {/* Conversation messages */}
-        <div className={styles.messagesContainer}>
-          {messages.map((msg, i) => (
-            <VoiceMessageBubble
-              key={msg.timestamp?.getTime?.() || i}
-              message={msg.content}
-              role={msg.role}
-              timestamp={msg.timestamp}
-              confidence={msg.confidence}
-              index={i}
-            />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+        {/* Conversation history */}
+        {messages.length > 0 && (
+          <div className={styles.messages}>
+            {messages.map((msg, i) => (
+              <VoiceMessageBubble
+                key={msg.timestamp?.getTime?.() || i}
+                message={msg.content}
+                role={msg.role}
+                timestamp={msg.timestamp}
+                confidence={msg.confidence}
+                index={i}
+              />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
+      {/* Bottom hint */}
+      <p className={styles.hint}>
+        {status === 'speaking' ? 'Tap the orb to interrupt' : 'Swipe down to exit'}
+      </p>
+
       {/* Error recovery */}
-      {error && (
-        <VoiceErrorRecovery
-          error={error}
-          onRetry={onRetry}
-          onClose={onExit}
-        />
-      )}
+      {error && <VoiceErrorRecovery error={error} onRetry={onRetry} onClose={onExit} />}
     </div>
   );
 }

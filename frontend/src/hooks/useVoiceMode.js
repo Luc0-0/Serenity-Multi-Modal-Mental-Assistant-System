@@ -5,7 +5,7 @@ import { useHapticFeedback } from './useVoiceEnhancements';
 /**
  * useVoiceMode - Complete voice conversation management
  * Handles: STT (Web Speech API), TTS (Kokoro + browser fallback),
- * state machine, interruption, frequency analysis, error recovery
+ * state machine, interruption, mic + TTS frequency analysis, error recovery
  */
 export function useVoiceMode({ sendChatMessage, conversationId, onConversationCreated, onMessageAdded }) {
   // ── State ──
@@ -23,10 +23,17 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
+  const ttsSourceRef = useRef(null);
   const animFrameRef = useRef(null);
   const listenRef = useRef(null);
   const processRef = useRef(null);
   const exitingRef = useRef(false);
+
+  // Mic stream refs (separate from TTS)
+  const micStreamRef = useRef(null);
+  const micSourceRef = useRef(null);
+  const micAnalyserRef = useRef(null);
+  const micAnimFrameRef = useRef(null);
 
   const haptic = useHapticFeedback();
 
@@ -35,13 +42,79 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       ? window.SpeechRecognition || window.webkitSpeechRecognition || null
       : null;
 
-  // ── Frequency Analysis (for waveform visualization) ──
-  const startFrequencyAnalysis = useCallback((audioElement) => {
+  // ── Ensure AudioContext ──
+  const getAudioContext = useCallback(async () => {
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') await ctx.resume();
+    return ctx;
+  }, []);
+
+  // ── Mic Frequency Analysis (drives waveform during listening) ──
+  const startMicAnalysis = useCallback(async () => {
     try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      if (!micStreamRef.current || !micStreamRef.current.active) {
+        micStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
-      const ctx = audioContextRef.current;
+      const ctx = await getAudioContext();
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
+      micAnalyserRef.current = analyser;
+
+      const source = ctx.createMediaStreamSource(micStreamRef.current);
+      source.connect(analyser);
+      micSourceRef.current = source;
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const bands = new Uint8Array(16);
+      const binPerBand = Math.floor(dataArray.length / 16);
+
+      const update = () => {
+        analyser.getByteFrequencyData(dataArray);
+        for (let i = 0; i < 16; i++) {
+          let sum = 0;
+          for (let j = i * binPerBand; j < (i + 1) * binPerBand; j++) {
+            sum += dataArray[j];
+          }
+          bands[i] = Math.min(100, Math.round((sum / binPerBand / 255) * 250));
+        }
+        setFrequencyData(new Uint8Array(bands));
+        micAnimFrameRef.current = requestAnimationFrame(update);
+      };
+      micAnimFrameRef.current = requestAnimationFrame(update);
+    } catch (_) {
+      // Mic visualization unavailable — voice mode still works via SpeechRecognition
+    }
+  }, [getAudioContext]);
+
+  const stopMicAnalysis = useCallback(() => {
+    if (micAnimFrameRef.current) {
+      cancelAnimationFrame(micAnimFrameRef.current);
+      micAnimFrameRef.current = null;
+    }
+    if (micSourceRef.current) {
+      try { micSourceRef.current.disconnect(); } catch (_) {}
+      micSourceRef.current = null;
+    }
+    micAnalyserRef.current = null;
+  }, []);
+
+  const releaseMicStream = useCallback(() => {
+    stopMicAnalysis();
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+  }, [stopMicAnalysis]);
+
+  // ── TTS Frequency Analysis (drives waveform during speaking) ──
+  const startTTSAnalysis = useCallback(async (audioElement) => {
+    try {
+      const ctx = await getAudioContext();
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.85;
@@ -50,6 +123,7 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       source.connect(analyser);
       analyser.connect(ctx.destination);
       analyserRef.current = analyser;
+      ttsSourceRef.current = source;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       const bands = new Uint8Array(16);
@@ -69,16 +143,38 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       };
       animFrameRef.current = requestAnimationFrame(update);
     } catch (_) {
-      // Fallback: AudioContext not available
+      // TTS visualization unavailable
     }
-  }, []);
+  }, [getAudioContext]);
 
-  const stopFrequencyAnalysis = useCallback(() => {
+  const stopTTSAnalysis = useCallback(() => {
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
+    if (ttsSourceRef.current) {
+      try { ttsSourceRef.current.disconnect(); } catch (_) {}
+      ttsSourceRef.current = null;
+    }
+    if (analyserRef.current) {
+      try { analyserRef.current.disconnect(); } catch (_) {}
+      analyserRef.current = null;
+    }
     setFrequencyData(new Uint8Array(16));
+  }, []);
+
+  // ── Simulated waveform for browser speechSynthesis fallback ──
+  const startSimulatedWaveform = useCallback(() => {
+    const update = () => {
+      const t = Date.now() / 1000;
+      const bands = new Uint8Array(16);
+      for (let i = 0; i < 16; i++) {
+        bands[i] = Math.round(18 + 28 * Math.abs(Math.sin(t * 2.2 + i * 0.45)));
+      }
+      setFrequencyData(new Uint8Array(bands));
+      animFrameRef.current = requestAnimationFrame(update);
+    };
+    animFrameRef.current = requestAnimationFrame(update);
   }, []);
 
   // ── TTS: Kokoro with browser fallback ──
@@ -95,7 +191,7 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
         const audio = new Audio(url);
         audioRef.current = audio;
 
-        startFrequencyAnalysis(audio);
+        await startTTSAnalysis(audio);
 
         await new Promise((resolve) => {
           audio.onended = resolve;
@@ -103,7 +199,7 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
           audio.play().catch(resolve);
         });
 
-        stopFrequencyAnalysis();
+        stopTTSAnalysis();
         URL.revokeObjectURL(url);
         audioRef.current = null;
         return;
@@ -112,9 +208,10 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       /* fall through to browser TTS */
     }
 
-    // Browser TTS fallback
+    // Browser TTS fallback with simulated waveform
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
+      startSimulatedWaveform();
       await new Promise((resolve) => {
         const utt = new SpeechSynthesisUtterance(text);
         utt.rate = 0.9;
@@ -127,28 +224,27 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
         window.speechSynthesis.speak(utt);
         setTimeout(resolve, 20000);
       });
+      stopTTSAnalysis();
     }
-  }, [haptic, startFrequencyAnalysis, stopFrequencyAnalysis]);
+  }, [haptic, startTTSAnalysis, stopTTSAnalysis, startSimulatedWaveform]);
 
   // ── Interrupt: stop AI speaking, resume listening ──
   const interrupt = useCallback(() => {
     if (voiceStatus !== 'speaking') return;
     haptic.tap();
 
-    // Stop Kokoro audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    // Stop browser TTS
     window.speechSynthesis?.cancel();
-    stopFrequencyAnalysis();
+    stopTTSAnalysis();
 
-    // Resume listening
+    startMicAnalysis();
     setVoiceStatus('listening');
     setTimeout(() => listenRef.current?.(), 200);
-  }, [voiceStatus, haptic, stopFrequencyAnalysis]);
+  }, [voiceStatus, haptic, stopTTSAnalysis, startMicAnalysis]);
 
   // ── Listen (STT via Web Speech API) ──
   listenRef.current = () => {
@@ -248,9 +344,11 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
   // ── Process: send transcribed text to chat API ──
   processRef.current = async (userText) => {
     if (abortRef.current) return;
+    stopMicAnalysis();
     haptic.tap();
     setVoiceStatus('processing');
     setTranscript('');
+    setFrequencyData(new Uint8Array(16));
 
     const userMsg = { role: 'user', content: userText, timestamp: new Date(), confidence: 0.85 };
     setVoiceMessages((prev) => [...prev, userMsg]);
@@ -291,6 +389,7 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
 
       if (abortRef.current) return;
       haptic.processing();
+      await startMicAnalysis();
       setTimeout(() => listenRef.current?.(), 400);
     } catch (err) {
       if (abortRef.current) return;
@@ -298,7 +397,10 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       setError({ type: 'network', message: 'Connection issue. Trying again...', recoverable: true });
       setTimeout(() => {
         setError(null);
-        if (!abortRef.current) listenRef.current?.();
+        if (!abortRef.current) {
+          startMicAnalysis();
+          listenRef.current?.();
+        }
       }, 2000);
     }
   };
@@ -314,10 +416,11 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
     abortRef.current = false;
     convIdRef.current = conversationId;
 
+    startMicAnalysis();
     setTimeout(() => {
       if (!abortRef.current) listenRef.current?.();
     }, 600);
-  }, [conversationId, haptic]);
+  }, [conversationId, haptic, startMicAnalysis]);
 
   // ── Exit Voice Mode ──
   const exitVoiceMode = useCallback(() => {
@@ -333,25 +436,28 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
       audioRef.current = null;
     }
     window.speechSynthesis?.cancel();
-    stopFrequencyAnalysis();
+    stopTTSAnalysis();
+    releaseMicStream();
 
     setTimeout(() => {
       setVoiceMode(false);
       setVoiceStatus('idle');
       setTranscript('');
       setError(null);
+      setFrequencyData(new Uint8Array(16));
       exitingRef.current = false;
     }, 400);
-  }, [haptic, stopFrequencyAnalysis]);
+  }, [haptic, stopTTSAnalysis, releaseMicStream]);
 
   // ── Retry ──
   const retryLastAction = useCallback(() => {
     setError(null);
     haptic.tap();
     if (!abortRef.current) {
+      startMicAnalysis();
       listenRef.current?.();
     }
-  }, [haptic]);
+  }, [haptic, startMicAnalysis]);
 
   // ── Auto-clear errors after 5s ──
   useEffect(() => {
@@ -370,12 +476,13 @@ export function useVoiceMode({ sendChatMessage, conversationId, onConversationCr
         audioRef.current = null;
       }
       window.speechSynthesis?.cancel();
-      stopFrequencyAnalysis();
+      stopTTSAnalysis();
+      releaseMicStream();
       if (audioContextRef.current) {
         audioContextRef.current.close().catch(() => {});
       }
     };
-  }, [stopFrequencyAnalysis]);
+  }, [stopTTSAnalysis, releaseMicStream]);
 
   return {
     voiceMode,

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import styles from "./Meditate.module.css";
 import { useBreathingTimer, PATTERNS } from "../hooks/useBreathingTimer";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
-import { useVoiceSession } from "../hooks/useVoiceSession";
+
 import { getMeditationSuggestion, logMeditationSession, getMeditationStats } from "../services/api";
 
 const BREATHWORK_KEYS = ["box", "calm", "deep", "wim_hof", "coherent"];
@@ -104,28 +104,6 @@ export function Meditate() {
 
   // Guided audio — must be before voice session
   const guidedAudio = useAudioPlayer();
-
-  // Voice session — declared after its dependencies
-  const handleVoiceSessionStart = useCallback(({ track_id, pattern, emotion }) => {
-    const track = TRACKS.find((t) => t.id === track_id) || TRACKS[0];
-    setActiveTrackId(track.id);
-    guidedAudio.loadAudio(track.file);
-    setSelectedBreath(pattern);
-    completionFiredRef.current = false;
-    setSuggestion({
-      suggested_pattern: pattern || "box",
-      emotion: emotion || "neutral",
-      insight: "Serenity crafted this session based on your conversation.",
-    });
-    setTimeout(() => guidedAudio.play(), 600);
-  }, [guidedAudio]);
-
-  const handleBreathworkCue = useCallback(() => {}, []);
-
-  const voice = useVoiceSession({
-    onSessionStart: handleVoiceSessionStart,
-    onBreathworkCue: handleBreathworkCue,
-  });
 
   // Fetch stats whenever nulled (on load + after each session save)
   useEffect(() => {
@@ -301,7 +279,7 @@ export function Meditate() {
     setSelectedBreath(null);
   }, [breathing, selectedBreath, saveSession]);
 
-  // Clear component errors (voice.error auto-clears inside the hook)
+  // Clear errors
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(() => setError(null), 4000);
@@ -408,51 +386,6 @@ export function Meditate() {
             <span className={`${styles.moon} ${styles.moon2} ${isOrbActive ? styles.moonActive : ""}`} />
             <span className={`${styles.moon} ${styles.moon3} ${isOrbActive ? styles.moonActive : ""}`} />
           </div>
-
-          {/* Voice Mic Button — orbital position (right of orb) */}
-          {!guidedAudio.isPlaying && voice.status !== "session_ready" && (
-            <button
-              className={`${styles.voiceMicBtn} ${
-                voice.isListening ? styles.voiceMicListening :
-                voice.isSpeaking ? styles.voiceMicSpeaking :
-                voice.isProcessing ? styles.voiceMicProcessing : ""
-              }`}
-              onClick={() => {
-                if (voice.isActive) voice.stopConversation();
-                else voice.startConversation();
-              }}
-              title={voice.isActive ? "Stop voice session" : "Talk to Serenity"}
-            >
-              {voice.isListening ? (
-                <span className={styles.micWaves}>
-                  {[...Array(3)].map((_, i) => (
-                    <span key={i} className={styles.micWave} style={{ animationDelay: `${i * 0.15}s` }} />
-                  ))}
-                </span>
-              ) : (
-                <svg className={styles.micIcon} viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="2" width="6" height="11" rx="3" fill="currentColor" opacity="0.9"/>
-                  <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-                  <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                  <line x1="9" y1="21" x2="15" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
-              )}
-            </button>
-          )}
-
-          {/* Voice status label */}
-          {voice.isActive && (
-            <div className={styles.voiceStatusLabel}>
-              {voice.isProcessing && "thinking..."}
-              {voice.isSpeaking && "speaking..."}
-              {voice.isListening && "listening..."}
-            </div>
-          )}
-
-          {/* Voice transcript bubble */}
-          {voice.transcript && (
-            <div className={styles.voiceTranscript}>{voice.transcript}</div>
-          )}
 
           {/* Orb */}
           <div
@@ -622,23 +555,6 @@ export function Meditate() {
             )}
           </div>
 
-          {/* Breathwork mic check-in */}
-          {breathing.isRunning && (
-            <button
-              className={`${styles.breathMicBtn} ${
-                voice.status === "breathwork_listening" ? styles.breathMicListening : ""
-              }`}
-              onClick={voice.breathworkCheckIn}
-              title="Check in with Serenity"
-            >
-              <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
-                <rect x="9" y="2" width="6" height="11" rx="3" fill="currentColor" opacity="0.8"/>
-                <path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-                <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </button>
-          )}
-
           {/* Insight Card (crescent — preserved) */}
           <div className={styles.insightBox}>
             <div className={styles.insightContent}>
@@ -660,9 +576,7 @@ export function Meditate() {
       </p>
 
       {/* Error toast */}
-      {(error || voice.error) && (
-        <div className={styles.errorToast}>{error || voice.error}</div>
-      )}
+      {error && <div className={styles.errorToast}>{error}</div>}
 
       {/* Cinematic overlay */}
       <div

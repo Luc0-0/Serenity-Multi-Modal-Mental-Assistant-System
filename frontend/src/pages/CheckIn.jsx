@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../context/AuthContext";
 import { useConversationRefresh } from "../contexts/ConversationRefreshContext";
+import { useVoiceSession } from "../hooks/useVoiceSession";
 import { CrisisAlert } from "../components/CrisisAlert";
 import { SerenityDeck } from "../components/SerenityDeck";
 import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
@@ -74,6 +75,14 @@ export function CheckIn() {
   const [showInsights, setShowInsights] = useState(window.innerWidth > 768);
   const [isDeckPinned, setIsDeckPinned] = useState(false);
 
+  // Voice mode state
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [voiceExiting, setVoiceExiting] = useState(false);
+
+  // Inline mic state
+  const [inlineMicActive, setInlineMicActive] = useState(false);
+  const inlineRecognitionRef = useRef(null);
+
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
@@ -86,6 +95,26 @@ export function CheckIn() {
 
   const [emotionData, setEmotionData] = useState(null);
   const [emotionLoading, setEmotionLoading] = useState(false);
+
+  // Voice session for dedicated voice mode
+  const {
+    status: voiceStatus,
+    transcript: voiceTranscript,
+    error: voiceError,
+    isActive: voiceIsActive,
+    startConversation: startVoiceConversation,
+    stopConversation: stopVoiceConversation,
+    isListening: voiceIsListening,
+    isSpeaking: voiceIsSpeaking,
+    isProcessing: voiceIsProcessing,
+  } = useVoiceSession({
+    onSessionStart: null,
+    onBreathworkCue: null,
+  });
+
+  // Voice mode messages (separate from chat messages for voice overlay display)
+  const [voiceMessages, setVoiceMessages] = useState([]);
+  const voiceMessagesEndRef = useRef(null);
 
   /* Transition state: orb shrinks before chat appears */
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -372,6 +401,105 @@ export function CheckIn() {
     finalizeAndReset(conversationId, messages.length);
   }, [finalizeAndReset, conversationId, messages.length]);
 
+  /* ── Voice Mode ── */
+  const enterVoiceMode = useCallback(() => {
+    setVoiceMode(true);
+    setVoiceExiting(false);
+    setVoiceMessages([]);
+    if (!isInChat) enterChat();
+    startVoiceConversation();
+  }, [isInChat, enterChat, startVoiceConversation]);
+
+  const exitVoiceMode = useCallback(() => {
+    setVoiceExiting(true);
+    stopVoiceConversation();
+    setTimeout(() => {
+      setVoiceMode(false);
+      setVoiceExiting(false);
+    }, 400);
+  }, [stopVoiceConversation]);
+
+  // Sync voice session messages to voiceMessages for overlay display
+  useEffect(() => {
+    if (voiceStatus === 'speaking' && voiceTranscript) {
+      setVoiceMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === 'user' && last?.text === voiceTranscript) return prev;
+        return [...prev, { role: 'user', text: voiceTranscript, id: Date.now() }];
+      });
+    }
+  }, [voiceStatus, voiceTranscript]);
+
+  // Scroll voice messages
+  useEffect(() => {
+    voiceMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [voiceMessages]);
+
+  /* ── Inline Mic (Speech-to-Text for chat input) ── */
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+
+  const toggleInlineMic = useCallback(() => {
+    if (inlineMicActive) {
+      try { inlineRecognitionRef.current?.stop(); } catch (_) {}
+      inlineRecognitionRef.current = null;
+      setInlineMicActive(false);
+      return;
+    }
+
+    if (!SpeechRecognition) {
+      setError('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+    inlineRecognitionRef.current = recognition;
+    setInlineMicActive(true);
+
+    let finalText = '';
+
+    recognition.onresult = (e) => {
+      let interim = '';
+      finalText = '';
+      for (let i = 0; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      setInputValue(finalText || interim);
+    };
+
+    recognition.onerror = (e) => {
+      if (e.error === 'not-allowed') {
+        setError('Microphone access denied. Please allow mic permission.');
+      }
+      setInlineMicActive(false);
+      inlineRecognitionRef.current = null;
+    };
+
+    recognition.onend = () => {
+      setInlineMicActive(false);
+      inlineRecognitionRef.current = null;
+    };
+
+    try {
+      recognition.start();
+    } catch (_) {
+      setInlineMicActive(false);
+      inlineRecognitionRef.current = null;
+    }
+  }, [inlineMicActive, SpeechRecognition]);
+
+  // Cleanup inline mic on unmount
+  useEffect(() => {
+    return () => {
+      try { inlineRecognitionRef.current?.stop(); } catch (_) {}
+    };
+  }, []);
+
   const handleSelectConversation = async (convId) => {
     try {
       if (streamingRef.current) clearTimeout(streamingRef.current);
@@ -513,6 +641,13 @@ export function CheckIn() {
                     >
                       <span className={styles.actionBtnBar} />
                       Meditate
+                    </button>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={enterVoiceMode}
+                    >
+                      <span className={styles.actionBtnBar} />
+                      Voice
                     </button>
                   </div>
                 </div>
@@ -686,6 +821,39 @@ export function CheckIn() {
                   aria-label="Send message"
                   disabled={isLoading && !isStreaming}
                 />
+                <AnimatedTooltip content={inlineMicActive ? "Stop recording" : "Voice input"} placement="top">
+                  <button
+                    className={`${styles.micBtn} ${inlineMicActive ? styles.micBtnActive : ''}`}
+                    onClick={toggleInlineMic}
+                    aria-label={inlineMicActive ? "Stop voice input" : "Start voice input"}
+                  >
+                    {inlineMicActive ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="6" width="12" height="12" rx="2" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="22" />
+                      </svg>
+                    )}
+                  </button>
+                </AnimatedTooltip>
+                <AnimatedTooltip content="Voice conversation" placement="top">
+                  <button
+                    className={styles.voiceModeBtn}
+                    onClick={enterVoiceMode}
+                    aria-label="Enter voice conversation mode"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <line x1="12" y1="19" x2="12" y2="22" />
+                      <circle cx="12" cy="12" r="11" strokeDasharray="4 3" opacity="0.3" />
+                    </svg>
+                  </button>
+                </AnimatedTooltip>
                 {messages.length > 1 && (
                   <AnimatedTooltip content="Export conversation" placement="top">
                     <button
@@ -751,6 +919,73 @@ export function CheckIn() {
               </div>
             </div>
           </>
+        )}
+
+        {/* ── Voice Overlay ── */}
+        {voiceMode && (
+          <div className={`${styles.voiceOverlay} ${voiceExiting ? styles.voiceOverlayExiting : ''}`}>
+            {/* Voice Orb */}
+            <div className={`${styles.voiceOrb} ${
+              voiceIsListening ? styles.voiceOrbListening :
+              voiceIsProcessing ? styles.voiceOrbProcessing :
+              voiceIsSpeaking ? styles.voiceOrbSpeaking : ''
+            }`}>
+              <div className={styles.voiceOrbRing} />
+              <div className={styles.voiceOrbRing} />
+              <div className={styles.voiceOrbRing} />
+              <div className={styles.voiceOrbCore} />
+            </div>
+
+            {/* Status */}
+            <div className={`${styles.voiceStatus} ${
+              voiceIsListening ? styles.voiceStatusListening :
+              voiceIsSpeaking ? styles.voiceStatusSpeaking : ''
+            }`}>
+              {voiceIsListening ? 'Listening...' :
+               voiceIsProcessing ? 'Thinking...' :
+               voiceIsSpeaking ? 'Speaking...' :
+               voiceStatus === 'idle' ? 'Starting...' : ''}
+            </div>
+
+            {/* Live transcript */}
+            <div className={styles.voiceTranscript}>
+              {voiceTranscript || (voiceIsListening ? 'Speak now...' : '')}
+            </div>
+
+            {/* Voice conversation history */}
+            {voiceMessages.length > 0 && (
+              <div className={styles.voiceMessages}>
+                {voiceMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`${styles.voiceMsg} ${
+                      msg.role === 'user' ? styles.voiceMsgUser : styles.voiceMsgAssistant
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                ))}
+                <div ref={voiceMessagesEndRef} />
+              </div>
+            )}
+
+            {/* Error */}
+            {voiceError && (
+              <div className={styles.voiceError}>{voiceError}</div>
+            )}
+
+            {/* End call */}
+            <button
+              className={styles.voiceEndBtn}
+              onClick={exitVoiceMode}
+              aria-label="End voice conversation"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 2.59 3.4Z" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            </button>
+          </div>
         )}
 
         {!isInChat && (

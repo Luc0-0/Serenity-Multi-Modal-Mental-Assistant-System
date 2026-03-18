@@ -1040,7 +1040,7 @@
 .voiceMicBtn {
   position: absolute;
   top: 50%;
-  left: calc(50% + 168px);
+  left: calc(50% + 270px);
   transform: translate(-50%, -50%);
   width: 52px;
   height: 52px;
@@ -2254,6 +2254,8 @@
   .orbReflection { top: 290px; bottom: auto; display: block; width: 220px; opacity: 0.5; }
   .orbCenter { top: 160px; left: 50%; transform: translate(-50%,-50%); }
   .progressWrap { top: 310px; bottom: auto; left: 50%; transform: translateX(-50%); }
+  /* On mobile, place mic below the orb ring instead of beside it (ring bottom ≈ 330px) */
+  .voiceMicBtn { top: 345px; left: 50%; width: 44px; height: 44px; }
 
   .gridContainer {
     width: 100%;

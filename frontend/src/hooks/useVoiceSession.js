@@ -8,17 +8,33 @@ function browserSpeak(text) {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
     window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 0.88;
-    utt.pitch = 0.95;
+
+    const speak = () => {
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate = 0.88;
+      utt.pitch = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const calm = voices.find(
+        (v) => /female|woman|samantha|zira|karen|moira/i.test(v.name)
+      ) || voices[0];
+      if (calm) utt.voice = calm;
+      utt.onend = resolve;
+      utt.onerror = resolve;
+      window.speechSynthesis.speak(utt);
+    };
+
+    // Voices may not be loaded yet on first call
     const voices = window.speechSynthesis.getVoices();
-    const calm = voices.find(
-      (v) => /female|woman|samantha|zira|karen|moira/i.test(v.name)
-    ) || voices[0];
-    if (calm) utt.voice = calm;
-    utt.onend = resolve;
-    utt.onerror = resolve;
-    window.speechSynthesis.speak(utt);
+    if (voices.length > 0) {
+      speak();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        speak();
+      };
+      // Fallback if event never fires
+      setTimeout(() => { if (window.speechSynthesis.speaking === false) speak(); }, 500);
+    }
   });
 }
 
@@ -28,10 +44,10 @@ async function speakWithFallback(text) {
     if (blob) {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve) => {
         audio.onended = resolve;
-        audio.onerror = reject;
-        audio.play().catch(reject);
+        audio.onerror = resolve; // resolve on error to keep flow going
+        audio.play().catch(resolve);
       });
       URL.revokeObjectURL(url);
       return;
@@ -48,8 +64,9 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
   const [error, setError] = useState(null);
 
   const abortRef = useRef(false);
+  const runningRef = useRef(false); // prevents concurrent startConversation calls
   const recognitionRef = useRef(null);
-  // Stable refs to break circular useCallback dependency
+  // Stable refs to break circular dependency
   const listenRef = useRef(null);
   const processRef = useRef(null);
   const onSessionStartRef = useRef(onSessionStart);
@@ -66,7 +83,6 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
     setTranscript('');
 
     if (!SpeechRecognition) {
-      // No speech API — skip to resolve
       processRef.current(currentTurn, currentMessages, 'I am not sure');
       return;
     }
@@ -77,6 +93,13 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
     let finalTranscript = '';
+    let dispatched = false; // ← prevents onerror + onend double-fire
+
+    const dispatch = (text) => {
+      if (dispatched || abortRef.current) return;
+      dispatched = true;
+      processRef.current(currentTurn, currentMessages, text || 'I am not sure');
+    };
 
     recognition.onresult = (e) => {
       let interim = '';
@@ -88,20 +111,20 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
       setTranscript(finalTranscript || interim);
     };
 
-    recognition.onerror = () => {
-      if (!abortRef.current) {
-        processRef.current(currentTurn, currentMessages, finalTranscript || 'I am not sure');
-      }
+    recognition.onerror = (e) => {
+      // 'no-speech' is normal (user was quiet) — still proceed
+      dispatch(finalTranscript);
     };
 
     recognition.onend = () => {
-      if (!abortRef.current) {
-        processRef.current(currentTurn, currentMessages, finalTranscript || 'I am not sure');
-      }
+      dispatch(finalTranscript);
     };
 
-    try { recognition.start(); } catch (_) {
-      processRef.current(currentTurn, currentMessages, 'I am not sure');
+    try {
+      recognition.start();
+    } catch (_) {
+      // Recognition already started or unavailable — dispatch immediately
+      dispatch(finalTranscript);
     }
   };
 
@@ -128,22 +151,29 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
 
       if (res.action === 'start_session') {
         setStatus('session_ready');
+        runningRef.current = false;
         onSessionStartRef.current?.({
           track_id: res.track_id || 'fear',
           pattern: res.pattern || 'box',
           emotion: res.emotion || 'neutral',
         });
       } else {
-        listenRef.current(nextTurn, allMessages);
+        // Small delay so browser recognition teardown from previous instance completes
+        setTimeout(() => listenRef.current(nextTurn, allMessages), 300);
       }
     } catch (_) {
-      setStatus('session_ready');
-      onSessionStartRef.current?.({ track_id: 'fear', pattern: 'box', emotion: 'neutral' });
+      if (!abortRef.current) {
+        setStatus('session_ready');
+        runningRef.current = false;
+        onSessionStartRef.current?.({ track_id: 'fear', pattern: 'box', emotion: 'neutral' });
+      }
     }
   };
 
   // ── Start guided conversation ──────────────────────────────────────────────
   const startConversation = useCallback(async () => {
+    if (runningRef.current) return; // prevent concurrent calls
+    runningRef.current = true;
     abortRef.current = false;
     setMessages([]);
     setTurn(1);
@@ -152,14 +182,15 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
 
     try {
       const res = await voiceChat({ messages: [], turn: 1, context: 'guided' });
-      if (abortRef.current) return;
+      if (abortRef.current) { runningRef.current = false; return; }
       const opening = [{ role: 'assistant', content: res.text }];
       setMessages(opening);
       setStatus('speaking');
       await speakWithFallback(res.text);
-      if (abortRef.current) return;
+      if (abortRef.current) { runningRef.current = false; return; }
       listenRef.current(1, opening);
     } catch (_) {
+      runningRef.current = false;
       setError('Could not start voice session.');
       setStatus('idle');
     }
@@ -177,10 +208,15 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
     recognition.interimResults = false;
     recognitionRef.current = recognition;
     let finalText = '';
+    let dispatched = false;
 
     recognition.onresult = (e) => { finalText = e.results[0][0].transcript; };
-    recognition.onerror = () => setStatus('breathwork_idle');
+    recognition.onerror = () => {
+      if (!dispatched) { dispatched = true; setStatus('breathwork_idle'); }
+    };
     recognition.onend = async () => {
+      if (dispatched) return;
+      dispatched = true;
       if (!finalText) { setStatus('breathwork_idle'); return; }
       setStatus('breathwork_processing');
       try {
@@ -202,17 +238,21 @@ export function useVoiceSession({ onSessionStart, onBreathworkCue }) {
   // ── Stop ───────────────────────────────────────────────────────────────────
   const stopConversation = useCallback(() => {
     abortRef.current = true;
+    runningRef.current = false;
     recognitionRef.current?.abort();
+    recognitionRef.current = null;
     window.speechSynthesis?.cancel();
     setStatus('idle');
     setMessages([]);
     setTurn(0);
     setTranscript('');
+    setError(null);
   }, []);
 
   useEffect(() => {
     return () => {
       abortRef.current = true;
+      runningRef.current = false;
       recognitionRef.current?.abort();
       window.speechSynthesis?.cancel();
     };

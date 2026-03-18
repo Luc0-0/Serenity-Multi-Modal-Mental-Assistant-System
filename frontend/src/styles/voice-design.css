@@ -1,0 +1,324 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SERENITY VOICE MODE — DESIGN SYSTEM
+   Apple-level UX patterns: Haptics, Easing Curves, Animations, Color Transitions
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── HAPTIC TIMING PATTERNS ── */
+  /* Haptic pulses are achieved via navigator.vibrate([pattern]) */
+  /* CSS durations mirror the haptic feedback timing for visual sync */
+  --haptic-tap: 50ms; /* single tap: [50] */
+  --haptic-double: 50ms; /* double tap: [50, 30, 50] */
+  --haptic-triple: 150ms; /* triple confirmation: [50, 30, 50, 30, 50] */
+  --haptic-pulse: 500ms; /* listening pulse: repeating [10, 5, 10, 5, 10] */
+  --haptic-warning: 200ms; /* error warning: [50, 50, 50] */
+
+  /* ── APPLE EASING CURVES ── */
+  --ease-in-out-smooth: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  ); /* smooth standard */
+  --ease-custom-apple: cubic-bezier(0.32, 0, 0.67, 0); /* processing pulse */
+  --ease-in-out-back: cubic-bezier(
+    0.68,
+    -0.55,
+    0.265,
+    1.55
+  ); /* bouncy entrance */
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1); /* quick exit */
+  --ease-in-sine: cubic-bezier(0.12, 0, 0.39, 0); /* gentle start */
+  --ease-out-sine: cubic-bezier(0.61, 1, 0.88, 1); /* gentle end */
+
+  /* ── ANIMATION DURATIONS (Apple HIG Standards) ── */
+  --duration-micro: 150ms; /* micro interactions (button hover) */
+  --duration-standard: 300ms; /* standard transitions (state changes) */
+  --duration-macro: 500ms; /* macro animations (overlay slide) */
+  --duration-breath: 4s; /* breathing rhythm (orb idle) */
+  --duration-pulse: 1.5s; /* pulse rhythm (processing) */
+  --duration-ripple: 2s; /* ripple decay (speaking) */
+
+  /* ── VOICE STATE COLORS ── */
+  --voice-idle: rgba(232, 168, 74, 0.3); /* warm amber, dim */
+  --voice-listening: #e8a84a; /* warm amber, bright */
+  --voice-processing: #f5c87a; /* light gold, focused */
+  --voice-speaking: #ffffff; /* soft white, AI's turn */
+  --voice-error: #ff6b6b; /* error red */
+
+  /* ── TEXT HIERARCHY FIXES ── */
+  --text-status: 18px; /* status label (was 14px) */
+  --text-transcript: 16px; /* live transcript (was 13px) */
+  --text-shadow-depth: 0 2px 8px rgba(0, 0, 0, 0.3); /* text shadow for legibility */
+
+  /* ── RIPPLE EFFECT ── */
+  --ripple-wave-count: 6;
+  --ripple-wave-size: 120px;
+  --ripple-wave-color: rgba(232, 168, 74, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ORBING MOTION — BREATHING & PULSE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes orbBreathing {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes orbPulsing {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(232, 168, 74, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(232, 168, 74, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(232, 168, 74, 0.4);
+  }
+}
+
+@keyframes orbRipple {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 30px rgba(255, 255, 255, 0),
+      0 0 40px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    box-shadow:
+      0 0 0 60px rgba(255, 255, 255, 0),
+      0 0 20px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Ring opacity variations for depth */
+@keyframes ringOpacityWave {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MIC BUTTON STATE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes micPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+@keyframes micWaveform {
+  0%,
+  100% {
+    height: 2px;
+  }
+  50% {
+    height: 12px;
+  }
+}
+
+/* Spinning dots for transcribing state */
+@keyframes dotsSpinner {
+  0%,
+  20% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEXT & INPUT MORPHING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cursorPulse {
+  0%,
+  50% {
+    border-color: rgba(232, 168, 74, 1);
+  }
+  100% {
+    border-color: rgba(232, 168, 74, 0.3);
+  }
+}
+
+@keyframes inputExpand {
+  from {
+    max-width: 200px;
+  }
+  to {
+    max-width: 500px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OVERLAY & GLASSMORPHISM EFFECTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes overlaySlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes overlaySlideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Message fade-in cascade */
+@keyframes messageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ERROR STATE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes errorPulse {
+  0%,
+  100% {
+    background-color: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.5);
+  }
+  50% {
+    background-color: rgba(255, 107, 107, 0.2);
+    border-color: rgba(255, 107, 107, 0.8);
+  }
+}
+
+@keyframes waveDecay {
+  from {
+    height: 24px;
+    opacity: 0.8;
+  }
+  to {
+    height: 4px;
+    opacity: 0.2;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Breathing orb (listening idle state) */
+.voiceOrbBreathing {
+  animation: orbBreathing var(--duration-breath) var(--ease-in-out-smooth)
+    infinite;
+}
+
+/* Pulsing orb (processing state) */
+.voiceOrbPulsing {
+  animation: orbPulsing var(--duration-pulse) var(--ease-custom-apple) infinite;
+}
+
+/* Rippling orb (speaking state) */
+.voiceOrbRippling {
+  animation: orbRipple var(--duration-ripple) var(--ease-out-expo) infinite;
+}
+
+/* Respects user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HAPTIC FEEDBACK SYNC
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Visual feedback timed with haptic patterns */
+.haptic-tap-visual {
+  animation: micPulse var(--haptic-tap) var(--ease-in-out-smooth);
+}
+
+.haptic-pulse-visual {
+  animation: micPulse var(--haptic-pulse) var(--ease-in-out-smooth) infinite;
+}
+
+.haptic-warning-visual {
+  animation: errorShake var(--haptic-warning) var(--ease-in-out-smooth);
+}

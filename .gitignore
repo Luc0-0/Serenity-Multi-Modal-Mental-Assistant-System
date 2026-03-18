@@ -86,3 +86,7 @@ backend/huggingface_cache/
 
 # Logs
 *.log
+
+# Docs / specs (internal only)
+docs/
+.github/

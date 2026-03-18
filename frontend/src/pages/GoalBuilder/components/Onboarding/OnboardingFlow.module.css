@@ -99,14 +99,14 @@
 
 .stepContainer {
   position: absolute;
-  top: 80px;
+  top: 60px;
   left: 0;
   right: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 32px;
+  padding: 40px 32px 80px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -329,8 +329,8 @@
   }
 
   .stepContainer {
-    top: 70px;
-    padding: 20px;
+    top: 55px;
+    padding: 32px 20px 60px;
   }
 
   .glassCard {
@@ -362,8 +362,8 @@
   }
 
   .stepContainer {
-    top: 60px;
-    padding: 16px;
+    top: 45px;
+    padding: 24px 16px 60px;
     align-items: flex-start;
   }
 

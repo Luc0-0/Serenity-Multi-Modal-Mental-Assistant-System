@@ -160,7 +160,7 @@ export default function OnboardingFlow({ onComplete, onSkip, initialStep = 0, in
       </AnimatePresence>
 
       {/* Skip option (only on first few steps) */}
-      {currentStep < 4 && (
+      {currentStep < 3 && (
         <button
           className={styles.skipButton}
           onClick={() => { clearDraft(); onSkip(); }}

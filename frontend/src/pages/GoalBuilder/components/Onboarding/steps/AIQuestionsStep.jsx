@@ -32,6 +32,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   const [showTooltip, setShowTooltip] = useState(null);
   const [groupMeta, setGroupMeta] = useState({});
   const containerRef = useRef(null);
+  const isFetchingRef = useRef(false);
 
   useEffect(() => {
     fetchAllQuestions();
@@ -77,7 +78,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     ? categories.map((cat, i) => ({
         id: cat.id,
         name: groupMeta[cat.id]?.label || cat.name,
-        icon: cat.icon || 'sparkle',
+        icon: GROUP_ICONS[i % GROUP_ICONS.length],
         color: groupMeta[cat.id]?.color || GROUP_COLORS[i % GROUP_COLORS.length],
         description: groupMeta[cat.id]?.description || '',
       }))
@@ -128,7 +129,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     const groupId = (activeGroupMeta[groupIndex] || GROUP_META[groupIndex])?.id;
     try {
       const data = await apiClient.post('/api/goals/generate-category-questions', {
-        title: formData.goal.title,
+        title: formData.goal?.title || '',
         theme: formData.theme,
         category: groupId,
         previous_answers: answers,
@@ -148,11 +149,17 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
 
   const handleGroupSummaryNext = useCallback(async () => {
     if (currentGroup < totalGroups - 1) {
+      if (isFetchingRef.current) return;
+      isFetchingRef.current = true;
       const nextGroupIdx = currentGroup + 1;
       setCurrentGroup(nextGroupIdx);
       setCurrentQ(0);
       setView('loading');
-      await fetchSmartQuestions(nextGroupIdx);
+      try {
+        await fetchSmartQuestions(nextGroupIdx);
+      } finally {
+        isFetchingRef.current = false;
+      }
       setView('question');
     } else {
       setView('final-summary');

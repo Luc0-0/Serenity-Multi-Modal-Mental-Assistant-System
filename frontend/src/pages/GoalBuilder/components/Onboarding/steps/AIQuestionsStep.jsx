@@ -160,7 +160,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
    *  LOADING VIEW
    * ════════════════════════════════════════════ */
   if (view === 'loading') {
-    return <AILoadingScreen groupIndex={currentGroup} />;
+    return <AILoadingScreen groupIndex={currentGroup} goalTitle={formData.goal.title} />;
   }
 
   /* ════════════════════════════════════════════
@@ -171,48 +171,48 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     const catQuestions = category?.questions || [];
 
     return (
-      <div className={styles.stepContent} style={{ maxWidth: 520 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Group badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background: `${group.color}15`,
-                border: `1px solid ${group.color}30`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <SvgIcon name={group.icon} size={22} color={group.color} />
+      <div className={styles.stepContent} style={{ maxWidth: 500 }}>
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+
+          {/* Group header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+            <div style={{
+              width: 46, height: 46, borderRadius: 12,
+              background: `${group.color}10`,
+              border: `1px solid ${group.color}28`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <SvgIcon name={group.icon} size={20} color={group.color} />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: group.color, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-                Group {currentGroup + 1} of {totalGroups} Complete
+              <div style={{
+                fontSize: 9, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: group.color, marginBottom: 4,
+              }}>
+                Group {currentGroup + 1} of {totalGroups} — Complete
               </div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
+              <div style={{
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
+                fontSize: 22, fontWeight: 600, color: '#EDE5D4',
+              }}>
+                {group.name}
+              </div>
             </div>
           </div>
 
-          {/* Answer summary cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-            {catQuestions.map((q) => {
+          {/* Thin divider */}
+          <div style={{ height: 1, background: 'rgba(237,229,212,0.06)', marginBottom: 20 }} />
+
+          {/* Answer list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 28 }}>
+            {catQuestions.map((q, qi) => {
               const a = summaryAnswers[q.id];
               if (a === undefined) return null;
 
               let displayValue = '';
               if (Array.isArray(a)) {
-                const labels = a.map((v) => {
-                  const opt = q.options?.find((o) => o.value === v);
-                  return opt?.label || v;
-                });
+                const labels = a.map((v) => q.options?.find((o) => o.value === v)?.label || v);
                 displayValue = labels.join(', ');
               } else if (q.options) {
                 displayValue = q.options.find((o) => o.value === a)?.label || String(a);
@@ -225,20 +225,27 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
               return (
                 <motion.div
                   key={q.id}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * catQuestions.indexOf(q) }}
+                  transition={{ delay: qi * 0.07, duration: 0.4 }}
                   style={{
-                    padding: '12px 16px',
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: 12,
+                    padding: '14px 0',
+                    borderBottom: '1px solid rgba(237,229,212,0.05)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16,
                   }}
                 >
-                  <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.45)', marginBottom: 4 }}>
+                  <div style={{
+                    fontSize: 12, fontFamily: 'Raleway, sans-serif',
+                    color: 'rgba(237,229,212,0.4)', lineHeight: 1.5, flex: 1,
+                  }}>
                     {q.question}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: group.color }}>{displayValue}</div>
+                  <div style={{
+                    fontFamily: 'Raleway, sans-serif', fontSize: 13, fontWeight: 600,
+                    color: group.color, textAlign: 'right', flexShrink: 0, maxWidth: '45%',
+                  }}>
+                    {displayValue}
+                  </div>
                 </motion.div>
               );
             })}
@@ -248,16 +255,17 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
           <motion.button
             className={`${styles.button} ${styles.buttonPrimary}`}
             onClick={handleGroupSummaryNext}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            style={{ width: '100%' }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            style={{ width: '100%', justifyContent: 'center' }}
           >
             {currentGroup < totalGroups - 1 ? (
-              <>Next: {GROUP_META[currentGroup + 1].name} <SvgIcon name="chevronRight" size={14} color="currentColor" /></>
+              <>Next: {GROUP_META[currentGroup + 1].name} <SvgIcon name="chevronRight" size={13} color="currentColor" /></>
             ) : (
-              <>Review All Answers <SvgIcon name="chevronRight" size={14} color="currentColor" /></>
+              <>Review All Answers <SvgIcon name="chevronRight" size={13} color="currentColor" /></>
             )}
           </motion.button>
+
         </motion.div>
       </div>
     );
@@ -268,15 +276,33 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
    * ════════════════════════════════════════════ */
   if (view === 'final-summary') {
     return (
-      <div className={styles.stepContent} ref={containerRef} style={{ maxWidth: 560, overflowY: 'auto', maxHeight: '75vh' }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className={styles.stepTitle} style={{ fontSize: 'clamp(24px, 4vw, 34px)', marginBottom: 8 }}>
-            Your Personalization Profile
-          </div>
-          <div className={styles.stepSubtitle} style={{ marginBottom: 28 }}>
-            Here's everything AI knows about you. Ready to generate your plan?
+      <div className={styles.stepContent} ref={containerRef} style={{ maxWidth: 560, overflowY: 'auto', maxHeight: '78vh', textAlign: 'left' }}>
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{
+              fontSize: 9, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              color: 'rgba(201,168,76,0.5)', marginBottom: 10,
+            }}>
+              Personalization Profile
+            </div>
+            <div style={{
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: 'clamp(24px, 4vw, 34px)', fontWeight: 600, color: '#EDE5D4',
+            }}>
+              Here's what AI knows about you
+            </div>
+            <div style={{
+              fontSize: 13, fontFamily: 'Raleway, sans-serif',
+              color: 'rgba(237,229,212,0.4)', marginTop: 8, lineHeight: 1.6,
+            }}>
+              Ready to generate your personalized plan?
+            </div>
           </div>
 
+          {/* Category sections */}
           {GROUP_META.map((gm, gi) => {
             const ga = answers[gm.id] || {};
             const cat = categories[gi];
@@ -285,21 +311,33 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
             return (
               <motion.div
                 key={gm.id}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: gi * 0.1 }}
+                transition={{ delay: gi * 0.08 }}
                 style={{
-                  marginBottom: 16,
+                  marginBottom: 14,
+                  background: 'rgba(14,12,10,0.5)',
+                  border: '1px solid rgba(237,229,212,0.06)',
+                  borderLeft: `3px solid ${gm.color}50`,
+                  borderRadius: '0 14px 14px 0',
                   padding: '16px 18px',
-                  background: 'rgba(15,15,20,0.4)',
-                  border: `1px solid ${gm.color}20`,
-                  borderRadius: 16,
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <SvgIcon name={gm.icon} size={18} color={gm.color} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: gm.color }}>{gm.name}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(245,240,232,0.35)', marginLeft: 'auto' }}>
+                {/* Category header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14 }}>
+                  <SvgIcon name={gm.icon} size={15} color={gm.color} />
+                  <span style={{
+                    fontSize: 12, fontWeight: 600, fontFamily: 'Raleway, sans-serif',
+                    letterSpacing: '0.06em', textTransform: 'uppercase', color: gm.color,
+                  }}>
+                    {gm.name}
+                  </span>
+                  <span style={{
+                    fontSize: 10, color: 'rgba(237,229,212,0.25)',
+                    marginLeft: 'auto', fontFamily: 'Raleway, sans-serif',
+                  }}>
                     {Object.keys(ga).length} answers
                   </span>
                 </div>
@@ -320,9 +358,23 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
                   }
 
                   return (
-                    <div key={q.id} style={{ marginBottom: 8 }}>
-                      <div style={{ fontSize: 11, color: 'rgba(245,240,232,0.4)' }}>{q.question}</div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#F5F0E8' }}>{display}</div>
+                    <div key={q.id} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                      gap: 12, padding: '8px 0',
+                      borderBottom: '1px solid rgba(237,229,212,0.04)',
+                    }}>
+                      <div style={{
+                        fontSize: 11, fontFamily: 'Raleway, sans-serif',
+                        color: 'rgba(237,229,212,0.35)', flex: 1, lineHeight: 1.5,
+                      }}>
+                        {q.question}
+                      </div>
+                      <div style={{
+                        fontSize: 12, fontWeight: 500, fontFamily: 'Raleway, sans-serif',
+                        color: '#EDE5D4', textAlign: 'right', flexShrink: 0, maxWidth: '48%',
+                      }}>
+                        {display}
+                      </div>
                     </div>
                   );
                 })}
@@ -330,26 +382,24 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
             );
           })}
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
             <button
               className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={() => {
-                setCurrentGroup(0);
-                setCurrentQ(0);
-                setView('question');
-              }}
+              onClick={() => { setCurrentGroup(0); setCurrentQ(0); setView('question'); }}
               style={{ flex: 1 }}
             >
-              <SvgIcon name="chevronLeft" size={14} color="currentColor" /> Edit
+              <SvgIcon name="chevronLeft" size={13} color="currentColor" /> Edit
             </button>
             <button
               className={`${styles.button} ${styles.buttonPrimary}`}
               onClick={handleComplete}
-              style={{ flex: 2 }}
+              style={{ flex: 2.5 }}
             >
-              Generate My Plan <SvgIcon name="sparkle" size={14} color="currentColor" />
+              Generate My Plan <SvgIcon name="sparkle" size={13} color="currentColor" />
             </button>
           </div>
+
         </motion.div>
       </div>
     );
@@ -359,57 +409,34 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
    *  QUESTION VIEW (default)
    * ════════════════════════════════════════════ */
   return (
-    <div className={styles.stepContent} ref={containerRef} style={{ maxWidth: 560 }}>
-      {/* Top bar: group indicator + overall progress */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{ marginBottom: 24 }}
-      >
-        {/* Group chips */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-          {GROUP_META.map((gm, i) => {
-            const isActive = i === currentGroup;
-            const isDone = i < currentGroup;
-            return (
-              <div
-                key={gm.id}
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 2,
-                  background: isDone ? gm.color : isActive ? `${gm.color}80` : 'rgba(255,255,255,0.06)',
-                  transition: 'all 0.4s',
-                }}
-              />
-            );
-          })}
+    <div className={styles.stepContent} ref={containerRef} style={{ maxWidth: 540 }}>
+
+      {/* Top: progress segments + Q counter */}
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 5, marginBottom: 18 }}>
+          {GROUP_META.map((gm, i) => (
+            <div key={gm.id} style={{
+              flex: 1, height: 2, borderRadius: 1,
+              background: i < currentGroup ? gm.color : i === currentGroup ? `${gm.color}55` : 'rgba(237,229,212,0.05)',
+              transition: 'all 0.5s',
+            }} />
+          ))}
         </div>
 
-        {/* Group header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: `${group.color}12`,
-              border: `1px solid ${group.color}25`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <SvgIcon name={group.icon} size={20} color={group.color} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 3, height: 18, background: group.color, borderRadius: 2, flexShrink: 0 }} />
+          <div style={{
+            fontSize: 10, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+            letterSpacing: '0.14em', textTransform: 'uppercase', color: group.color,
+            flex: 1,
+          }}>
+            {group.name}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
-            <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.45)' }}>{group.description}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: group.color }}>
-              {currentQ + 1}/{questions.length}
-            </div>
+          <div style={{
+            fontSize: 10, fontFamily: 'Raleway, sans-serif', fontWeight: 500,
+            letterSpacing: '0.08em', color: 'rgba(237,229,212,0.3)',
+          }}>
+            {currentQ + 1} / {questions.length}
           </div>
         </div>
       </motion.div>
@@ -419,53 +446,53 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
         {question && (
           <motion.div
             key={`${group.id}-${question.id}`}
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 32 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            style={{
-              background: 'rgba(15,15,20,0.35)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: 20,
-              padding: '28px 24px',
-              marginBottom: 24,
-            }}
+            exit={{ opacity: 0, x: -32 }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            style={{ marginBottom: 24 }}
           >
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#F5F0E8', marginBottom: 20, lineHeight: 1.5 }}>
+            {/* Question text — Cormorant large italic */}
+            <div style={{
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontStyle: 'italic', fontWeight: 500,
+              fontSize: 'clamp(20px, 3.2vw, 27px)',
+              color: '#EDE5D4', lineHeight: 1.45,
+              marginBottom: 22, letterSpacing: '-0.1px',
+            }}>
               {question.question}
             </div>
 
-            {/* Render by type */}
+            {/* Thin divider */}
+            <div style={{ height: 1, background: 'rgba(237,229,212,0.06)', marginBottom: 16 }} />
+
+            {/* Options by type */}
             {question.type === 'radio' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {question.options?.map((opt) => {
-                  const selected = groupAnswers[question.id] === opt.value;
-                  return (
-                    <OptionButton
-                      key={opt.value}
-                      opt={opt}
-                      selected={selected}
-                      color={group.color}
-                      onClick={() => handleAnswer(opt.value)}
-                      showTooltip={showTooltip}
-                      setShowTooltip={setShowTooltip}
-                      tooltipKey={`${group.id}-${question.id}-${opt.value}`}
-                    />
-                  );
-                })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {question.options?.map((opt) => (
+                  <OptionButton
+                    key={opt.value}
+                    opt={opt}
+                    selected={groupAnswers[question.id] === opt.value}
+                    color={group.color}
+                    onClick={() => handleAnswer(opt.value)}
+                    showTooltip={showTooltip}
+                    setShowTooltip={setShowTooltip}
+                    tooltipKey={`${group.id}-${question.id}-${opt.value}`}
+                  />
+                ))}
               </div>
             )}
 
             {question.type === 'checkbox' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {question.options?.map((opt) => {
                   const vals = groupAnswers[question.id] || [];
-                  const selected = vals.includes(opt.value);
                   return (
                     <OptionButton
                       key={opt.value}
                       opt={opt}
-                      selected={selected}
+                      selected={vals.includes(opt.value)}
                       color={group.color}
                       checkbox
                       onClick={() => handleAnswer(opt.value, true)}
@@ -475,26 +502,23 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
                     />
                   );
                 })}
-                {/* Next button for checkbox (multi-select needs manual advance) */}
                 {(groupAnswers[question.id]?.length > 0) && (
                   <motion.button
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={advanceQuestion}
                     style={{
-                      marginTop: 8,
-                      padding: '10px 20px',
-                      background: 'rgba(200,169,110,0.12)',
-                      border: '1px solid rgba(200,169,110,0.25)',
-                      borderRadius: 10,
-                      color: '#C8A96E',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      alignSelf: 'flex-end',
+                      marginTop: 6, padding: '10px 18px',
+                      background: 'rgba(201,168,76,0.08)',
+                      border: '1px solid rgba(201,168,76,0.22)',
+                      borderRadius: 8, color: '#C9A84C',
+                      fontSize: 11, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+                      letterSpacing: '0.12em', textTransform: 'uppercase',
+                      cursor: 'pointer', alignSelf: 'flex-end',
+                      display: 'flex', alignItems: 'center', gap: 6,
                     }}
                   >
-                    Next <SvgIcon name="chevronRight" size={12} color="#C8A96E" />
+                    Next <SvgIcon name="chevronRight" size={11} color="#C9A84C" />
                   </motion.button>
                 )}
               </div>
@@ -502,26 +526,18 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
 
             {question.type === 'slider' && (
               <SliderQuestion
-                question={question}
-                value={groupAnswers[question.id]}
-                color={group.color}
-                onChange={(v) => handleAnswer(v)}
-                onNext={advanceQuestion}
-                showTooltip={showTooltip}
-                setShowTooltip={setShowTooltip}
+                question={question} value={groupAnswers[question.id]}
+                color={group.color} onChange={(v) => handleAnswer(v)} onNext={advanceQuestion}
+                showTooltip={showTooltip} setShowTooltip={setShowTooltip}
                 tooltipKey={`${group.id}-${question.id}-slider`}
               />
             )}
 
             {question.type === 'time' && (
               <TimeQuestion
-                question={question}
-                value={groupAnswers[question.id]}
-                color={group.color}
-                onChange={(v) => handleAnswer(v)}
-                onNext={advanceQuestion}
-                showTooltip={showTooltip}
-                setShowTooltip={setShowTooltip}
+                question={question} value={groupAnswers[question.id]}
+                color={group.color} onChange={(v) => handleAnswer(v)} onNext={advanceQuestion}
+                showTooltip={showTooltip} setShowTooltip={setShowTooltip}
                 tooltipKey={`${group.id}-${question.id}-time`}
               />
             )}
@@ -530,42 +546,37 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className={styles.buttonContainer}>
+      <div className={styles.buttonContainer} style={{ justifyContent: 'space-between', marginTop: 16 }}>
         <button
           className={`${styles.button} ${styles.buttonSecondary}`}
           onClick={() => {
-            if (currentQ > 0) {
-              setCurrentQ((q) => q - 1);
-            } else if (currentGroup > 0) {
+            if (currentQ > 0) { setCurrentQ((q) => q - 1); }
+            else if (currentGroup > 0) {
               setCurrentGroup((g) => g - 1);
               const prevCat = categories[currentGroup - 1];
               setCurrentQ((prevCat?.questions?.length || 1) - 1);
-            } else {
-              prevStep();
-            }
+            } else { prevStep(); }
           }}
         >
-          <SvgIcon name="chevronLeft" size={14} color="currentColor" /> Back
+          <SvgIcon name="chevronLeft" size={13} color="currentColor" /> Back
         </button>
 
-        {/* Skip group button */}
         {answeredInGroup >= 1 && currentQ < questions.length - 1 && (
           <button
-            style={{
-              padding: '8px 16px',
-              background: 'none',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 8,
-              color: 'rgba(245,240,232,0.4)',
-              fontSize: 12,
-              cursor: 'pointer',
-            }}
             onClick={() => setView('group-summary')}
+            style={{
+              padding: '8px 14px', background: 'transparent',
+              border: '1px solid rgba(237,229,212,0.08)',
+              borderRadius: 6, color: 'rgba(237,229,212,0.3)',
+              fontSize: 10, fontFamily: 'Raleway, sans-serif', fontWeight: 500,
+              letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+            }}
           >
             Skip to summary
           </button>
         )}
       </div>
+
     </div>
   );
 }
@@ -575,53 +586,58 @@ function OptionButton({ opt, selected, color, checkbox, onClick, showTooltip, se
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      whileTap={{ scale: 0.997 }}
       style={{
-        padding: '13px 16px',
-        background: selected ? `${color}12` : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${selected ? color + '50' : 'rgba(255,255,255,0.07)'}`,
-        borderRadius: 12,
-        color: '#F5F0E8',
+        width: '100%',
+        padding: '13px 14px 13px 16px',
+        background: selected ? `${color}08` : 'rgba(237,229,212,0.015)',
+        border: `1px solid ${selected ? color + '30' : 'rgba(237,229,212,0.07)'}`,
+        borderLeft: selected ? `3px solid ${color}` : '3px solid transparent',
+        borderRadius: 10,
+        color: '#EDE5D4',
         fontSize: 14,
-        fontFamily: 'inherit',
+        fontFamily: 'Raleway, sans-serif',
+        fontWeight: selected ? 500 : 400,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         textAlign: 'left',
         transition: 'all 0.2s',
+        position: 'relative',
       }}
     >
-      <span>{opt.label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ flex: 1 }}>{opt.label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {opt.recommended && (
           <div
             style={{ position: 'relative' }}
             onMouseEnter={() => setShowTooltip(tooltipKey)}
             onMouseLeave={() => setShowTooltip(null)}
           >
-            <SvgIcon name="sparkle" size={14} color="#FCD34D" />
+            <span style={{
+              fontSize: 8, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: '#C9A84C', border: '1px solid rgba(201,168,76,0.28)',
+              borderRadius: 3, padding: '2px 5px',
+            }}>
+              Pick
+            </span>
             {showTooltip === tooltipKey && (
-              <div style={tooltipStyle}>AI Pick: {opt.reason}</div>
+              <div style={tooltipStyle}>AI: {opt.reason}</div>
             )}
           </div>
         )}
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: checkbox ? 5 : '50%',
-            border: `2px solid ${selected ? color : 'rgba(255,255,255,0.15)'}`,
-            background: selected ? color : 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-          }}
-        >
-          {selected && !checkbox && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#0A0A0F' }} />}
-          {selected && checkbox && <SvgIcon name="check" size={12} color="#0A0A0F" strokeWidth={3} />}
+        <div style={{
+          width: 17, height: 17,
+          borderRadius: checkbox ? 4 : '50%',
+          border: `1.5px solid ${selected ? color : 'rgba(237,229,212,0.18)'}`,
+          background: selected ? color : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.2s', flexShrink: 0,
+        }}>
+          {selected && !checkbox && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#080706' }} />}
+          {selected && checkbox && <SvgIcon name="check" size={10} color="#080706" strokeWidth={3} />}
         </div>
       </div>
     </motion.button>
@@ -635,61 +651,67 @@ function SliderQuestion({ question, value, color, onChange, onNext, showTooltip,
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <span style={{ fontSize: 13, color: 'rgba(245,240,232,0.5)' }}>{question.min}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 20, fontWeight: 700, color }}>{v} {question.unit}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontSize: 12, fontFamily: 'Raleway, sans-serif', color: 'rgba(237,229,212,0.35)', letterSpacing: '0.06em' }}>
+          {question.min}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontSize: 28, fontWeight: 600, color,
+          }}>
+            {v}
+          </span>
+          <span style={{ fontSize: 13, fontFamily: 'Raleway, sans-serif', color: 'rgba(237,229,212,0.45)' }}>
+            {question.unit}
+          </span>
           {question.recommended === v && (
             <div
               style={{ position: 'relative' }}
               onMouseEnter={() => setShowTooltip(tooltipKey)}
               onMouseLeave={() => setShowTooltip(null)}
             >
-              <SvgIcon name="sparkle" size={14} color="#FCD34D" />
-              {showTooltip === tooltipKey && <div style={tooltipStyle}>AI Pick: {question.reason}</div>}
+              <span style={{
+                fontSize: 8, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: '#C9A84C', border: '1px solid rgba(201,168,76,0.28)',
+                borderRadius: 3, padding: '2px 5px',
+              }}>Pick</span>
+              {showTooltip === tooltipKey && <div style={tooltipStyle}>AI: {question.reason}</div>}
             </div>
           )}
         </div>
-        <span style={{ fontSize: 13, color: 'rgba(245,240,232,0.5)' }}>{question.max}</span>
+        <span style={{ fontSize: 12, fontFamily: 'Raleway, sans-serif', color: 'rgba(237,229,212,0.35)', letterSpacing: '0.06em' }}>
+          {question.max}
+        </span>
       </div>
       <input
         type="range"
-        min={question.min}
-        max={question.max}
-        step={question.step}
-        value={v}
+        min={question.min} max={question.max} step={question.step} value={v}
         onChange={(e) => onChange(parseInt(e.target.value))}
         style={{
-          width: '100%',
-          height: 6,
-          borderRadius: 3,
-          background: `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
-          outline: 'none',
-          appearance: 'none',
-          WebkitAppearance: 'none',
-          cursor: 'pointer',
+          width: '100%', height: 4, borderRadius: 2,
+          background: `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(237,229,212,0.07) ${pct}%, rgba(237,229,212,0.07) 100%)`,
+          outline: 'none', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer',
         }}
       />
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        onClick={onNext}
-        style={{
-          marginTop: 16,
-          padding: '10px 20px',
-          background: 'rgba(200,169,110,0.12)',
-          border: '1px solid rgba(200,169,110,0.25)',
-          borderRadius: 10,
-          color: '#C8A96E',
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'pointer',
-          float: 'right',
-        }}
-      >
-        Next <SvgIcon name="chevronRight" size={12} color="#C8A96E" />
-      </motion.button>
-      <div style={{ clear: 'both' }} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={onNext}
+          style={{
+            padding: '9px 18px',
+            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.22)',
+            borderRadius: 8, color: '#C9A84C',
+            fontSize: 11, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+            letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          Next <SvgIcon name="chevronRight" size={11} color="#C9A84C" />
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -699,29 +721,26 @@ function TimeQuestion({ question, value, color, onChange, onNext, showTooltip, s
   const v = value || question.defaultValue;
 
   const handleConfirm = () => {
-    // Ensure current value (even unchanged default) is saved before advancing
     onChange(v);
     onNext();
   };
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
         <input
           type="time"
           value={v}
           onChange={(e) => onChange(e.target.value)}
           style={{
-            flex: 1,
-            padding: '14px 18px',
-            background: 'rgba(255,255,255,0.02)',
-            border: `1px solid rgba(255,255,255,0.08)`,
-            borderRadius: 12,
-            color: '#F5F0E8',
-            fontSize: 16,
-            fontFamily: 'inherit',
-            outline: 'none',
-            cursor: 'pointer',
+            flex: 1, padding: '13px 16px',
+            background: 'rgba(237,229,212,0.02)',
+            border: '1px solid rgba(237,229,212,0.08)',
+            borderRadius: 10, color: '#EDE5D4',
+            fontSize: 18,
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontWeight: 500,
+            outline: 'none', cursor: 'pointer',
           }}
         />
         {question.recommended === v && (
@@ -730,30 +749,33 @@ function TimeQuestion({ question, value, color, onChange, onNext, showTooltip, s
             onMouseEnter={() => setShowTooltip(tooltipKey)}
             onMouseLeave={() => setShowTooltip(null)}
           >
-            <SvgIcon name="sparkle" size={18} color="#FCD34D" />
-            {showTooltip === tooltipKey && <div style={tooltipStyle}>AI Pick: {question.reason}</div>}
+            <span style={{
+              fontSize: 8, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: '#C9A84C', border: '1px solid rgba(201,168,76,0.28)',
+              borderRadius: 3, padding: '3px 6px',
+            }}>Pick</span>
+            {showTooltip === tooltipKey && <div style={tooltipStyle}>AI: {question.reason}</div>}
           </div>
         )}
       </div>
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        onClick={handleConfirm}
-        style={{
-          padding: '10px 20px',
-          background: 'rgba(200,169,110,0.12)',
-          border: '1px solid rgba(200,169,110,0.25)',
-          borderRadius: 10,
-          color: '#C8A96E',
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'pointer',
-          float: 'right',
-        }}
-      >
-        Confirm <SvgIcon name="chevronRight" size={12} color="#C8A96E" />
-      </motion.button>
-      <div style={{ clear: 'both' }} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={handleConfirm}
+          style={{
+            padding: '9px 18px',
+            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.22)',
+            borderRadius: 8, color: '#C9A84C',
+            fontSize: 11, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+            letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          Confirm <SvgIcon name="chevronRight" size={11} color="#C9A84C" />
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -774,7 +796,7 @@ const BETWEEN_STAGES = [
   { label: 'Almost ready', sub: 'Personalizing for your exact situation' },
 ];
 
-function AILoadingScreen({ groupIndex }) {
+function AILoadingScreen({ groupIndex, goalTitle }) {
   const [stageIdx, setStageIdx] = useState(0);
   const stages = groupIndex === 0 ? INITIAL_STAGES : BETWEEN_STAGES;
 
@@ -789,94 +811,113 @@ function AILoadingScreen({ groupIndex }) {
   const progress = Math.min(((stageIdx + 1) / stages.length) * 100, 95);
 
   return (
-    <div className={styles.stepContent} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 420 }}>
-      {/* Orb */}
-      <div style={{ position: 'relative', marginBottom: 48 }}>
-        <motion.div
-          animate={{ scale: [1, 1.12, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            width: 80, height: 80, borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 35%, rgba(200,169,110,0.9), rgba(200,169,110,0.1))',
-            boxShadow: '0 0 40px rgba(200,169,110,0.3), 0 0 80px rgba(200,169,110,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-          >
-            <SvgIcon name="sparkle" size={30} color="rgba(10,10,15,0.9)" />
-          </motion.div>
-        </motion.div>
+    <div className={styles.stepContent} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', minHeight: '70vh', position: 'relative',
+    }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', width: 500, height: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)',
+        filter: 'blur(80px)', pointerEvents: 'none',
+      }} />
 
-        {/* Orbiting dots */}
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            style={{
-              position: 'absolute', top: '50%', left: '50%',
-              width: 6, height: 6, borderRadius: '50%',
-              background: `rgba(200,169,110,${0.3 + i * 0.2})`,
-              marginTop: -3, marginLeft: -3,
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3 + i * 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.4 }}
-            transformTemplate={({ rotate }) => `rotate(${rotate}) translateX(${48 + i * 14}px)`}
-          />
-        ))}
-      </div>
+      {/* Brand mark */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+        style={{
+          fontSize: 9, fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+          letterSpacing: '0.4em', textTransform: 'uppercase',
+          color: 'rgba(201,168,76,0.4)', marginBottom: 24,
+        }}
+      >
+        Serenity AI
+      </motion.div>
+
+      {/* Expanding line */}
+      <motion.div
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={{ scaleX: 1, opacity: 1 }}
+        transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+        style={{
+          width: 200, height: 1,
+          background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)',
+          marginBottom: 36, transformOrigin: 'center',
+        }}
+      />
 
       {/* Stage text */}
       <AnimatePresence mode="wait">
         <motion.div
           key={stageIdx}
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.4 }}
-          style={{ textAlign: 'center', marginBottom: 40 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ textAlign: 'center', marginBottom: 12 }}
         >
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#F5F0E8', marginBottom: 6 }}>
+          <div style={{
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontStyle: 'italic', fontWeight: 500,
+            fontSize: 'clamp(26px, 4.5vw, 40px)',
+            color: '#EDE5D4', lineHeight: 1.25, marginBottom: 10,
+          }}>
             {stages[stageIdx]?.label}
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(245,240,232,0.45)' }}>
+          <div style={{
+            fontSize: 12, fontFamily: 'Raleway, sans-serif',
+            color: 'rgba(237,229,212,0.38)', letterSpacing: '0.06em',
+          }}>
             {stages[stageIdx]?.sub}
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress bar */}
-      <div style={{ width: 240, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+      {/* Progress line */}
+      <div style={{
+        width: 200, height: 1, background: 'rgba(237,229,212,0.06)',
+        marginTop: 28, marginBottom: 36, position: 'relative', overflow: 'hidden',
+      }}>
         <motion.div
           animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
-          style={{ height: '100%', background: 'linear-gradient(90deg, rgba(200,169,110,0.6), #C8A96E)', borderRadius: 2 }}
+          transition={{ duration: 1.2, ease: 'easeInOut' }}
+          style={{
+            height: '100%', position: 'absolute', top: 0, left: 0,
+            background: 'linear-gradient(90deg, rgba(201,168,76,0.4), #C9A84C)',
+            boxShadow: '0 0 8px rgba(201,168,76,0.4)',
+          }}
         />
       </div>
 
-      {/* Category dots (only on initial load) */}
+      {/* Category icons — initial load only */}
       {groupIndex === 0 && (
-        <div style={{ display: 'flex', gap: 20, marginTop: 32 }}>
+        <div style={{ display: 'flex', gap: 24 }}>
           {GROUP_META.map((gm, i) => {
             const lit = stageIdx >= i + 2;
             return (
               <motion.div
                 key={gm.id}
-                animate={{ opacity: lit ? 1 : 0.25, scale: lit ? 1 : 0.85 }}
-                transition={{ duration: 0.5 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}
+                animate={{ opacity: lit ? 1 : 0.18 }}
+                transition={{ duration: 0.9 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}
               >
                 <div style={{
-                  width: 32, height: 32, borderRadius: 8,
-                  background: lit ? `${gm.color}20` : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${lit ? gm.color + '50' : 'rgba(255,255,255,0.06)'}`,
+                  width: 38, height: 38, borderRadius: 10,
+                  background: lit ? `${gm.color}12` : 'rgba(237,229,212,0.02)',
+                  border: `1px solid ${lit ? gm.color + '35' : 'rgba(237,229,212,0.05)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.5s',
+                  transition: 'all 0.9s ease',
                 }}>
-                  <SvgIcon name={gm.icon} size={14} color={lit ? gm.color : 'rgba(255,255,255,0.2)'} />
+                  <SvgIcon name={gm.icon} size={15} color={lit ? gm.color : 'rgba(237,229,212,0.15)'} />
                 </div>
-                <div style={{ fontSize: 9, color: lit ? gm.color : 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, transition: 'color 0.5s' }}>
+                <div style={{
+                  fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  fontFamily: 'Raleway, sans-serif', fontWeight: 600,
+                  color: lit ? 'rgba(201,168,76,0.55)' : 'rgba(237,229,212,0.15)',
+                  transition: 'color 0.9s ease',
+                }}>
                   {gm.name.split(' ')[0]}
                 </div>
               </motion.div>
@@ -974,15 +1015,15 @@ function getFallbackQuestions(catId) {
 const tooltipStyle = {
   position: 'absolute',
   right: 0,
-  bottom: '100%',
-  marginBottom: 8,
-  padding: '6px 12px',
-  background: 'rgba(10,10,15,0.95)',
-  border: '1px solid rgba(252,211,77,0.3)',
-  borderRadius: 8,
+  bottom: 'calc(100% + 6px)',
+  padding: '6px 10px',
+  background: 'rgba(8,7,6,0.96)',
+  border: '1px solid rgba(201,168,76,0.22)',
+  borderRadius: 6,
   fontSize: 11,
-  color: '#FCD34D',
+  fontFamily: 'Raleway, sans-serif',
+  color: '#C9A84C',
   whiteSpace: 'nowrap',
   zIndex: 100,
-  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
 };

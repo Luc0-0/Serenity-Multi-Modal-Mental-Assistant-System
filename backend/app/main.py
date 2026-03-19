@@ -45,9 +45,6 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Add proxy middleware to trust X-Forwarded-Proto from Railway
-app.add_middleware(TrustedProxyMiddleware)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -55,6 +52,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add proxy middleware LAST so it runs FIRST (before CORS checks)
+app.add_middleware(TrustedProxyMiddleware)
 
 # Global service instances
 emotion_service = None

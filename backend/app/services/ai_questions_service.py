@@ -284,7 +284,7 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
         logger.info(f"[SCHEDULE] START goal='{goal_title}' theme={theme} duration={duration_days}d answers={len(answers)} categories")
         try:
             t0 = time.monotonic()
-            response = await self.engine.generate(system_prompt, [])
+            response = await self.engine.generate(system_prompt, [], max_tokens=8000)
             elapsed = time.monotonic() - t0
             logger.info(f"[SCHEDULE] LLM response: {len(response)} chars in {elapsed:.1f}s")
 
@@ -373,10 +373,11 @@ Output the array now:"""
             raw = self._extract_json(response)
             if not isinstance(raw, list):
                 raise ValueError("Expected list of questions")
-            # Normalize by wrapping in a fake category, then extracting questions back
-            normalized_cats = self._normalize_questions([{'id': category, 'questions': raw}])
-            matched = next((c for c in normalized_cats if c['id'] == category), None)
-            questions = matched['questions'] if matched else []
+            questions = []
+            for idx, q in enumerate(raw):
+                normalized = self._normalize_single_question(q, category, idx)
+                if normalized is not None:
+                    questions.append(normalized)
             if not questions:
                 logger.error(f"[CATEGORY] BAD_STRUCTURE — no valid questions for '{category}'. Raw (single-line): {response[:400].replace(chr(10), ' ')}")
                 raise ValueError("Normalization produced no valid questions")

@@ -87,11 +87,23 @@ Output the array now:"""
             raw = self._extract_json(response)
             questions = self._normalize_questions(raw)
 
-            if not self._validate_questions(questions):
-                logger.error(f"[BAD_STRUCTURE] LLM response was: {response[:800]}")
+            # Count how many categories have AI-generated questions
+            ai_count = sum(1 for q in questions if len(q.get('questions', [])) >= 1)
+
+            if ai_count == 0:
+                logger.error(f"[BAD_STRUCTURE] No usable categories. LLM response: {response[:800]}")
                 raise ValueError("Normalization could not produce usable structure")
 
-            logger.info(f"[AI] Personalized questions generated for goal: '{goal_title}' (theme={theme})")
+            if ai_count < 4:
+                # Partial success — fill gaps with category-specific fallbacks
+                logger.warning(f"[PARTIAL_AI] Got {ai_count}/4 categories — filling gaps with fallbacks")
+                fallback_map = {q['id']: q for q in self._get_fallback_questions()}
+                questions = [
+                    q if len(q.get('questions', [])) >= 1 else fallback_map.get(q['id'], q)
+                    for q in questions
+                ]
+
+            logger.info(f"[AI] Questions generated for goal: '{goal_title}' — {ai_count}/4 categories from AI")
             return questions
 
         except Exception as e:

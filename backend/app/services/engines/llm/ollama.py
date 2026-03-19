@@ -59,7 +59,13 @@ class OllamaLLMEngine(LLMEngine):
                 )
                 response.raise_for_status()
                 data = response.json()
-                return data['choices'][0]['message']['content'].strip()
+                choice = data['choices'][0]
+                finish_reason = choice.get('finish_reason', 'unknown')
+                if finish_reason == 'length':
+                    logger.warning(f"[TOKEN_LIMIT] Response stopped at max_tokens ({payload['max_tokens']}). Output was truncated.")
+                content = choice['message']['content'].strip()
+                logger.info(f"[RESPONSE_LEN] {len(content)} chars, finish_reason={finish_reason}")
+                return content
         except httpx.HTTPStatusError as e:
             logger.error(f"Ollama API error: {e.status_code} - {e.response.text}")
             raise RuntimeError(f"Ollama API failed: {e.status_code}")

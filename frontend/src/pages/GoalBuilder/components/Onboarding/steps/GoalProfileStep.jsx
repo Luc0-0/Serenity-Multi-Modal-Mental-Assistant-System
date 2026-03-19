@@ -24,6 +24,7 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
   );
   const [newDomain, setNewDomain] = useState('');
   const [isClassifying, setIsClassifying] = useState(false);
+  const [classifyError, setClassifyError] = useState(false);
   const hasClassified = useRef(false);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
       const defaultPriorities = {};
       suggestedDomains.forEach(d => { defaultPriorities[d] = 'medium'; });
       setPriorities(defaultPriorities);
+      setClassifyError(false);
       updateFormData({
         goalProfile: {
           ...formData.goalProfile,
@@ -56,6 +58,7 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
       });
     } catch (e) {
       console.warn('Classification failed, using defaults');
+      setClassifyError(true);
     } finally {
       setIsClassifying(false);
     }
@@ -81,7 +84,8 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
 
   const addDomain = () => {
     const trimmed = newDomain.trim();
-    if (!trimmed || domains.includes(trimmed) || domains.length >= 6) return;
+    const trimmedLower = trimmed.toLowerCase();
+    if (!trimmed || domains.some(d => d.toLowerCase() === trimmedLower) || domains.length >= 6) return;
     const updated = [...domains, trimmed];
     const updatedP = { ...priorities, [trimmed]: 'medium' };
     setDomains(updated);
@@ -146,43 +150,15 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.85 }}
                       transition={{ delay: i * 0.05 }}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        padding: '6px 10px 6px 12px',
-                        background: 'rgba(237,229,212,0.04)',
-                        border: '1px solid rgba(237,229,212,0.1)',
-                        borderRadius: 8,
-                        fontFamily: 'Raleway, sans-serif',
-                        fontSize: 13,
-                        color: '#EDE5D4',
-                        fontWeight: 500,
-                      }}
+                      className={styles.domainChip}
                     >
-                      <span>{domain}</span>
+                      <span className={styles.domainChipName}>{domain}</span>
                       {/* Priority badge — cycles H→M→L */}
                       <button
                         onClick={() => cyclePriority(domain)}
                         title="Click to change priority"
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 4,
-                          border: `1px solid ${PRIORITY_COLORS[priorities[domain] || 'medium']}55`,
-                          background: `${PRIORITY_COLORS[priorities[domain] || 'medium']}18`,
-                          color: PRIORITY_COLORS[priorities[domain] || 'medium'],
-                          fontSize: 10,
-                          fontWeight: 700,
-                          fontFamily: 'Raleway, sans-serif',
-                          letterSpacing: '0.05em',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.18s ease',
-                          flexShrink: 0,
-                        }}
+                        className={styles.priorityTag}
+                        style={{ '--priority-color': PRIORITY_COLORS[priorities[domain] || 'medium'] }}
                       >
                         {PRIORITY_LABELS[priorities[domain] || 'medium']}
                       </button>
@@ -190,25 +166,7 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
                       <button
                         onClick={() => removeDomain(domain)}
                         aria-label="Remove domain"
-                        style={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: 4,
-                          border: 'none',
-                          background: 'transparent',
-                          color: 'rgba(237,229,212,0.3)',
-                          fontSize: 14,
-                          lineHeight: 1,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'color 0.15s',
-                          flexShrink: 0,
-                          padding: 0,
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.color = 'rgba(237,229,212,0.75)'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(237,229,212,0.3)'}
+                        className={styles.domainRemove}
                       >
                         ×
                       </button>
@@ -259,6 +217,18 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
             }}>
               H = High (5 deep questions) · M = Medium (3) · L = Low (2 quick)
             </div>
+
+            {classifyError && (
+              <div style={{
+                marginTop: '0.5rem',
+                fontSize: '0.78rem',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--font-sans)',
+                fontStyle: 'italic'
+              }}>
+                Could not analyse your goal — add domains manually above.
+              </div>
+            )}
           </div>
 
           {/* Feasibility warning */}
@@ -268,25 +238,11 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                style={{
-                  overflow: 'hidden',
-                  marginBottom: 24,
-                }}
+                className={styles.feasibilityWarning}
               >
-                <div style={{
-                  padding: '10px 14px',
-                  background: 'rgba(201,168,76,0.06)',
-                  border: '1px solid rgba(201,168,76,0.2)',
-                  borderRadius: 8,
-                  fontSize: 12,
-                  fontFamily: 'Raleway, sans-serif',
-                  color: 'rgba(237,229,212,0.65)',
-                  lineHeight: 1.6,
-                }}>
-                  <span style={{ color: '#C9A84C' }}>⚠</span>{' '}
-                  {highCount} high-priority domains is ambitious.
-                  Consider setting some to Medium for a more achievable plan.
-                </div>
+                <span style={{ color: '#C9A84C' }}>⚠</span>{' '}
+                {highCount} high-priority domains is ambitious.
+                Consider setting some to Medium for a more achievable plan.
               </motion.div>
             )}
           </AnimatePresence>
@@ -295,28 +251,11 @@ export default function GoalProfileStep({ formData, updateFormData, nextStep, pr
           <div>
             <div style={labelStyle}>What's driving you?</div>
             <textarea
-              style={{
-                width: '100%',
-                padding: '13px 14px',
-                background: 'rgba(237,229,212,0.02)',
-                border: '1px solid rgba(237,229,212,0.1)',
-                borderRadius: 8,
-                color: '#EDE5D4',
-                fontSize: 14,
-                fontFamily: 'Raleway, sans-serif',
-                fontWeight: 400,
-                lineHeight: 1.7,
-                outline: 'none',
-                resize: 'vertical',
-                minHeight: 90,
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box',
-              }}
-              onFocus={e => e.target.style.borderColor = 'rgba(201,168,76,0.35)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(237,229,212,0.1)'}
+              className={styles.textareaField}
               placeholder="What does achieving this mean to you? Why now?"
               value={motivation}
               rows={3}
+              maxLength={500}
               onChange={e => {
                 setMotivation(e.target.value);
                 saveProfile(domains, priorities, e.target.value);

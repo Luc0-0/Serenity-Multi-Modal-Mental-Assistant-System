@@ -7,7 +7,7 @@
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from datetime import date, datetime, timedelta
 import json
 
@@ -89,7 +89,7 @@ async def generate_category_questions(
 async def get_pulse_check(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Check if pulse check is due (Sunday) and return status."""
     today = date.today()
@@ -117,7 +117,7 @@ async def submit_pulse_check(
     goal_id: int,
     pulse_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Submit weekly pulse check (3 quick questions)."""
     today = date.today()
@@ -166,7 +166,7 @@ async def submit_pulse_check(
 async def create_goal(
     goal_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Create a new goal with personalized or LLM-generated schedule."""
     goal_service = GoalService(db)
@@ -218,7 +218,7 @@ async def create_goal(
 @router.get("/")
 async def get_user_goals(
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get all goals for the current user."""
     goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
@@ -229,7 +229,7 @@ async def get_user_goals(
 async def get_goal(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get specific goal with all related data."""
     goal_service = GoalService(db)
@@ -246,7 +246,7 @@ async def update_goal(
     goal_id: int,
     goal_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Update goal details."""
     goal = db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == current_user.id).first()
@@ -266,7 +266,7 @@ async def update_goal(
 async def get_schedule(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get daily schedule for a goal."""
     schedule = db.query(DailySchedule).filter(
@@ -281,7 +281,7 @@ async def create_schedule_item(
     goal_id: int,
     schedule_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Add new schedule item."""
     schedule_item = DailySchedule(
@@ -304,7 +304,7 @@ async def get_daily_logs(
     goal_id: int,
     days: int = 30,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get daily completion logs."""
     start_date = date.today() - timedelta(days=days)
@@ -323,7 +323,7 @@ async def log_daily_completion(
     goal_id: int,
     log_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Log today's completion."""
     goal_service = GoalService(db)
@@ -361,7 +361,7 @@ async def log_daily_completion(
 async def use_streak_freeze(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Use a streak freeze for today."""
     goal_service = GoalService(db)
@@ -379,7 +379,7 @@ async def use_streak_freeze(
 async def get_phases(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get goal phases with unlock status."""
     phases = db.query(GoalPhase).filter(GoalPhase.goal_id == goal_id).order_by(GoalPhase.phase_number).all()
@@ -392,7 +392,7 @@ async def toggle_phase_task(
     phase_id: int,
     task_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Toggle completion of a phase task."""
     task = db.query(PhaseTask).filter(PhaseTask.id == task_id, PhaseTask.phase_id == phase_id).first()
@@ -412,7 +412,7 @@ async def toggle_phase_task(
 async def get_weekly_reviews(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get weekly reviews for a goal."""
     reviews = db.query(WeeklyReview).filter(
@@ -428,7 +428,7 @@ async def submit_weekly_review(
     goal_id: int,
     review_data: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Submit weekly review."""
     # Get start of current week (Sunday)
@@ -463,7 +463,7 @@ async def submit_weekly_review(
 async def get_goal_analytics(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Get goal analytics and insights."""
     goal_service = GoalService(db)

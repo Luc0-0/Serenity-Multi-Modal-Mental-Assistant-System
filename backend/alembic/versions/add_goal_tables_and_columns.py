@@ -17,164 +17,158 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # ### Goal Tables Creation ###
+    # ### Goal Tables Creation (Idempotent) ###
 
     # Goals table
-    op.create_table('goals',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('title', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('theme', sa.String(length=50), nullable=True),
-    sa.Column('duration_days', sa.Integer(), nullable=True),
-    sa.Column('start_date', sa.Date(), nullable=False),
-    sa.Column('current_streak', sa.Integer(), nullable=True),
-    sa.Column('longest_streak', sa.Integer(), nullable=True),
-    sa.Column('freezes_available', sa.Integer(), nullable=True),
-    sa.Column('total_completed_days', sa.Integer(), nullable=True),
-    sa.Column('answers_json', sa.Text(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS goals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        theme VARCHAR(50) DEFAULT 'balanced',
+        duration_days INTEGER DEFAULT 180,
+        start_date DATE NOT NULL,
+        current_streak INTEGER DEFAULT 0,
+        longest_streak INTEGER DEFAULT 0,
+        freezes_available INTEGER DEFAULT 0,
+        total_completed_days INTEGER DEFAULT 0,
+        answers_json TEXT,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        updated_at TIMESTAMP WITH TIME ZONE
     )
-    op.create_index(op.f('ix_goals_id'), 'goals', ['id'], unique=False)
-    op.create_index(op.f('ix_goals_user_id'), 'goals', ['user_id'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_goals_id ON goals(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_goals_user_id ON goals(user_id)")
 
     # Goal Phases table
-    op.create_table('goal_phases',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('goal_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('phase_number', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('unlock_streak_required', sa.Integer(), nullable=True),
-    sa.Column('is_unlocked', sa.Boolean(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['goal_id'], ['goals.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS goal_phases (
+        id SERIAL PRIMARY KEY,
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        phase_number INTEGER NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        unlock_streak_required INTEGER DEFAULT 0,
+        is_unlocked BOOLEAN DEFAULT false,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_goal_phases_id'), 'goal_phases', ['id'], unique=False)
-    op.create_index(op.f('ix_goal_phases_goal_id'), 'goal_phases', ['goal_id'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_goal_phases_id ON goal_phases(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_goal_phases_goal_id ON goal_phases(goal_id)")
 
     # Daily Schedule table
-    op.create_table('daily_schedules',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('goal_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('time', sa.String(length=10), nullable=False),
-    sa.Column('activity', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('tags', sa.Text(), nullable=True),
-    sa.Column('sort_order', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['goal_id'], ['goals.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS daily_schedules (
+        id SERIAL PRIMARY KEY,
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        time VARCHAR(10) NOT NULL,
+        activity VARCHAR(255) NOT NULL,
+        description TEXT,
+        tags TEXT,
+        sort_order INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_daily_schedules_id'), 'daily_schedules', ['id'], unique=False)
-    op.create_index(op.f('ix_daily_schedules_goal_id'), 'daily_schedules', ['goal_id'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_schedules_id ON daily_schedules(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_schedules_goal_id ON daily_schedules(goal_id)")
 
     # Daily Logs table
-    op.create_table('daily_logs',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('goal_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('date', sa.Date(), nullable=False, index=True),
-    sa.Column('completed_items', sa.Text(), nullable=True),
-    sa.Column('is_frozen', sa.Boolean(), nullable=True),
-    sa.Column('completion_percentage', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['goal_id'], ['goals.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS daily_logs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        date DATE NOT NULL,
+        completed_items TEXT,
+        is_frozen BOOLEAN DEFAULT false,
+        completion_percentage INTEGER DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_daily_logs_id'), 'daily_logs', ['id'], unique=False)
-    op.create_index(op.f('ix_daily_logs_user_id'), 'daily_logs', ['user_id'], unique=False)
-    op.create_index(op.f('ix_daily_logs_goal_id'), 'daily_logs', ['goal_id'], unique=False)
-    op.create_index(op.f('ix_daily_logs_date'), 'daily_logs', ['date'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_logs_id ON daily_logs(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_logs_user_id ON daily_logs(user_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_logs_goal_id ON daily_logs(goal_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_daily_logs_date ON daily_logs(date)")
 
     # Phase Tasks table
-    op.create_table('phase_tasks',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('phase_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('domain_name', sa.String(length=100), nullable=False),
-    sa.Column('task_title', sa.String(length=255), nullable=False),
-    sa.Column('subtasks', sa.Text(), nullable=True),
-    sa.Column('is_completed', sa.Boolean(), nullable=True),
-    sa.Column('completed_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['phase_id'], ['goal_phases.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS phase_tasks (
+        id SERIAL PRIMARY KEY,
+        phase_id INTEGER NOT NULL REFERENCES goal_phases(id) ON DELETE CASCADE,
+        domain_name VARCHAR(100) NOT NULL,
+        task_title VARCHAR(255) NOT NULL,
+        subtasks TEXT,
+        is_completed BOOLEAN DEFAULT false,
+        completed_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_phase_tasks_id'), 'phase_tasks', ['id'], unique=False)
-    op.create_index(op.f('ix_phase_tasks_phase_id'), 'phase_tasks', ['phase_id'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_phase_tasks_id ON phase_tasks(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_phase_tasks_phase_id ON phase_tasks(phase_id)")
 
     # Weekly Reviews table
-    op.create_table('weekly_reviews',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('goal_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('week_start_date', sa.Date(), nullable=False, index=True),
-    sa.Column('answers', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['goal_id'], ['goals.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS weekly_reviews (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        week_start_date DATE NOT NULL,
+        answers TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_weekly_reviews_id'), 'weekly_reviews', ['id'], unique=False)
-    op.create_index(op.f('ix_weekly_reviews_user_id'), 'weekly_reviews', ['user_id'], unique=False)
-    op.create_index(op.f('ix_weekly_reviews_goal_id'), 'weekly_reviews', ['goal_id'], unique=False)
-    op.create_index(op.f('ix_weekly_reviews_week_start_date'), 'weekly_reviews', ['week_start_date'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_weekly_reviews_id ON weekly_reviews(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_weekly_reviews_user_id ON weekly_reviews(user_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_weekly_reviews_goal_id ON weekly_reviews(goal_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_weekly_reviews_week_start_date ON weekly_reviews(week_start_date)")
 
     # Streak Freezes table
-    op.create_table('streak_freezes',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('goal_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('used_date', sa.Date(), nullable=False, index=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['goal_id'], ['goals.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS streak_freezes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        used_date DATE NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_streak_freezes_id'), 'streak_freezes', ['id'], unique=False)
-    op.create_index(op.f('ix_streak_freezes_user_id'), 'streak_freezes', ['user_id'], unique=False)
-    op.create_index(op.f('ix_streak_freezes_goal_id'), 'streak_freezes', ['goal_id'], unique=False)
-    op.create_index(op.f('ix_streak_freezes_used_date'), 'streak_freezes', ['used_date'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_streak_freezes_id ON streak_freezes(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_streak_freezes_user_id ON streak_freezes(user_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_streak_freezes_goal_id ON streak_freezes(goal_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_streak_freezes_used_date ON streak_freezes(used_date)")
 
     # Meditation Sessions table
-    op.create_table('meditation_sessions',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False, index=True),
-    sa.Column('session_type', sa.String(length=50), nullable=False),
-    sa.Column('duration_minutes', sa.Integer(), nullable=False),
-    sa.Column('completed_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('mood_before', sa.String(length=50), nullable=True),
-    sa.Column('mood_after', sa.String(length=50), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS meditation_sessions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        session_type VARCHAR(50) NOT NULL,
+        duration_minutes INTEGER NOT NULL,
+        completed_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        mood_before VARCHAR(50),
+        mood_after VARCHAR(50),
+        notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     )
-    op.create_index(op.f('ix_meditation_sessions_id'), 'meditation_sessions', ['id'], unique=False)
-    op.create_index(op.f('ix_meditation_sessions_user_id'), 'meditation_sessions', ['user_id'], unique=False)
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_meditation_sessions_id ON meditation_sessions(id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_meditation_sessions_user_id ON meditation_sessions(user_id)")
 
-    # Set default values
-    op.execute("ALTER TABLE goals ALTER COLUMN theme SET DEFAULT 'balanced'")
-    op.execute("ALTER TABLE goals ALTER COLUMN duration_days SET DEFAULT 180")
-    op.execute("ALTER TABLE goals ALTER COLUMN current_streak SET DEFAULT 0")
-    op.execute("ALTER TABLE goals ALTER COLUMN longest_streak SET DEFAULT 0")
-    op.execute("ALTER TABLE goals ALTER COLUMN freezes_available SET DEFAULT 0")
-    op.execute("ALTER TABLE goals ALTER COLUMN total_completed_days SET DEFAULT 0")
-    op.execute("ALTER TABLE goals ALTER COLUMN is_active SET DEFAULT true")
+    # Add missing columns to goals table if they don't exist
+    op.execute("""
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='goals' AND column_name='answers_json') THEN
+            ALTER TABLE goals ADD COLUMN answers_json TEXT;
+        END IF;
 
-    op.execute("ALTER TABLE goal_phases ALTER COLUMN unlock_streak_required SET DEFAULT 0")
-    op.execute("ALTER TABLE goal_phases ALTER COLUMN is_unlocked SET DEFAULT false")
-
-    op.execute("ALTER TABLE daily_logs ALTER COLUMN is_frozen SET DEFAULT false")
-    op.execute("ALTER TABLE daily_logs ALTER COLUMN completion_percentage SET DEFAULT 0")
-
-    op.execute("ALTER TABLE phase_tasks ALTER COLUMN is_completed SET DEFAULT false")
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='goals' AND column_name='total_completed_days') THEN
+            ALTER TABLE goals ADD COLUMN total_completed_days INTEGER DEFAULT 0;
+        END IF;
+    END $$;
+    """)
 
 
 def downgrade() -> None:

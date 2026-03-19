@@ -9,6 +9,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SvgIcon, getDomainIcon } from '../../../../components/icons/SvgIcon';
 import { MomentumBar } from '../../../../components/MomentumBar/MomentumBar';
+import { apiClient } from '../../../../services/apiClient';
 import styles from './TodayTab.module.css';
 
 function getCurrentTimeSlot() {
@@ -56,16 +57,8 @@ export default function TodayTab({ goalData, onUpdate }) {
       const count = Object.values(completed).filter(Boolean).length;
       const pct = schedule.length > 0 ? (count / schedule.length) * 100 : 0;
 
-      const res = await fetch(`/api/goals/${goal.id}/logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ completed_items: completed, completion_percentage: pct }),
-      });
-
-      if (res.ok) onUpdate(goal.id);
+      await apiClient.post(`/goals/${goal.id}/logs`, { completed_items: completed, completion_percentage: pct });
+      onUpdate(goal.id);
     } catch (err) {
       console.error('Failed to log:', err);
     } finally {
@@ -75,11 +68,8 @@ export default function TodayTab({ goalData, onUpdate }) {
 
   const useStreakFreeze = async () => {
     try {
-      const res = await fetch(`/api/goals/${goal.id}/freeze`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (res.ok) onUpdate(goal.id);
+      await apiClient.post(`/goals/${goal.id}/freeze`);
+      onUpdate(goal.id);
     } catch (err) {
       console.error('Freeze failed:', err);
     }

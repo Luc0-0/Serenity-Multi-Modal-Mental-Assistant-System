@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SvgIcon } from '../../../../../components/icons/SvgIcon';
+import { apiClient } from '../../../../../services/apiClient';
 import styles from '../OnboardingFlow.module.css';
 
 const GROUP_META = [
@@ -36,21 +37,11 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   const fetchQuestions = async () => {
     setView('loading');
     try {
-      const res = await fetch('/api/goals/generate-questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          title: formData.goal.title,
-          description: formData.goal.description,
-          theme: formData.theme,
-        }),
+      const data = await apiClient.post('/goals/generate-questions', {
+        title: formData.goal.title,
+        description: formData.goal.description,
+        theme: formData.theme,
       });
-
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
 
       if (data.categories?.length === 4) {
         setCategories(data.categories);
@@ -70,22 +61,12 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     const groupId = GROUP_META[groupIndex].id;
 
     try {
-      const res = await fetch('/api/goals/generate-category-questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          title: formData.goal.title,
-          theme: formData.theme,
-          category: groupId,
-          previous_answers: answers,
-        }),
+      const data = await apiClient.post('/goals/generate-category-questions', {
+        title: formData.goal.title,
+        theme: formData.theme,
+        category: groupId,
+        previous_answers: answers,
       });
-
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
 
       if (data.questions?.length > 0) {
         // Merge smart questions into the category

@@ -10,6 +10,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { SvgIcon } from '../../components/icons/SvgIcon';
+import { apiClient } from '../../services/apiClient';
 import { MomentumBar } from '../../components/MomentumBar/MomentumBar';
 import { PhaseUnlockModal } from '../../components/PhaseUnlockModal/PhaseUnlockModal';
 import { PulseCheckModal } from '../../components/PulseCheckModal/PulseCheckModal';
@@ -48,18 +49,12 @@ export default function GoalBuilder() {
 
   const checkUserGoals = async () => {
     try {
-      const response = await fetch('/api/goals', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-
-      if (response.ok) {
-        const goals = await response.json();
-        if (goals.length === 0) {
-          setShowOnboarding(true);
-        } else {
-          const activeGoal = goals.find((g) => g.is_active) || goals[0];
-          await loadGoalDetails(activeGoal.id);
-        }
+      const goals = await apiClient.get('/goals');
+      if (goals.length === 0) {
+        setShowOnboarding(true);
+      } else {
+        const activeGoal = goals.find((g) => g.is_active) || goals[0];
+        await loadGoalDetails(activeGoal.id);
       }
     } catch (error) {
       console.error('Failed to fetch goals:', error);
@@ -71,28 +66,22 @@ export default function GoalBuilder() {
 
   const loadGoalDetails = useCallback(async (goalId) => {
     try {
-      const response = await fetch(`/api/goals/${goalId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
+      const data = await apiClient.get(`/goals/${goalId}`);
 
-      if (response.ok) {
-        const data = await response.json();
-
-        // Detect newly unlocked phases (compare with previous state)
-        if (goalData?.phases && data.phases) {
-          const prevUnlocked = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
-          const newlyUnlocked = data.phases.find((p) => p.is_unlocked && !prevUnlocked.has(p.id));
-          if (newlyUnlocked) {
-            setPhaseUnlock(newlyUnlocked);
-            setShowPhaseModal(true);
-          }
+      // Detect newly unlocked phases (compare with previous state)
+      if (goalData?.phases && data.phases) {
+        const prevUnlocked = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
+        const newlyUnlocked = data.phases.find((p) => p.is_unlocked && !prevUnlocked.has(p.id));
+        if (newlyUnlocked) {
+          setPhaseUnlock(newlyUnlocked);
+          setShowPhaseModal(true);
         }
-
-        setGoalData(data);
-
-        // Check if pulse check is due
-        checkPulseCheck(goalId);
       }
+
+      setGoalData(data);
+
+      // Check if pulse check is due
+      checkPulseCheck(goalId);
     } catch (error) {
       console.error('Failed to load goal details:', error);
     }
@@ -100,14 +89,9 @@ export default function GoalBuilder() {
 
   const checkPulseCheck = async (goalId) => {
     try {
-      const res = await fetch(`/api/goals/${goalId}/pulse-check`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.is_due) {
-          setTimeout(() => setShowPulseCheck(true), 2000); // Slight delay for UX
-        }
+      const data = await apiClient.get(`/goals/${goalId}/pulse-check`);
+      if (data.is_due) {
+        setTimeout(() => setShowPulseCheck(true), 2000); // Slight delay for UX
       }
     } catch {
       // Silent fail

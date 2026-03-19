@@ -8,6 +8,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SvgIcon } from '../icons/SvgIcon';
+import { apiClient } from '../../services/apiClient';
 import styles from './PulseCheckModal.module.css';
 
 const PULSE_QUESTIONS = [
@@ -70,23 +71,12 @@ export function PulseCheckModal({ isOpen, goalId, onClose, onSubmit }) {
     setSubmitting(true);
 
     try {
-      const res = await fetch(`/api/goals/${goalId}/pulse-check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ answers }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.insights) {
-          setInsights(data.insights);
-        } else {
-          onSubmit?.();
-          onClose();
-        }
+      const data = await apiClient.post(`/goals/${goalId}/pulse-check`, { answers });
+      if (data.insights) {
+        setInsights(data.insights);
+      } else {
+        onSubmit?.();
+        onClose();
       }
     } catch (err) {
       console.error('Pulse check submit failed:', err);

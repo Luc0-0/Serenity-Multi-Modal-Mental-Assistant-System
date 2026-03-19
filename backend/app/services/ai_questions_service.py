@@ -5,6 +5,7 @@
 
 import json
 import logging
+import re
 from typing import List, Dict, Any
 from app.services.engines.factory import get_llm_engine
 
@@ -13,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 def _to_id(domain_name: str) -> str:
     """Convert domain name to snake_case id."""
-    import re
     return re.sub(r'[^a-z0-9]+', '_', domain_name.lower()).strip('_')
 
 
@@ -635,8 +635,7 @@ Return ONLY valid JSON:"""
                 normalized = self._normalize_single_question(q, item.get("id", ""), idx)
                 if normalized is not None:
                     normalized_qs.append(normalized)
-            item["questions"] = normalized_qs
-            result.append(item)
+            result.append({**item, "questions": normalized_qs})
         return result
 
     def _get_dynamic_fallback(self, domains: list, priority_map: dict) -> list:
@@ -677,6 +676,26 @@ Return ONLY valid JSON:"""
                             {"value": "motivation", "label": "Staying motivated", "recommended": False},
                             {"value": "knowledge", "label": "Not knowing where to start", "recommended": False},
                             {"value": "consistency", "label": "Building consistency", "recommended": False},
+                        ]
+                    },
+                    {
+                        "id": f"{domain_id}_approach",
+                        "type": "radio",
+                        "question": f"How do you prefer to approach improving at {domain}?",
+                        "options": [
+                            {"value": "structured", "label": "Structured plan", "recommended": True, "reason": "Systematic progress is most reliable"},
+                            {"value": "intuitive", "label": "Intuitive practice", "recommended": False},
+                            {"value": "mixed", "label": "Mix of both", "recommended": False},
+                        ]
+                    },
+                    {
+                        "id": f"{domain_id}_tracking",
+                        "type": "radio",
+                        "question": f"How will you track progress in {domain}?",
+                        "options": [
+                            {"value": "metrics", "label": "Measurable metrics", "recommended": True, "reason": "What gets measured gets improved"},
+                            {"value": "feel", "label": "Personal feel", "recommended": False},
+                            {"value": "milestones", "label": "Milestone checkpoints", "recommended": False},
                         ]
                     },
                 ][:n]

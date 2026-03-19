@@ -25,96 +25,54 @@ class AIQuestionsService:
     ) -> List[Dict[str, Any]]:
         """Generate personalized questions for 4 fixed categories."""
 
-        system_prompt = f"""You are an expert goal achievement strategist. Generate personalized onboarding questions for a user's goal.
+        system_prompt = f"""Return a JSON array. Nothing else — no markdown, no prose, no code fences.
 
-GOAL:
-- Title: {goal_title}
-- Description: {goal_description}
-- Theme: {theme}
+You build onboarding questions for a goal-tracking app.
+Goal: "{goal_title}" — "{goal_description}" (theme: {theme})
 
-OUTPUT: A JSON array of exactly 4 category objects, in this exact order, with these exact IDs:
-1. "physical" — Physical & Energy
-2. "mental" — Mental & Focus
-3. "lifestyle" — Lifestyle & Constraints
-4. "preferences" — Preferences & Approach
+The array has EXACTLY 4 objects in this order:
+  [{{"id":"physical",...}}, {{"id":"mental",...}}, {{"id":"lifestyle",...}}, {{"id":"preferences",...}}]
 
-Each category object:
-{{
-  "id": "<one of: physical | mental | lifestyle | preferences>",
-  "name": "<category display name>",
-  "description": "<one-line description>",
-  "questions": [ /* 3 to 4 question objects */ ]
-}}
+Each object: {{"id":"<id>","name":"<name>","description":"<1 sentence>","questions":[<3 questions>]}}
 
-QUESTION SCHEMAS (use exactly these fields, no extras):
+QUESTION TYPES — pick the right tool for each question:
+• radio    → mutually exclusive choice (experience level, plan style, schedule type)
+• checkbox → pick all that apply (equipment, activities, barriers, motivators)
+• slider   → numeric value (distances, durations, frequencies, intensity 1–10)
+• time     → clock picker — ONLY for wake-up time or bedtime. Max 1 per category.
 
-TYPE "radio" — user picks ONE option:
-{{
-  "id": "<snake_case_unique_id>",
-  "type": "radio",
-  "question": "<question text>",
-  "options": [
-    {{"value": "<string>", "label": "<display label>", "recommended": true, "reason": "<why AI recommends this>"}},
-    {{"value": "<string>", "label": "<display label>", "recommended": false}},
-    {{"value": "<string>", "label": "<display label>", "recommended": false}}
-  ]
-}}
-Rules: 3–4 options. Exactly ONE option has "recommended": true with a "reason" string. Others have "recommended": false (no "reason").
+EXACT SCHEMAS (follow precisely, no extra fields):
 
-TYPE "checkbox" — user picks MULTIPLE options:
-{{
-  "id": "<snake_case_unique_id>",
-  "type": "checkbox",
-  "question": "<question text>",
-  "options": [
-    {{"value": "<string>", "label": "<display label>", "recommended": true, "reason": "<why recommended>"}},
-    {{"value": "<string>", "label": "<display label>", "recommended": false}},
-    {{"value": "<string>", "label": "<display label>", "recommended": false}},
-    {{"value": "<string>", "label": "<display label>", "recommended": false}}
-  ]
-}}
-Rules: 3–5 options. Exactly ONE has "recommended": true with "reason". Others have "recommended": false.
+radio:
+{{"id":"physical_experience","type":"radio","question":"How would you describe your experience level?","options":[
+  {{"value":"beginner","label":"Beginner","recommended":false}},
+  {{"value":"intermediate","label":"Intermediate","recommended":true,"reason":"Most first-timers at this goal start here"}},
+  {{"value":"advanced","label":"Advanced","recommended":false}}
+]}}
 
-TYPE "slider" — numeric range the user drags:
-{{
-  "id": "<snake_case_unique_id>",
-  "type": "slider",
-  "question": "<question text>",
-  "min": <integer>,
-  "max": <integer>,
-  "step": <integer>,
-  "unit": "<unit label, e.g. min or kg or days — empty string if none>",
-  "defaultValue": <integer within min–max>,
-  "recommended": <integer within min–max>,
-  "reason": "<why this value>"
-}}
+checkbox:
+{{"id":"physical_equipment","type":"checkbox","question":"What equipment do you already have?","options":[
+  {{"value":"shoes","label":"Proper footwear","recommended":true,"reason":"Essential foundation for this goal"}},
+  {{"value":"watch","label":"GPS / sports watch","recommended":false}},
+  {{"value":"bag","label":"Gear bag","recommended":false}}
+]}}
 
-TYPE "time" — 24-hour time picker:
-{{
-  "id": "<snake_case_unique_id>",
-  "type": "time",
-  "question": "<question text>",
-  "defaultValue": "<HH:MM in 24h format>",
-  "recommended": "<HH:MM in 24h format>",
-  "reason": "<why this time>"
-}}
+slider:
+{{"id":"physical_weekly_volume","type":"slider","question":"What is your current weekly training volume?","min":0,"max":40,"step":2,"unit":"km","defaultValue":10,"recommended":15,"reason":"15 km/week is a safe base to build from for this goal"}}
 
-CATEGORY RULES:
-- "physical": wake time (time), exercise frequency (radio or slider), energy peak (radio), physical intensity (slider or radio)
-- "mental": focus session length (slider), biggest distractions (checkbox), learning style (radio)
-- "lifestyle": schedule type (radio), available resources (checkbox), bedtime (time), constraints (radio or checkbox)
-- "preferences": schedule intensity 1–10 (slider), tracking detail (radio), motivators (checkbox)
+time:
+{{"id":"lifestyle_wake_time","type":"time","question":"What time do you usually wake up?","defaultValue":"06:30","recommended":"06:30","reason":"Morning sessions fit most training schedules"}}
 
-PERSONALIZATION RULES:
-- Every question must be DIRECTLY relevant to "{goal_title}" — not generic
-- Recommended values must reflect the specific demands of this goal and theme
-- Use "time" type for wake/sleep/session start times only
-- Use "slider" for durations, intensities, frequencies that need fine control
-- Use "radio" for clear mutually-exclusive choices
-- Use "checkbox" for complementary options (resources, habits, motivators)
-- Mix types — never use all radio
+RULES — violations mean the output is wrong:
+1. "recommended" in radio/checkbox options MUST be boolean true or false — never a string
+2. Exactly ONE option per radio/checkbox has recommended:true WITH a "reason" field — all others have recommended:false and NO "reason" field at all
+3. slider: defaultValue and recommended must be integers within [min, max]
+4. time: defaultValue and recommended must be "HH:MM" 24-hour format (e.g. "06:30")
+5. All question IDs unique, snake_case, prefixed with their category (physical_, mental_, lifestyle_, preferences_)
+6. Each category: exactly 3 questions, always mixed types, never 2 time questions in same category
+7. Every question must be DIRECTLY relevant to "{goal_title}" — not generic wellness filler
 
-Return ONLY a valid JSON array. No markdown, no explanation, no trailing text."""
+Output the array now:"""
 
         try:
             response = await self.engine.generate(system_prompt, [])
@@ -289,44 +247,47 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
 
         prev_context = self._format_answers_context(previous_answers) if previous_answers else "No previous answers yet."
 
-        system_prompt = f"""You are an expert goal strategist generating adaptive follow-up questions.
+        system_prompt = f"""Return a JSON array of 3 questions. Nothing else — no markdown, no prose.
 
-GOAL: {goal_title} (theme: {theme})
-CATEGORY TO GENERATE FOR: {category}
+Goal: "{goal_title}" (theme: {theme})
+Category: {category}
 
-WHAT THE USER ALREADY ANSWERED:
+What the user already told you:
 {prev_context}
 
-TASK: Generate 3–4 follow-up questions for the "{category}" category that DIG DEEPER based on the user's previous answers.
-Do NOT repeat anything already asked. Adapt the questions to what you know about them.
+Generate 3 FOLLOW-UP questions for "{category}" that go DEEPER based on the answers above.
+Do NOT ask anything already answered. Adapt specifically to what they said.
 
-Examples of adaptation:
-- If they said they wake at 5 AM → ask about their specific morning activities, not wake time again
-- If they selected "gym access" → ask about their preferred workout style or split
-- If they said "student" schedule → ask about class hours, exam periods, study environment
+Use these exact schemas:
 
-Each question must use one of these exact schemas:
+radio:
+{{"id":"{category}_<name>","type":"radio","question":"...","options":[
+  {{"value":"a","label":"Option A","recommended":true,"reason":"why"}},
+  {{"value":"b","label":"Option B","recommended":false}},
+  {{"value":"c","label":"Option C","recommended":false}}
+]}}
 
-radio (single choice, 3–4 options, exactly one recommended:true with reason):
-{{"id":"<id>","type":"radio","question":"...","options":[{{"value":"...","label":"...","recommended":true,"reason":"..."}},{{"value":"...","label":"...","recommended":false}}]}}
+checkbox:
+{{"id":"{category}_<name>","type":"checkbox","question":"...","options":[
+  {{"value":"a","label":"Option A","recommended":true,"reason":"why"}},
+  {{"value":"b","label":"Option B","recommended":false}},
+  {{"value":"c","label":"Option C","recommended":false}}
+]}}
 
-checkbox (multi-choice, 3–5 options, exactly one recommended:true with reason):
-{{"id":"<id>","type":"checkbox","question":"...","options":[{{"value":"...","label":"...","recommended":true,"reason":"..."}},{{"value":"...","label":"...","recommended":false}}]}}
+slider:
+{{"id":"{category}_<name>","type":"slider","question":"...","min":0,"max":100,"step":5,"unit":"min","defaultValue":30,"recommended":45,"reason":"why"}}
 
-slider (numeric drag):
-{{"id":"<id>","type":"slider","question":"...","min":<int>,"max":<int>,"step":<int>,"unit":"<string>","defaultValue":<int>,"recommended":<int>,"reason":"..."}}
+time:
+{{"id":"{category}_<name>","type":"time","question":"...","defaultValue":"07:00","recommended":"07:00","reason":"why"}}
 
-time (24h time picker):
-{{"id":"<id>","type":"time","question":"...","defaultValue":"HH:MM","recommended":"HH:MM","reason":"..."}}
+Rules:
+1. recommended in radio/checkbox is boolean true/false — never a string
+2. Exactly ONE option has recommended:true WITH "reason" — others have recommended:false, NO "reason"
+3. Mix types across the 3 questions
+4. IDs prefixed with "{category}_", unique snake_case
+5. Questions must be specific to "{goal_title}" and informed by the prior answers
 
-STRICT RULES:
-- Return a JSON array of 3–4 question objects only
-- "recommended" must be boolean true/false for radio/checkbox options, integer for slider, "HH:MM" string for time
-- IDs must be unique snake_case strings
-- Questions must be specific to "{goal_title}" and informed by the user's prior answers
-- Mix types — do not use all radio
-
-Return ONLY valid JSON array, no other text:"""
+Output the array now:"""
 
         try:
             response = await self.engine.generate(system_prompt, [])

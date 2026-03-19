@@ -168,7 +168,7 @@ async def submit_pulse_check(
 
 
 # Goal Management
-@router.post("/")
+@router.post("")
 async def create_goal(
     goal_data: dict,
     current_user: User = Depends(get_current_user),
@@ -217,7 +217,7 @@ async def create_goal(
     return {"goal_id": goal.id, "message": "Goal created successfully"}
 
 
-@router.get("/")
+@router.get("")
 async def get_user_goals(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

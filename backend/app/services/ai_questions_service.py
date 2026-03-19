@@ -79,6 +79,7 @@ Output the array now:"""
                 system_prompt,
                 [{"role": "user", "content": "Output the JSON array now."}],
                 temperature=0.1,
+                max_tokens=4000,
             )
             logger.info(f"Question generation response length: {len(response)}")
 
@@ -299,6 +300,7 @@ Output the array now:"""
                 system_prompt,
                 [{"role": "user", "content": "Output the JSON array now."}],
                 temperature=0.1,
+                max_tokens=4000,
             )
             raw = self._extract_json(response)
             if not isinstance(raw, list):

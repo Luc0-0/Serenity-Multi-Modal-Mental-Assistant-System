@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'add_goal_tables_2024'
-down_revision = 'rename_ai_to_auto'
+down_revision = 'memory_layers_v1'
 branch_labels = None
 depends_on = None
 

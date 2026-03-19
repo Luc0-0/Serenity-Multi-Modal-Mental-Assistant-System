@@ -11,6 +11,12 @@ from app.services.engines.factory import get_llm_engine
 logger = logging.getLogger(__name__)
 
 
+def _to_id(domain_name: str) -> str:
+    """Convert domain name to snake_case id."""
+    import re
+    return re.sub(r'[^a-z0-9]+', '_', domain_name.lower()).strip('_')
+
+
 class AIQuestionsService:
     """AI-powered question generation and schedule creation from answers."""
 
@@ -21,97 +27,132 @@ class AIQuestionsService:
         self,
         goal_title: str,
         goal_description: str,
-        theme: str = "balanced"
+        theme: str = "balanced",
+        domains: list = None,
+        domain_priorities: dict = None,
+        motivation: str = None,
+        baselines: dict = None,
+        goal_type: str = None,
     ) -> List[Dict[str, Any]]:
-        """Generate personalized questions for 4 fixed categories."""
+        """Generate personalized questions — dynamic categories per domain, adaptive depth per priority."""
+
+        # --- Layer 1: Determine categories (A = custom names per domain) ---
+        if domains and len(domains) >= 2:
+            category_list = domains[:6]  # max 6 domains
+        else:
+            category_list = self._default_domains_for_type(goal_type or "lifestyle")
+
+        # --- Layer 2: Build priority map (B = adaptive question depth) ---
+        priorities = domain_priorities or {}
+        priority_map = {d: priorities.get(d, "medium") for d in category_list}
+
+        def question_count(domain: str) -> int:
+            p = priority_map.get(domain, "medium").lower()
+            return 5 if p == "high" else 3 if p == "medium" else 2
+
+        # --- Layer 3: Build motivation + baseline context ---
+        motivation_context = f"\nUser's motivation: \"{motivation}\"" if motivation else ""
+        baseline_lines = ""
+        if baselines:
+            for domain, level in baselines.items():
+                baseline_lines += f"\n  - {domain}: current level {level}/10"
+        baseline_context = f"\nCurrent baselines:{baseline_lines}" if baseline_lines else ""
+
+        # --- Layer 4: Feasibility check (detect overcommitment) ---
+        high_priority_count = sum(1 for p in priority_map.values() if p.lower() == "high")
+        feasibility_warning = ""
+        if high_priority_count >= 4:
+            feasibility_warning = f"\nFEASIBILITY NOTE: User marked {high_priority_count} domains as high priority. Include at least 1 question per high-priority domain asking about time commitment (hours/week available), so you can flag overcommitment risk in the schedule."
+
+        # --- Layer 5: Build categories spec for prompt ---
+        categories_spec = "\n".join([
+            f"  [{i+1}] id=\"{_to_id(d)}\" name=\"{d}\" priority={priority_map[d].upper()} questions={question_count(d)}"
+            for i, d in enumerate(category_list)
+        ])
+
+        n_cats = len(category_list)
+        ids_list = ", ".join([f'"{_to_id(d)}"' for d in category_list])
+        first_id = _to_id(category_list[0]) if category_list else "domain"
 
         system_prompt = f"""Return a JSON array. Nothing else — no markdown, no prose, no code fences.
 
 You build onboarding questions for a goal-tracking app.
-Goal: "{goal_title}" — "{goal_description}" (theme: {theme})
+Goal: "{goal_title}" — "{goal_description}"
+Theme: {theme}
+Goal type: {goal_type or "general"}{motivation_context}{baseline_context}{feasibility_warning}
 
-The array has EXACTLY 4 objects in this order:
-  [{{"id":"physical",...}}, {{"id":"mental",...}}, {{"id":"lifestyle",...}}, {{"id":"preferences",...}}]
+The array has EXACTLY {n_cats} objects, one per domain listed below:
+{categories_spec}
 
-Each object: {{"id":"<id>","name":"<name>","description":"<1 sentence>","questions":[<3 questions>]}}
+Each object: {{"id":"<id>","name":"<name>","description":"<1 sentence about this domain>","questions":[<N questions>]}}
+where N is the questions count listed above for that domain.
 
 QUESTION TYPES — pick the right tool for each question:
-• radio    → mutually exclusive choice (experience level, plan style, schedule type)
+• radio    → mutually exclusive choice (experience level, approach style, schedule type)
 • checkbox → pick all that apply (equipment, activities, barriers, motivators)
-• slider   → numeric value (distances, durations, frequencies, intensity 1–10)
+• slider   → numeric value (distances, durations, frequencies, intensity 1–10, hours/week)
 • time     → clock picker — ONLY for wake-up time or bedtime. Max 1 per category.
 
 EXACT SCHEMAS (follow precisely, no extra fields):
 
 radio:
-{{"id":"physical_experience","type":"radio","question":"How would you describe your experience level?","options":[
-  {{"value":"beginner","label":"Beginner","recommended":false}},
-  {{"value":"intermediate","label":"Intermediate","recommended":true,"reason":"Most first-timers at this goal start here"}},
-  {{"value":"advanced","label":"Advanced","recommended":false}}
+{{"id":"<id>_<name>","type":"radio","question":"...","options":[
+  {{"value":"a","label":"Option A","recommended":true,"reason":"why this fits this goal"}},
+  {{"value":"b","label":"Option B","recommended":false}},
+  {{"value":"c","label":"Option C","recommended":false}}
 ]}}
 
 checkbox:
-{{"id":"physical_equipment","type":"checkbox","question":"What equipment do you already have?","options":[
-  {{"value":"shoes","label":"Proper footwear","recommended":true,"reason":"Essential foundation for this goal"}},
-  {{"value":"watch","label":"GPS / sports watch","recommended":false}},
-  {{"value":"bag","label":"Gear bag","recommended":false}}
+{{"id":"<id>_<name>","type":"checkbox","question":"...","options":[
+  {{"value":"a","label":"Option A","recommended":true,"reason":"why"}},
+  {{"value":"b","label":"Option B","recommended":false}}
 ]}}
 
 slider:
-{{"id":"physical_weekly_volume","type":"slider","question":"What is your current weekly training volume?","min":0,"max":40,"step":2,"unit":"km","defaultValue":10,"recommended":15,"reason":"15 km/week is a safe base to build from for this goal"}}
+{{"id":"<id>_<name>","type":"slider","question":"...","min":0,"max":100,"step":5,"unit":"hr/wk","defaultValue":5,"recommended":8,"reason":"why"}}
 
 time:
-{{"id":"lifestyle_wake_time","type":"time","question":"What time do you usually wake up?","defaultValue":"06:30","recommended":"06:30","reason":"Morning sessions fit most training schedules"}}
+{{"id":"<id>_<name>","type":"time","question":"...","defaultValue":"06:30","recommended":"06:30","reason":"why"}}
 
-RULES — violations mean the output is wrong:
-1. "recommended" in radio/checkbox options MUST be boolean true or false — never a string
-2. Exactly ONE option per radio/checkbox has recommended:true WITH a "reason" field — all others have recommended:false and NO "reason" field at all
+RULES — violations make the output wrong:
+1. "recommended" in radio/checkbox options MUST be boolean true/false — never a string
+2. Exactly ONE option per radio/checkbox has recommended:true WITH a "reason" — all others have recommended:false and NO "reason" field
 3. slider: defaultValue and recommended must be integers within [min, max]
-4. time: defaultValue and recommended must be "HH:MM" 24-hour format (e.g. "06:30")
-5. All question IDs unique, snake_case, prefixed with their category (physical_, mental_, lifestyle_, preferences_)
-6. Each category: exactly 3 questions, always mixed types, never 2 time questions in same category
-7. Every question must be DIRECTLY relevant to "{goal_title}" — not generic wellness filler
+4. time: defaultValue and recommended must be "HH:MM" 24-hour format
+5. All question IDs unique, snake_case, prefixed with their category id (e.g. "{first_id}_")
+6. Every question must be DIRECTLY relevant to "{goal_title}" and the specific domain
+7. For HIGH priority domains: ask about time commitment, current skill level, and primary obstacle
+8. For domains with baselines provided: skip "current level" questions (already known), go deeper
 
-Output the array now:"""
+Output the array now — {ids_list} in that order:"""
 
-        import time
-        logger.info(f"[QUESTIONS] START goal='{goal_title}' theme={theme}")
+        import time as time_module
+        logger.info(f"[QUESTIONS] START goal='{goal_title}' type={goal_type} domains={category_list} priorities={priority_map}")
         try:
-            t0 = time.monotonic()
+            t0 = time_module.monotonic()
             response = await self.engine.generate(
                 system_prompt,
                 [{"role": "user", "content": "Output the JSON array now."}],
                 temperature=0.1,
-                max_tokens=4000,
+                max_tokens=5000,
             )
-            elapsed = time.monotonic() - t0
+            elapsed = time_module.monotonic() - t0
             logger.info(f"[QUESTIONS] LLM response: {len(response)} chars in {elapsed:.1f}s")
 
-            # Extract, normalize, then validate
             raw = self._extract_json(response)
-            questions = self._normalize_questions(raw)
+            questions = self._normalize_questions_dynamic(raw, category_list)
 
-            # Count how many categories have AI-generated questions
             ai_count = sum(1 for q in questions if len(q.get('questions', [])) >= 1)
-
             if ai_count == 0:
                 logger.error(f"[QUESTIONS] BAD_STRUCTURE — no usable categories. Raw (single-line): {response[:600].replace(chr(10), ' ')}")
-                raise ValueError("Normalization could not produce usable structure")
+                raise ValueError("Normalization produced no usable structure")
 
-            if ai_count < 4:
-                logger.warning(f"[QUESTIONS] PARTIAL — {ai_count}/4 categories from AI, filling gaps with fallback")
-                fallback_map = {q['id']: q for q in self._get_fallback_questions()}
-                questions = [
-                    q if len(q.get('questions', [])) >= 1 else fallback_map.get(q['id'], q)
-                    for q in questions
-                ]
-
-            logger.info(f"[QUESTIONS] OK — {ai_count}/4 AI categories for goal='{goal_title}'")
+            logger.info(f"[QUESTIONS] OK — {ai_count}/{n_cats} AI categories for goal='{goal_title}'")
             return questions
 
         except Exception as e:
-            logger.error(f"[QUESTIONS] FALLBACK — hardcoded defaults. reason={e}")
-            return self._get_fallback_questions()
+            logger.error(f"[QUESTIONS] FALLBACK — reason={e}")
+            return self._get_dynamic_fallback(category_list, priority_map)
 
     async def generate_schedule_and_phases(
         self,
@@ -448,6 +489,95 @@ Return ONLY valid JSON:"""
             logger.error(f"[JSON] ALL_REPAIR_PASSES_FAILED: {e} — raw (single-line): {response[:400].replace(chr(10), ' ')}")
             raise Exception(f"Failed to parse LLM response after repair: {e}")
 
+    def _normalize_single_question(self, q: dict, cat_id: str = "", idx: int = 0) -> dict | None:
+        """
+        Normalize a single question dict into the clean schema the UI expects.
+        Returns None if the question is invalid and should be dropped.
+        """
+        import re
+        VALID_TYPES = {'radio', 'checkbox', 'slider', 'time'}
+
+        if not isinstance(q, dict):
+            return None
+        qtype = str(q.get('type', '')).lower()
+        if qtype not in VALID_TYPES:
+            return None
+        qid = str(q.get('id', f'{cat_id}_{idx}'))
+        question_text = str(q.get('question', ''))
+        if not question_text:
+            return None
+
+        if qtype in ('radio', 'checkbox'):
+            raw_opts = q.get('options', [])
+            if not isinstance(raw_opts, list) or len(raw_opts) < 2:
+                return None
+
+            options = []
+            for opt in raw_opts:
+                if not isinstance(opt, dict):
+                    continue
+                rec_raw = opt.get('recommended', False)
+                if isinstance(rec_raw, str):
+                    rec = rec_raw.strip().lower() == 'true'
+                else:
+                    rec = bool(rec_raw)
+                options.append({
+                    'value': str(opt.get('value', opt.get('label', ''))),
+                    'label': str(opt.get('label', opt.get('value', ''))),
+                    'recommended': rec,
+                    **(({'reason': str(opt['reason'])} if opt.get('reason') else {})),
+                })
+
+            # Ensure exactly one recommended
+            rec_indices = [i for i, o in enumerate(options) if o['recommended']]
+            if not rec_indices:
+                options[0]['recommended'] = True
+                options[0].setdefault('reason', 'Best default for most users')
+            elif len(rec_indices) > 1:
+                for i in rec_indices[1:]:
+                    options[i]['recommended'] = False
+                    options[i].pop('reason', None)
+
+            return {'id': qid, 'type': qtype, 'question': question_text, 'options': options}
+
+        elif qtype == 'slider':
+            try:
+                mn = int(q.get('min', 0))
+                mx = int(q.get('max', 100))
+                step = int(q.get('step', 1))
+                dv = int(q.get('defaultValue', (mn + mx) // 2))
+                rec = int(q.get('recommended', dv))
+                dv = max(mn, min(mx, dv))
+                rec = max(mn, min(mx, rec))
+            except (TypeError, ValueError):
+                return None
+            return {
+                'id': qid, 'type': 'slider', 'question': question_text,
+                'min': mn, 'max': mx, 'step': step,
+                'unit': str(q.get('unit', '')),
+                'defaultValue': dv, 'recommended': rec,
+                'reason': str(q.get('reason', '')),
+            }
+
+        elif qtype == 'time':
+            def coerce_time(val, fallback='08:00'):
+                s = str(val or '').strip()
+                m = re.match(r'^(\d{1,2}):(\d{2})$', s)
+                if m:
+                    h, mi = int(m.group(1)), int(m.group(2))
+                    if 0 <= h <= 23 and 0 <= mi <= 59:
+                        return f'{h:02d}:{mi:02d}'
+                return fallback
+            dv = coerce_time(q.get('defaultValue'), '08:00')
+            rec = coerce_time(q.get('recommended'), dv)
+            return {
+                'id': qid, 'type': 'time', 'question': question_text,
+                'defaultValue': dv, 'recommended': rec,
+                'reason': str(q.get('reason', '')),
+            }
+
+        return None
+
     def _normalize_questions(self, raw: List[Dict]) -> List[Dict]:
         """
         Sanitize AI output into exactly what the UI expects.
@@ -455,8 +585,6 @@ Return ONLY valid JSON:"""
         out-of-range slider values, wrong time format, extra/missing fields.
         """
         REQUIRED_IDS = ['physical', 'mental', 'lifestyle', 'preferences']
-        VALID_TYPES = {'radio', 'checkbox', 'slider', 'time'}
-        import re
 
         # Index categories by id so order doesn't matter
         by_id = {cat.get('id'): cat for cat in raw if isinstance(cat, dict)}
@@ -467,87 +595,10 @@ Return ONLY valid JSON:"""
             raw_questions = cat.get('questions', [])
             clean_questions = []
 
-            for q in raw_questions:
-                if not isinstance(q, dict):
-                    continue
-                qtype = str(q.get('type', '')).lower()
-                if qtype not in VALID_TYPES:
-                    continue
-                qid = str(q.get('id', f'{cat_id}_{len(clean_questions)}'))
-                question_text = str(q.get('question', ''))
-                if not question_text:
-                    continue
-
-                if qtype in ('radio', 'checkbox'):
-                    raw_opts = q.get('options', [])
-                    if not isinstance(raw_opts, list) or len(raw_opts) < 2:
-                        continue
-
-                    options = []
-                    for opt in raw_opts:
-                        if not isinstance(opt, dict):
-                            continue
-                        # Normalize recommended to strict bool
-                        rec_raw = opt.get('recommended', False)
-                        if isinstance(rec_raw, str):
-                            rec = rec_raw.strip().lower() == 'true'
-                        else:
-                            rec = bool(rec_raw)
-                        options.append({
-                            'value': str(opt.get('value', opt.get('label', ''))),
-                            'label': str(opt.get('label', opt.get('value', ''))),
-                            'recommended': rec,
-                            **(({'reason': str(opt['reason'])} if opt.get('reason') else {})),
-                        })
-
-                    # Ensure exactly one recommended — if none, mark first; if multiple, keep first only
-                    rec_indices = [i for i, o in enumerate(options) if o['recommended']]
-                    if not rec_indices:
-                        options[0]['recommended'] = True
-                        options[0].setdefault('reason', 'Best default for most users')
-                    elif len(rec_indices) > 1:
-                        for i in rec_indices[1:]:
-                            options[i]['recommended'] = False
-                            options[i].pop('reason', None)
-
-                    clean_questions.append({'id': qid, 'type': qtype, 'question': question_text, 'options': options})
-
-                elif qtype == 'slider':
-                    try:
-                        mn = int(q.get('min', 0))
-                        mx = int(q.get('max', 100))
-                        step = int(q.get('step', 1))
-                        dv = int(q.get('defaultValue', (mn + mx) // 2))
-                        rec = int(q.get('recommended', dv))
-                        dv = max(mn, min(mx, dv))
-                        rec = max(mn, min(mx, rec))
-                    except (TypeError, ValueError):
-                        continue
-                    clean_questions.append({
-                        'id': qid, 'type': 'slider', 'question': question_text,
-                        'min': mn, 'max': mx, 'step': step,
-                        'unit': str(q.get('unit', '')),
-                        'defaultValue': dv, 'recommended': rec,
-                        'reason': str(q.get('reason', '')),
-                    })
-
-                elif qtype == 'time':
-                    def coerce_time(val, fallback='08:00'):
-                        s = str(val or '').strip()
-                        # Accept HH:MM or H:MM
-                        m = re.match(r'^(\d{1,2}):(\d{2})$', s)
-                        if m:
-                            h, mi = int(m.group(1)), int(m.group(2))
-                            if 0 <= h <= 23 and 0 <= mi <= 59:
-                                return f'{h:02d}:{mi:02d}'
-                        return fallback
-                    dv = coerce_time(q.get('defaultValue'), '08:00')
-                    rec = coerce_time(q.get('recommended'), dv)
-                    clean_questions.append({
-                        'id': qid, 'type': 'time', 'question': question_text,
-                        'defaultValue': dv, 'recommended': rec,
-                        'reason': str(q.get('reason', '')),
-                    })
+            for idx, q in enumerate(raw_questions):
+                normalized = self._normalize_single_question(q, cat_id, idx)
+                if normalized is not None:
+                    clean_questions.append(normalized)
 
             result.append({
                 'id': cat_id,
@@ -557,6 +608,80 @@ Return ONLY valid JSON:"""
             })
 
         return result
+
+    def _default_domains_for_type(self, goal_type: str) -> list:
+        defaults = {
+            "health": ["Training", "Nutrition", "Recovery", "Mindset"],
+            "skill": ["Core Technique", "Practice Habits", "Mental Game", "Progress Tracking"],
+            "academic": ["Subject Mastery", "Study Habits", "Memory & Retention", "Time Management"],
+            "financial": ["Budgeting", "Investing", "Income Growth", "Financial Mindset"],
+            "creative": ["Core Craft", "Inspiration & Ideas", "Technical Skills", "Output Consistency"],
+            "multi_domain": ["Primary Focus", "Supporting Habits", "Mindset", "Lifestyle"],
+            "lifestyle": ["Daily Habits", "Physical Health", "Mental Wellbeing", "Environment"],
+        }
+        return defaults.get(goal_type, defaults["lifestyle"])
+
+    def _normalize_questions_dynamic(self, raw: list, expected_domains: list) -> list:
+        """Normalize questions for dynamic domain list."""
+        if not isinstance(raw, list):
+            return []
+        result = []
+        for item in raw[:len(expected_domains)]:
+            if not isinstance(item, dict):
+                continue
+            questions = item.get("questions", [])
+            normalized_qs = []
+            for idx, q in enumerate(questions):
+                normalized = self._normalize_single_question(q, item.get("id", ""), idx)
+                if normalized is not None:
+                    normalized_qs.append(normalized)
+            item["questions"] = normalized_qs
+            result.append(item)
+        return result
+
+    def _get_dynamic_fallback(self, domains: list, priority_map: dict) -> list:
+        """Generate minimal fallback categories for any domain list."""
+        categories = []
+        for domain in domains:
+            domain_id = _to_id(domain)
+            n = 5 if priority_map.get(domain, "medium").lower() == "high" else 3
+            categories.append({
+                "id": domain_id,
+                "name": domain,
+                "description": f"Your approach to {domain}",
+                "questions": [
+                    {
+                        "id": f"{domain_id}_experience",
+                        "type": "radio",
+                        "question": f"How would you describe your current level in {domain}?",
+                        "options": [
+                            {"value": "beginner", "label": "Just starting out", "recommended": False},
+                            {"value": "intermediate", "label": "Some experience", "recommended": True, "reason": "Most people begin here"},
+                            {"value": "advanced", "label": "Already proficient", "recommended": False},
+                        ]
+                    },
+                    {
+                        "id": f"{domain_id}_time",
+                        "type": "slider",
+                        "question": f"How many hours per week can you dedicate to {domain}?",
+                        "min": 1, "max": 20, "step": 1, "unit": "hr/wk",
+                        "defaultValue": 5, "recommended": 7,
+                        "reason": "Consistent daily effort compounds fastest"
+                    },
+                    {
+                        "id": f"{domain_id}_obstacle",
+                        "type": "radio",
+                        "question": f"What's your biggest challenge with {domain} right now?",
+                        "options": [
+                            {"value": "time", "label": "Finding time", "recommended": True, "reason": "Most common blocker"},
+                            {"value": "motivation", "label": "Staying motivated", "recommended": False},
+                            {"value": "knowledge", "label": "Not knowing where to start", "recommended": False},
+                            {"value": "consistency", "label": "Building consistency", "recommended": False},
+                        ]
+                    },
+                ][:n]
+            })
+        return categories
 
     def _validate_questions(self, questions: List[Dict]) -> bool:
         """Validate that normalization produced usable output."""

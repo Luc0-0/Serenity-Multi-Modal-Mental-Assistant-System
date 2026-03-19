@@ -7,7 +7,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class OllamaCrisisEngine(CrisisEngine):
+class GeminiCrisisEngine(CrisisEngine):
 
     VALID_SEVERITIES = {"none", "warning", "danger", "emergency"}
 
@@ -97,15 +97,15 @@ class OllamaCrisisEngine(CrisisEngine):
     }
 
     def __init__(self):
-        self.endpoint = settings.ollama_endpoint
-        self.api_key = settings.ollama_api_key
-        self.model = settings.ollama_model
+        self.endpoint = settings.gemini_endpoint
+        self.api_key = settings.gemini_api_key
+        self.model = settings.gemini_model
         self.timeout = 15.0
         self._available = bool(self.endpoint)
         if self._available:
-            logger.info("✓ Ollama crisis engine initialized")
+            logger.info("✓ Gemini crisis engine initialized")
         else:
-            logger.error("✗ Ollama crisis engine: OLLAMA_ENDPOINT not set")
+            logger.error("✗ Gemini crisis engine: GEMINI_ENDPOINT not set")
 
     async def assess(
         self,
@@ -114,7 +114,7 @@ class OllamaCrisisEngine(CrisisEngine):
         history: Optional[List[str]] = None,
     ) -> Dict:
         if not self._available:
-            raise RuntimeError("Ollama crisis engine not available")
+            raise RuntimeError("Gemini crisis engine not available")
 
         context = message[:500]
         if emotion_label:
@@ -161,7 +161,7 @@ class OllamaCrisisEngine(CrisisEngine):
             }
 
         except Exception as e:
-            logger.error(f"Ollama crisis assessment failed: {e}")
+            logger.error(f"Gemini crisis assessment failed: {e}")
             raise
 
     def _parse_severity(self, raw: str) -> str:
@@ -188,7 +188,7 @@ class OllamaCrisisEngine(CrisisEngine):
 
     @property
     def provider_name(self) -> str:
-        return "ollama"
+        return "gemini"
 
     @property
     def is_available(self) -> bool:

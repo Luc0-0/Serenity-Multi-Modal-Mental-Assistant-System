@@ -8,22 +8,21 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class OllamaLLMEngine(LLMEngine):
-    """Ollama Cloud API LLM integration."""
-    
+class GeminiLLMEngine(LLMEngine):
+    """Gemini API LLM integration."""
+
     def __init__(self):
-        self.endpoint = settings.ollama_endpoint
-        self.api_key = settings.ollama_api_key
-        self.model = settings.ollama_model
-        self.max_tokens = settings.ollama_max_tokens
+        self.endpoint = settings.gemini_endpoint
+        self.api_key = settings.gemini_api_key
+        self.model = settings.gemini_model
+        self.max_tokens = settings.gemini_max_tokens
         self.timeout = 120.0
         self._available = self._check_availability()
     
     def _check_availability(self) -> bool:
         if not self.endpoint:
-            logger.error("OLLAMA_ENDPOINT not set - please configure in .env or docker-compose")
+            logger.error("GEMINI_ENDPOINT not set - please configure in .env or docker-compose")
             return False
-        # API key is optional for local Ollama instances
         return True
     
     async def generate(
@@ -34,8 +33,8 @@ class OllamaLLMEngine(LLMEngine):
     ) -> str:
         """Generate LLM response via Ollama Cloud API."""
         if not self._available:
-            raise RuntimeError("Ollama engine not available")
-        
+            raise RuntimeError("Gemini engine not available")
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -52,7 +51,7 @@ class OllamaLLMEngine(LLMEngine):
             "temperature": temp,
         }
 
-        logger.info(f"[OLLAMA] REQUEST model={self.model} max_tokens={max_tok} temp={temp} messages={len(full_messages)}")
+        logger.info(f"[GEMINI] REQUEST model={self.model} max_tokens={max_tok} temp={temp} messages={len(full_messages)}")
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -71,16 +70,16 @@ class OllamaLLMEngine(LLMEngine):
                 logger.info(f"[RESPONSE_LEN] {len(content)} chars, finish_reason={finish_reason}")
                 return content
         except httpx.HTTPStatusError as e:
-            logger.error(f"Ollama API error: {e.status_code} - {e.response.text}")
-            raise RuntimeError(f"Ollama API failed: {e.status_code}")
+            logger.error(f"Gemini API error: {e.status_code} - {e.response.text}")
+            raise RuntimeError(f"Gemini API failed: {e.status_code}")
         except Exception as e:
-            logger.error(f"Ollama generation failed: {e}")
+            logger.error(f"Gemini generation failed: {e}")
             raise
     
     async def generate_stream(self, system_prompt: str, messages: List[Dict[str, str]], **kwargs):
-        """Stream tokens from Ollama Cloud via OpenAI-compatible SSE."""
+        """Stream tokens from Gemini via OpenAI-compatible SSE."""
         if not self._available:
-            raise RuntimeError("Ollama engine not available")
+            raise RuntimeError("Gemini engine not available")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -117,16 +116,16 @@ class OllamaLLMEngine(LLMEngine):
                         except (json.JSONDecodeError, KeyError, IndexError):
                             continue
         except httpx.HTTPStatusError as e:
-            logger.error(f"Ollama streaming API error: {e.status_code} - {e.response.text}")
-            raise RuntimeError(f"Ollama streaming API failed: {e.status_code}")
+            logger.error(f"Gemini streaming API error: {e.status_code} - {e.response.text}")
+            raise RuntimeError(f"Gemini streaming API failed: {e.status_code}")
         except Exception as e:
-            logger.error(f"Ollama streaming failed: {e}")
+            logger.error(f"Gemini streaming failed: {e}")
             raise
 
     async def generate_title(self, text: str) -> str:
         """Generate short conversation title from text snippet."""
         if not self._available:
-            raise RuntimeError("Ollama engine not available")
+            raise RuntimeError("Gemini engine not available")
 
         headers = {"Content-Type": "application/json"}
         if self.api_key:
@@ -173,7 +172,7 @@ class OllamaLLMEngine(LLMEngine):
     
     @property
     def provider_name(self) -> str:
-        return 'ollama'
+        return 'gemini'
     
     @property
     def is_available(self) -> bool:

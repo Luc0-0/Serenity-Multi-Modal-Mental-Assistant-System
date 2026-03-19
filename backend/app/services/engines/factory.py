@@ -3,11 +3,11 @@ import os
 from typing import List, Optional
 from app.services.engines.base import EmotionEngine, LLMEngine, CrisisEngine
 from app.services.engines.emotion.keywords import KeywordEmotionEngine
-from app.services.engines.emotion.ollama import OllamaEmotionEngine
-from app.services.engines.llm.ollama import OllamaLLMEngine
+from app.services.engines.emotion.ollama import GeminiEmotionEngine
+from app.services.engines.llm.ollama import GeminiLLMEngine
 from app.services.engines.llm.fallback import FallbackLLMEngine
 from app.services.engines.crisis.keywords import KeywordCrisisEngine
-from app.services.engines.crisis.ollama import OllamaCrisisEngine
+from app.services.engines.crisis.ollama import GeminiCrisisEngine
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,8 @@ class EngineFactory:
         """Create emotion engine by provider name."""
         if provider == 'keywords':
             return KeywordEmotionEngine()
-        elif provider == 'ollama':
-            return OllamaEmotionEngine()
+        elif provider == 'gemini':
+            return GeminiEmotionEngine()
         else:
             logger.warning(f"Unknown emotion provider: {provider}, using keywords")
             return KeywordEmotionEngine()
@@ -58,8 +58,8 @@ class EngineFactory:
     @staticmethod
     def create_llm_engine(provider: str) -> LLMEngine:
         """Create LLM engine by provider name."""
-        if provider == 'ollama':
-            return OllamaLLMEngine()
+        if provider == 'gemini':
+            return GeminiLLMEngine()
         elif provider == 'fallback':
             return FallbackLLMEngine()
         else:
@@ -96,8 +96,8 @@ class EngineFactory:
         """Create crisis engine by provider name."""
         if provider == 'keywords':
             return KeywordCrisisEngine()
-        elif provider == 'ollama':
-            return OllamaCrisisEngine()
+        elif provider == 'gemini':
+            return GeminiCrisisEngine()
         else:
             logger.warning(f"Unknown crisis provider: {provider}, using keywords")
             return KeywordCrisisEngine()
@@ -134,10 +134,10 @@ async def init_engines():
     
     logger.info("Initializing AI engines...")
     
-    emotion_provider = os.getenv('EMOTION_PROVIDER', 'ollama')
+    emotion_provider = os.getenv('EMOTION_PROVIDER', 'gemini')
     emotion_engine = await EngineFactory.get_emotion_engine_with_fallback(emotion_provider)
-    
-    llm_provider = os.getenv('LLM_PROVIDER', 'ollama')
+
+    llm_provider = os.getenv('LLM_PROVIDER', 'gemini')
     llm_engine = await EngineFactory.get_llm_engine_with_fallback(llm_provider)
     
     crisis_provider = os.getenv('CRISIS_PROVIDER', 'keywords')

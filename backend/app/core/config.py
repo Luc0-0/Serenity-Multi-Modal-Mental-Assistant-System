@@ -19,18 +19,18 @@ class Settings(BaseSettings):
     supabase_service_role_key: Optional[str] = None
 
     # Engine selection
-    emotion_provider: str = "ollama"
+    emotion_provider: str = "gemini"
     emotion_fallback: str = "keywords"
-    llm_provider: str = "ollama"
+    llm_provider: str = "gemini"
     llm_fallback: str = "fallback"
     crisis_provider: str = "keywords"
     crisis_fallback: str = "keywords"
-    
-    # Ollama settings
-    ollama_endpoint: Optional[str] = "https://ollama.com/v1/chat/completions"
-    ollama_api_key: Optional[str] = None
-    ollama_model: Optional[str] = "gpt-oss:120b-cloud"
-    ollama_max_tokens: Optional[int] = 2000
+
+    # Gemini settings (OpenAI-compatible endpoint)
+    gemini_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_max_tokens: int = 2000
     
     # Kokoro TTS
     kokoro_url: Optional[str] = None

@@ -7,7 +7,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class OllamaEmotionEngine(EmotionEngine):
+class GeminiEmotionEngine(EmotionEngine):
 
     VALID_EMOTIONS = {"sadness", "joy", "fear", "anger", "surprise", "disgust", "neutral"}
 
@@ -21,19 +21,19 @@ class OllamaEmotionEngine(EmotionEngine):
     )
 
     def __init__(self):
-        self.endpoint = settings.ollama_endpoint
-        self.api_key = settings.ollama_api_key
-        self.model = settings.ollama_model
+        self.endpoint = settings.gemini_endpoint
+        self.api_key = settings.gemini_api_key
+        self.model = settings.gemini_model
         self.timeout = 15.0
         self._available = bool(self.endpoint)
         if self._available:
-            logger.info("✓ Ollama emotion engine initialized")
+            logger.info("✓ Gemini emotion engine initialized")
         else:
-            logger.error("✗ Ollama emotion engine: OLLAMA_ENDPOINT not set")
+            logger.error("✗ Gemini emotion engine: GEMINI_ENDPOINT not set")
 
     async def analyze(self, text: str) -> Dict:
         if not self._available:
-            raise RuntimeError("Ollama emotion engine not available")
+            raise RuntimeError("Gemini emotion engine not available")
 
         headers = {"Content-Type": "application/json"}
         if self.api_key:
@@ -61,10 +61,10 @@ class OllamaEmotionEngine(EmotionEngine):
             return {
                 "label": label,
                 "confidence": 0.85 if label != "neutral" else 0.6,
-                "provider": "ollama",
+                "provider": "gemini",
             }
         except Exception as e:
-            logger.error(f"Ollama emotion analysis failed: {e}")
+            logger.error(f"Gemini emotion analysis failed: {e}")
             raise
 
     def _parse_emotion(self, raw: str) -> str:
@@ -85,7 +85,7 @@ class OllamaEmotionEngine(EmotionEngine):
 
     @property
     def provider_name(self) -> str:
-        return "ollama"
+        return "gemini"
 
     @property
     def is_available(self) -> bool:

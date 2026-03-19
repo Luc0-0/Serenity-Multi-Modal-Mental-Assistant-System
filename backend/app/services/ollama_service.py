@@ -275,9 +275,12 @@ RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
             "Content-Type": "application/json"
         }
         
-        # Determine response length
-        dynamic_max_tokens, assessment_reason = await self._assess_response_length_needed(user_message) if user_message else (self.max_tokens, "No message provided")
-        logger.info(f"[TOKEN_ALLOCATION] Max tokens: {dynamic_max_tokens} | Reason: {assessment_reason}")
+        # Determine response length based on message length heuristic (no extra API call)
+        if user_message and len(user_message.split()) > 20:
+            dynamic_max_tokens = 3000
+        else:
+            dynamic_max_tokens = 1000
+        logger.info(f"[TOKEN_ALLOCATION] Max tokens: {dynamic_max_tokens}")
         
         # Prepare request payload
         payload = {
@@ -285,9 +288,8 @@ RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
             "messages": [{"role": "system", "content": system_prompt}] + messages,
             "max_tokens": dynamic_max_tokens,
             "temperature": 0.7,
-            "repeat_penalty": 1.1,
-            "frequency_penalty": 1.1,
-            "presence_penalty": 0.6
+            "frequency_penalty": 0.3,
+            "presence_penalty": 0.3
         }
         
         # Initialize HTTP client

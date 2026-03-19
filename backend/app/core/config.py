@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     # Ollama Cloud settings (OpenAI-compatible endpoint)
     ollama_endpoint: Optional[str] = None
     ollama_api_key: Optional[str] = None
-    ollama_model: str = "openai/gpt-4o"
+    ollama_model: str = "gpt-oss-120b:latest"
     ollama_max_tokens: int = 2000
     
     # Kokoro TTS

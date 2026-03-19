@@ -24,7 +24,7 @@ class EngineFactory:
         """Create emotion engine by provider name."""
         if provider == 'keywords':
             return KeywordEmotionEngine()
-        elif provider == 'gemini':
+        elif provider in ('gemini', 'ollama'):
             return GeminiEmotionEngine()
         else:
             logger.warning(f"Unknown emotion provider: {provider}, using keywords")
@@ -58,7 +58,7 @@ class EngineFactory:
     @staticmethod
     def create_llm_engine(provider: str) -> LLMEngine:
         """Create LLM engine by provider name."""
-        if provider == 'gemini':
+        if provider in ('gemini', 'ollama'):
             return GeminiLLMEngine()
         elif provider == 'fallback':
             return FallbackLLMEngine()
@@ -129,20 +129,22 @@ class EngineFactory:
 
 
 async def init_engines():
-    """Initialize all engines at app startup."""
-    global emotion_engine, llm_engine, crisis_engine
-    
-    logger.info("Initializing AI engines...")
-    
-    emotion_provider = os.getenv('EMOTION_PROVIDER', 'gemini')
-    emotion_engine = await EngineFactory.get_emotion_engine_with_fallback(emotion_provider)
+    """Initialize all engines at app startup.
 
-    llm_provider = os.getenv('LLM_PROVIDER', 'gemini')
-    llm_engine = await EngineFactory.get_llm_engine_with_fallback(llm_provider)
-    
-    crisis_provider = os.getenv('CRISIS_PROVIDER', 'keywords')
-    crisis_engine = await EngineFactory.get_crisis_engine_with_fallback(crisis_provider)
-    
+    A single LLM_PROVIDER env var controls all AI providers:
+      LLM_PROVIDER=gemini  → Gemini API for LLM + emotion
+      LLM_PROVIDER=ollama  → Ollama Cloud for LLM + emotion
+    Crisis detection always uses keyword engine (no LLM dependency for safety).
+    """
+    global emotion_engine, llm_engine, crisis_engine
+
+    logger.info("Initializing AI engines...")
+
+    provider = os.getenv('LLM_PROVIDER', 'gemini')
+    llm_engine = await EngineFactory.get_llm_engine_with_fallback(provider)
+    emotion_engine = await EngineFactory.get_emotion_engine_with_fallback(provider)
+    crisis_engine = await EngineFactory.get_crisis_engine_with_fallback('keywords')
+
     logger.info("✓ All engines initialized successfully")
 
 

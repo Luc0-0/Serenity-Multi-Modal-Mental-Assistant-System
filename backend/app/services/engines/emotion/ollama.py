@@ -21,15 +21,21 @@ class GeminiEmotionEngine(EmotionEngine):
     )
 
     def __init__(self):
-        self.endpoint = settings.gemini_endpoint
-        self.api_key = settings.gemini_api_key
-        self.model = settings.gemini_model
+        if settings.llm_provider == 'ollama':
+            self.endpoint = settings.ollama_endpoint
+            self.api_key = settings.ollama_api_key
+            self.model = settings.ollama_model
+        else:
+            self.endpoint = settings.gemini_endpoint
+            self.api_key = settings.gemini_api_key
+            self.model = settings.gemini_model
+        self.provider = settings.llm_provider
         self.timeout = 15.0
         self._available = bool(self.endpoint)
         if self._available:
-            logger.info("✓ Gemini emotion engine initialized")
+            logger.info(f"✓ Gemini emotion engine initialized (provider: {self.provider})")
         else:
-            logger.error("✗ Gemini emotion engine: GEMINI_ENDPOINT not set")
+            logger.error(f"✗ Emotion engine: endpoint not set for provider '{self.provider}'")
 
     async def analyze(self, text: str) -> Dict:
         if not self._available:

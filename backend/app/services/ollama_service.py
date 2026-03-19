@@ -17,20 +17,27 @@ class GeminiService:
     """Integration with Gemini LLM API for chat responses."""
 
     def __init__(self):
-        self.endpoint = settings.gemini_endpoint
-        self.api_key = settings.gemini_api_key
-        self.model = settings.gemini_model
-        self.max_tokens = settings.gemini_max_tokens
+        if settings.llm_provider == 'ollama':
+            self.endpoint = settings.ollama_endpoint
+            self.api_key = settings.ollama_api_key
+            self.model = settings.ollama_model
+            self.max_tokens = settings.ollama_max_tokens
+        else:
+            self.endpoint = settings.gemini_endpoint
+            self.api_key = settings.gemini_api_key
+            self.model = settings.gemini_model
+            self.max_tokens = settings.gemini_max_tokens
+        self.provider = settings.llm_provider
         self.timeout = 30.0
 
-        logger.info(f"GeminiService initialized:")
+        logger.info(f"GeminiService initialized (provider: {self.provider}):")
         logger.info(f"  Endpoint: {self.endpoint}")
         logger.info(f"  API Key: {'***' + self.api_key[-5:] if self.api_key else 'NOT SET'}")
         logger.info(f"  Model: {self.model}")
         logger.info(f"  Max Tokens: {self.max_tokens}")
 
         if not self.api_key:
-            logger.error("GEMINI_API_KEY not set in .env or environment!")
+            logger.error(f"{self.provider.upper()}_API_KEY not set in .env or environment!")
     
     async def get_response(
          self,
@@ -288,9 +295,14 @@ RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
             "messages": [{"role": "system", "content": system_prompt}] + messages,
             "max_tokens": dynamic_max_tokens,
             "temperature": 0.7,
-            "frequency_penalty": 0.3,
-            "presence_penalty": 0.3
         }
+        if self.provider == 'ollama':
+            payload["repeat_penalty"] = 1.1
+            payload["frequency_penalty"] = 0.5
+            payload["presence_penalty"] = 0.5
+        else:
+            payload["frequency_penalty"] = 0.3
+            payload["presence_penalty"] = 0.3
         
         # Initialize HTTP client
         async with httpx.AsyncClient(timeout=self.timeout) as client:

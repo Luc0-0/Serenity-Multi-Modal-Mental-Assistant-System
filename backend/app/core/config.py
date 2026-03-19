@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     gemini_api_key: Optional[str] = None
     gemini_model: str = "gemini-2.5-flash"
     gemini_max_tokens: int = 2000
+
+    # Ollama Cloud settings (OpenAI-compatible endpoint)
+    ollama_endpoint: Optional[str] = None
+    ollama_api_key: Optional[str] = None
+    ollama_model: str = "openai/gpt-4o"
+    ollama_max_tokens: int = 2000
     
     # Kokoro TTS
     kokoro_url: Optional[str] = None

@@ -9,19 +9,26 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiLLMEngine(LLMEngine):
-    """Gemini API LLM integration."""
+    """OpenAI-compatible LLM integration — supports Gemini and Ollama Cloud."""
 
     def __init__(self):
-        self.endpoint = settings.gemini_endpoint
-        self.api_key = settings.gemini_api_key
-        self.model = settings.gemini_model
-        self.max_tokens = settings.gemini_max_tokens
+        if settings.llm_provider == 'ollama':
+            self.endpoint = settings.ollama_endpoint
+            self.api_key = settings.ollama_api_key
+            self.model = settings.ollama_model
+            self.max_tokens = settings.ollama_max_tokens
+        else:
+            self.endpoint = settings.gemini_endpoint
+            self.api_key = settings.gemini_api_key
+            self.model = settings.gemini_model
+            self.max_tokens = settings.gemini_max_tokens
+        self.provider = settings.llm_provider
         self.timeout = 120.0
         self._available = self._check_availability()
-    
+
     def _check_availability(self) -> bool:
         if not self.endpoint:
-            logger.error("GEMINI_ENDPOINT not set - please configure in .env or docker-compose")
+            logger.error(f"{self.provider.upper()}_ENDPOINT not set")
             return False
         return True
     
@@ -50,8 +57,15 @@ class GeminiLLMEngine(LLMEngine):
             "max_tokens": max_tok,
             "temperature": temp,
         }
+        if self.provider == 'ollama':
+            payload["repeat_penalty"] = 1.1
+            payload["frequency_penalty"] = 0.5
+            payload["presence_penalty"] = 0.5
+        else:
+            payload["frequency_penalty"] = 0.3
+            payload["presence_penalty"] = 0.3
 
-        logger.info(f"[GEMINI] REQUEST model={self.model} max_tokens={max_tok} temp={temp} messages={len(full_messages)}")
+        logger.info(f"[{self.provider.upper()}] REQUEST model={self.model} max_tokens={max_tok} temp={temp} messages={len(full_messages)}")
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -95,6 +109,13 @@ class GeminiLLMEngine(LLMEngine):
             "temperature": kwargs.get("temperature", 0.7),
             "stream": True,
         }
+        if self.provider == 'ollama':
+            payload["repeat_penalty"] = 1.1
+            payload["frequency_penalty"] = 0.5
+            payload["presence_penalty"] = 0.5
+        else:
+            payload["frequency_penalty"] = 0.3
+            payload["presence_penalty"] = 0.3
 
         # Use a longer read timeout for streaming; connect timeout stays short.
         timeout = httpx.Timeout(connect=10.0, read=120.0, write=10.0, pool=5.0)
@@ -172,7 +193,7 @@ class GeminiLLMEngine(LLMEngine):
     
     @property
     def provider_name(self) -> str:
-        return 'gemini'
+        return self.provider
     
     @property
     def is_available(self) -> bool:

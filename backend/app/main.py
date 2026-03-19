@@ -22,6 +22,16 @@ from app.routers.meditate import router as meditate_router
 from app.routers.goals import router as goals_router
 from app.services.engines.factory import init_engines
 import logging
+import sys
+
+# Route all app logs to stdout (same stream as uvicorn access logs) so Railway
+# displays them in correct chronological order instead of interleaved from stderr.
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.INFO,
+    format="%(levelname)s: %(name)s — %(message)s",
+    force=True,
+)
 
 logger = logging.getLogger(__name__)
 

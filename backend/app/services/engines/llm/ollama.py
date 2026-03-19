@@ -16,7 +16,7 @@ class OllamaLLMEngine(LLMEngine):
         self.api_key = settings.ollama_api_key
         self.model = settings.ollama_model
         self.max_tokens = settings.ollama_max_tokens
-        self.timeout = 30.0
+        self.timeout = 120.0
         self._available = self._check_availability()
     
     def _check_availability(self) -> bool:

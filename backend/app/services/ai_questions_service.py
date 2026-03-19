@@ -334,7 +334,8 @@ Output the array now:"""
                 raise ValueError("Expected list of questions")
             # Normalize by wrapping in a fake category, then extracting questions back
             normalized_cats = self._normalize_questions([{'id': category, 'questions': raw}])
-            questions = normalized_cats[0]['questions'] if normalized_cats else []
+            matched = next((c for c in normalized_cats if c['id'] == category), None)
+            questions = matched['questions'] if matched else []
             if not questions:
                 logger.error(f"[CATEGORY] BAD_STRUCTURE — no valid questions for '{category}'. Raw (single-line): {response[:400].replace(chr(10), ' ')}")
                 raise ValueError("Normalization produced no valid questions")

@@ -1,10 +1,11 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool, create_engine
+from sqlalchemy import pool
 from alembic import context
 import os
 
 from app.core.config import settings
 from app.db.base import Base
+from app.db.session import sync_engine
 
 # Import models so they're registered with Base
 from app.models.user import User
@@ -37,23 +38,20 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-# Get database URL from environment
-database_url = settings.database_url
-if not database_url:
-    raise ValueError("DATABASE_URL environment variable is not set")
-
-# Convert async URLs to sync for migrations
-# postgresql+asyncpg:// → postgresql://
-if "postgresql+asyncpg://" in database_url:
-    database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
-
-# sqlite+aiosqlite:// → sqlite://
-if "sqlite+aiosqlite://" in database_url:
-    database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://")
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
+    # Get database URL from settings
+    database_url = settings.database_url
+    if not database_url:
+        raise ValueError("DATABASE_URL environment variable is not set")
+
+    # Convert async URLs to sync for migrations
+    if "postgresql+asyncpg://" in database_url:
+        database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+    if "sqlite+aiosqlite://" in database_url:
+        database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://")
+
     context.configure(
         url=database_url,
         target_metadata=target_metadata,
@@ -66,15 +64,11 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    connectable = create_engine(
-        database_url,
-        poolclass=pool.NullPool,
-    )
-
-    with connectable.connect() as connection:
+    """Run migrations in 'online' mode using sync engine."""
+    with sync_engine.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata
         )
 
         with context.begin_transaction():

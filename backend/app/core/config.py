@@ -4,14 +4,20 @@ from typing import Optional
 
 class Settings(BaseSettings):
     """Application configuration settings."""
-    
+
     app_name: str = "Serenity"
     environment: str = "development"
     debug: bool = True
-    
+
+    # Database configuration
     database_url: Optional[str] = None
     secret_key: str = "dev-secret-key-change-in-production"
-    
+
+    # Supabase configuration
+    supabase_url: Optional[str] = None
+    supabase_anon_key: Optional[str] = None
+    supabase_service_role_key: Optional[str] = None
+
     # Engine selection
     emotion_provider: str = "ollama"
     emotion_fallback: str = "keywords"

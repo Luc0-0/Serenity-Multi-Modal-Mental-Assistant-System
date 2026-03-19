@@ -8,8 +8,8 @@
 import json
 from datetime import date, datetime, timedelta
 from typing import List, Dict, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, func
 
 from app.models import Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, WeeklyReview, StreakFreeze
 
@@ -17,10 +17,10 @@ from app.models import Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, Week
 class GoalService:
     """Business logic for goal management."""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create_goal(
+    async def create_goal(
         self,
         user_id: int,
         title: str,
@@ -32,11 +32,7 @@ class GoalService:
         phases_data: Optional[List[Dict]] = None,
         answers_json: Optional[str] = None
     ) -> Goal:
-        """Create a new goal with schedule and phases.
-
-        If phases_data is provided (from LLM personalization), creates
-        phases/domains/tasks from it. Otherwise falls back to theme defaults.
-        """
+        """Create a new goal with schedule and phases."""
 
         goal = Goal(
             user_id=user_id,
@@ -48,7 +44,7 @@ class GoalService:
             answers_json=answers_json
         )
         self.db.add(goal)
-        self.db.flush()
+        await self.db.flush()
 
         # Create schedule items
         for idx, item in enumerate(schedule_items):
@@ -64,14 +60,14 @@ class GoalService:
 
         # Create phases — personalized if available, defaults otherwise
         if phases_data:
-            self._create_phases_from_llm(goal.id, phases_data)
+            await self._create_phases_from_llm(goal.id, phases_data)
         else:
-            self._create_default_phases(goal.id, theme)
+            await self._create_default_phases(goal.id, theme)
 
-        self.db.commit()
+        await self.db.commit()
         return goal
 
-    def _create_phases_from_llm(self, goal_id: int, phases_data: List[Dict]):
+    async def _create_phases_from_llm(self, goal_id: int, phases_data: List[Dict]):
         """Create phases, domains, and tasks from LLM-generated data."""
 
         for phase_data in phases_data:
@@ -84,13 +80,12 @@ class GoalService:
                 is_unlocked=phase_data.get("phase_number", 0) == 0
             )
             self.db.add(phase)
-            self.db.flush()
+            await self.db.flush()
 
             for domain in phase_data.get("domains", []):
                 domain_name = domain.get("name", "General")
                 for task_data in domain.get("tasks", []):
                     subtasks = task_data.get("subtasks", [])
-                    # Handle subtasks as list of strings or list of dicts
                     if subtasks and isinstance(subtasks[0], dict):
                         subtasks = [s.get("title", str(s)) for s in subtasks]
 
@@ -102,7 +97,7 @@ class GoalService:
                     )
                     self.db.add(task)
 
-    def _create_default_phases(self, goal_id: int, theme: str):
+    async def _create_default_phases(self, goal_id: int, theme: str):
         """Create 3 default phases for the goal."""
 
         phase_configs = {
@@ -196,154 +191,147 @@ class GoalService:
                 is_unlocked=phase_config["is_unlocked"]
             )
             self.db.add(phase)
-            self.db.flush()
+            await self.db.flush()
 
-            # Create sample tasks for each domain
             for domain in phase_config["domains"]:
-                for i in range(2):  # 2 tasks per domain
+                for i in range(2):
                     task = PhaseTask(
                         phase_id=phase.id,
                         domain_name=domain["name"],
                         task_title=f"Complete {domain['name'].lower()} milestone {i+1}",
                         subtasks=json.dumps([
-                            f"Research and plan approach",
-                            f"Execute primary action",
-                            f"Document and reflect"
+                            "Research and plan approach",
+                            "Execute primary action",
+                            "Document and reflect"
                         ])
                     )
                     self.db.add(task)
 
-    def update_streak(self, goal_id: int, user_id: int):
+    async def update_streak(self, goal_id: int, user_id: int):
         """Update goal streak based on completion."""
 
-        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        result = await self.db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == user_id)
+        )
+        goal = result.scalar_one_or_none()
         if not goal:
             return
 
         today = date.today()
         yesterday = today - timedelta(days=1)
 
-        # Get today's log
-        today_log = self.db.query(DailyLog).filter(
-            and_(
+        today_log_result = await self.db.execute(
+            select(DailyLog).where(
                 DailyLog.goal_id == goal_id,
                 DailyLog.user_id == user_id,
                 DailyLog.date == today
             )
-        ).first()
+        )
+        today_log = today_log_result.scalar_one_or_none()
 
-        # Get yesterday's log or freeze
-        yesterday_log = self.db.query(DailyLog).filter(
-            and_(
+        yesterday_log_result = await self.db.execute(
+            select(DailyLog).where(
                 DailyLog.goal_id == goal_id,
                 DailyLog.user_id == user_id,
                 DailyLog.date == yesterday
             )
-        ).first()
+        )
+        yesterday_log = yesterday_log_result.scalar_one_or_none()
 
-        yesterday_freeze = self.db.query(StreakFreeze).filter(
-            and_(
+        yesterday_freeze_result = await self.db.execute(
+            select(StreakFreeze).where(
                 StreakFreeze.goal_id == goal_id,
                 StreakFreeze.user_id == user_id,
                 StreakFreeze.used_date == yesterday
             )
-        ).first()
+        )
+        yesterday_freeze = yesterday_freeze_result.scalar_one_or_none()
 
-        # Calculate completion percentage for today
         is_today_complete = (
             today_log and today_log.completion_percentage >= 80
-        ) or self._has_freeze_today(goal_id, user_id)
+        ) or await self._has_freeze_today(goal_id, user_id)
 
-        # Check if yesterday was complete (either logged or frozen)
         was_yesterday_complete = (
             yesterday_log and yesterday_log.completion_percentage >= 80
         ) or yesterday_freeze is not None
 
-        # Update streak
         if is_today_complete:
             if was_yesterday_complete:
                 goal.current_streak += 1
             else:
                 goal.current_streak = 1
 
-            # Track cumulative completed days (never resets)
             goal.total_completed_days = (goal.total_completed_days or 0) + 1
-
-            # Update longest streak
             goal.longest_streak = max(goal.longest_streak, goal.current_streak)
-
-            # Update freeze availability
             goal.freezes_available = goal.current_streak // 14
 
-            # Check phase unlocks
-            self._check_phase_unlocks(goal_id, goal.current_streak)
+            await self._check_phase_unlocks(goal_id, goal.current_streak)
 
-        self.db.commit()
+        await self.db.commit()
 
-    def _has_freeze_today(self, goal_id: int, user_id: int) -> bool:
+    async def _has_freeze_today(self, goal_id: int, user_id: int) -> bool:
         """Check if user used freeze today."""
         today = date.today()
-        freeze = self.db.query(StreakFreeze).filter(
-            and_(
+        result = await self.db.execute(
+            select(StreakFreeze).where(
                 StreakFreeze.goal_id == goal_id,
                 StreakFreeze.user_id == user_id,
                 StreakFreeze.used_date == today
             )
-        ).first()
-        return freeze is not None
+        )
+        return result.scalar_one_or_none() is not None
 
-    def _check_phase_unlocks(self, goal_id: int, current_streak: int):
+    async def _check_phase_unlocks(self, goal_id: int, current_streak: int):
         """Check and unlock phases based on streak."""
-        phases = self.db.query(GoalPhase).filter(
-            and_(
+        result = await self.db.execute(
+            select(GoalPhase).where(
                 GoalPhase.goal_id == goal_id,
                 GoalPhase.unlock_streak_required <= current_streak,
                 GoalPhase.is_unlocked == False
             )
-        ).all()
+        )
+        phases = result.scalars().all()
 
         for phase in phases:
             phase.is_unlocked = True
 
-    def use_streak_freeze(self, goal_id: int, user_id: int) -> bool:
+    async def use_streak_freeze(self, goal_id: int, user_id: int) -> bool:
         """Use a streak freeze for today."""
 
-        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        result = await self.db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == user_id)
+        )
+        goal = result.scalar_one_or_none()
         if not goal or goal.freezes_available <= 0:
             return False
 
-        # Check if already used freeze today
         today = date.today()
-        existing_freeze = self.db.query(StreakFreeze).filter(
-            and_(
+        existing_result = await self.db.execute(
+            select(StreakFreeze).where(
                 StreakFreeze.goal_id == goal_id,
                 StreakFreeze.user_id == user_id,
                 StreakFreeze.used_date == today
             )
-        ).first()
-
-        if existing_freeze:
+        )
+        if existing_result.scalar_one_or_none():
             return False
 
-        # Create freeze record
         freeze = StreakFreeze(
             user_id=user_id,
             goal_id=goal_id,
             used_date=today
         )
         self.db.add(freeze)
-
-        # Decrease available freezes
         goal.freezes_available -= 1
 
-        # Create or update today's log to mark as frozen
-        today_log = self.db.query(DailyLog).filter(
-            and_(
+        today_log_result = await self.db.execute(
+            select(DailyLog).where(
                 DailyLog.goal_id == goal_id,
                 DailyLog.user_id == user_id,
                 DailyLog.date == today
             )
-        ).first()
+        )
+        today_log = today_log_result.scalar_one_or_none()
 
         if today_log:
             today_log.is_frozen = True
@@ -353,62 +341,72 @@ class GoalService:
                 goal_id=goal_id,
                 date=today,
                 is_frozen=True,
-                completion_percentage=100  # Frozen counts as complete
+                completion_percentage=100
             )
             self.db.add(today_log)
 
-        self.db.commit()
+        await self.db.commit()
         return True
 
-    def get_goal_with_details(self, goal_id: int, user_id: int) -> Optional[Dict]:
+    async def get_goal_with_details(self, goal_id: int, user_id: int) -> Optional[Dict]:
         """Get goal with all related data."""
 
-        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        goal_result = await self.db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == user_id)
+        )
+        goal = goal_result.scalar_one_or_none()
         if not goal:
             return None
 
-        # Get schedule
-        schedule = self.db.query(DailySchedule).filter(
-            DailySchedule.goal_id == goal_id
-        ).order_by(DailySchedule.sort_order).all()
+        schedule_result = await self.db.execute(
+            select(DailySchedule).where(
+                DailySchedule.goal_id == goal_id
+            ).order_by(DailySchedule.sort_order)
+        )
+        schedule = schedule_result.scalars().all()
 
-        # Get phases with tasks
-        phases = self.db.query(GoalPhase).filter(
-            GoalPhase.goal_id == goal_id
-        ).order_by(GoalPhase.phase_number).all()
+        phases_result = await self.db.execute(
+            select(GoalPhase).where(
+                GoalPhase.goal_id == goal_id
+            ).order_by(GoalPhase.phase_number)
+        )
+        phases = phases_result.scalars().all()
 
-        # Get recent logs
-        recent_logs = self.db.query(DailyLog).filter(
-            and_(
+        recent_logs_result = await self.db.execute(
+            select(DailyLog).where(
                 DailyLog.goal_id == goal_id,
                 DailyLog.user_id == user_id,
                 DailyLog.date >= date.today() - timedelta(days=30)
-            )
-        ).order_by(DailyLog.date.desc()).all()
+            ).order_by(DailyLog.date.desc())
+        )
+        recent_logs = recent_logs_result.scalars().all()
 
         return {
             "goal": goal,
             "schedule": schedule,
             "phases": phases,
             "recent_logs": recent_logs,
-            "freeze_used_today": self._has_freeze_today(goal_id, user_id)
+            "freeze_used_today": await self._has_freeze_today(goal_id, user_id)
         }
 
-    def get_analytics(self, goal_id: int, user_id: int) -> Dict:
+    async def get_analytics(self, goal_id: int, user_id: int) -> Dict:
         """Get goal analytics and insights."""
 
-        goal = self.db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        goal_result = await self.db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == user_id)
+        )
+        goal = goal_result.scalar_one_or_none()
         if not goal:
             return {}
 
-        # Calculate analytics
         total_days = (date.today() - goal.start_date).days + 1
-        logs = self.db.query(DailyLog).filter(
-            and_(
+        logs_result = await self.db.execute(
+            select(DailyLog).where(
                 DailyLog.goal_id == goal_id,
                 DailyLog.user_id == user_id
             )
-        ).all()
+        )
+        logs = logs_result.scalars().all()
 
         completed_days = len([log for log in logs if log.completion_percentage >= 80])
         avg_completion = sum(log.completion_percentage for log in logs) / len(logs) if logs else 0
@@ -420,43 +418,42 @@ class GoalService:
             "average_completion": avg_completion,
             "current_streak": goal.current_streak,
             "longest_streak": goal.longest_streak,
-            "days_to_next_phase": self._days_to_next_phase(goal_id, goal.current_streak),
+            "days_to_next_phase": await self._days_to_next_phase(goal_id, goal.current_streak),
             "consistency_score": self._calculate_consistency_score(logs)
         }
 
-    def _days_to_next_phase(self, goal_id: int, current_streak: int) -> Optional[int]:
+    async def _days_to_next_phase(self, goal_id: int, current_streak: int) -> Optional[int]:
         """Calculate days needed to unlock next phase."""
 
-        next_phase = self.db.query(GoalPhase).filter(
-            and_(
+        result = await self.db.execute(
+            select(GoalPhase).where(
                 GoalPhase.goal_id == goal_id,
                 GoalPhase.unlock_streak_required > current_streak,
                 GoalPhase.is_unlocked == False
-            )
-        ).order_by(GoalPhase.unlock_streak_required).first()
+            ).order_by(GoalPhase.unlock_streak_required)
+        )
+        next_phase = result.scalar_one_or_none()
 
         if next_phase:
             return next_phase.unlock_streak_required - current_streak
         return None
 
-    def _calculate_consistency_score(self, logs: List[DailyLog]) -> float:
+    def _calculate_consistency_score(self, logs: List) -> float:
         """Calculate consistency score (0-100) based on recent performance."""
 
         if not logs:
             return 0
 
-        # Get last 14 days of logs
         recent_logs = sorted(logs, key=lambda x: x.date, reverse=True)[:14]
 
         if not recent_logs:
             return 0
 
-        # Calculate weighted score (recent days matter more)
         total_score = 0
         total_weight = 0
 
         for i, log in enumerate(recent_logs):
-            weight = 1.0 - (i * 0.05)  # Recent days get higher weight
+            weight = 1.0 - (i * 0.05)
             score = min(log.completion_percentage / 100.0, 1.0)
             total_score += score * weight
             total_weight += weight

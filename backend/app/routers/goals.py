@@ -7,7 +7,8 @@
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from datetime import date, datetime, timedelta
 import json
 
@@ -89,21 +90,23 @@ async def generate_category_questions(
 async def get_pulse_check(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Check if pulse check is due (Sunday) and return status."""
     today = date.today()
     is_sunday = today.weekday() == 6
 
-    # Check if already submitted this week
     days_since_sunday = today.weekday() + 1 if today.weekday() != 6 else 0
     week_start = today - timedelta(days=days_since_sunday)
 
-    existing = db.query(WeeklyReview).filter(
-        WeeklyReview.goal_id == goal_id,
-        WeeklyReview.user_id == current_user.id,
-        WeeklyReview.week_start_date == week_start
-    ).first()
+    result = await db.execute(
+        select(WeeklyReview).where(
+            WeeklyReview.goal_id == goal_id,
+            WeeklyReview.user_id == current_user.id,
+            WeeklyReview.week_start_date == week_start
+        )
+    )
+    existing = result.scalar_one_or_none()
 
     return {
         "is_due": is_sunday and not existing,
@@ -117,20 +120,21 @@ async def submit_pulse_check(
     goal_id: int,
     pulse_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Submit weekly pulse check (3 quick questions)."""
     today = date.today()
     days_since_sunday = today.weekday() + 1 if today.weekday() != 6 else 0
     week_start = today - timedelta(days=days_since_sunday)
 
-    existing = db.query(WeeklyReview).filter(
-        WeeklyReview.goal_id == goal_id,
-        WeeklyReview.user_id == current_user.id,
-        WeeklyReview.week_start_date == week_start
-    ).first()
-
-    if existing:
+    existing_result = await db.execute(
+        select(WeeklyReview).where(
+            WeeklyReview.goal_id == goal_id,
+            WeeklyReview.user_id == current_user.id,
+            WeeklyReview.week_start_date == week_start
+        )
+    )
+    if existing_result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Pulse check already submitted this week")
 
     review = WeeklyReview(
@@ -141,10 +145,12 @@ async def submit_pulse_check(
     )
 
     db.add(review)
-    db.commit()
+    await db.commit()
 
-    # Optionally feed back into LLM for schedule refinement
-    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    goal_result = await db.execute(
+        select(Goal).where(Goal.id == goal_id)
+    )
+    goal = goal_result.scalar_one_or_none()
     if goal and goal.answers_json:
         try:
             ai_service = AIQuestionsService()
@@ -166,21 +172,17 @@ async def submit_pulse_check(
 async def create_goal(
     goal_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new goal with personalized or LLM-generated schedule."""
     goal_service = GoalService(db)
 
-    # Use pre-generated schedule from onboarding if available
     schedule_items = goal_data.get("schedule_items")
     phases_data = goal_data.get("phases")
 
     if not schedule_items:
-        # Fallback: generate via LLM if no pre-generated schedule
-        # This handles legacy clients or direct API calls
         answers = goal_data.get("answers")
         if answers:
-            # Generate personalized schedule + phases from answers
             ai_service = AIQuestionsService()
             result = await ai_service.generate_schedule_and_phases(
                 goal_title=goal_data["title"],
@@ -200,7 +202,7 @@ async def create_goal(
                 theme=goal_data.get("theme", "balanced")
             )
 
-    goal = goal_service.create_goal(
+    goal = await goal_service.create_goal(
         user_id=current_user.id,
         title=goal_data["title"],
         description=goal_data["description"],
@@ -218,10 +220,13 @@ async def create_goal(
 @router.get("/")
 async def get_user_goals(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get all goals for the current user."""
-    goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
+    result = await db.execute(
+        select(Goal).where(Goal.user_id == current_user.id)
+    )
+    goals = result.scalars().all()
     return goals
 
 
@@ -229,11 +234,11 @@ async def get_user_goals(
 async def get_goal(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get specific goal with all related data."""
     goal_service = GoalService(db)
-    goal = goal_service.get_goal_with_details(goal_id, current_user.id)
+    goal = await goal_service.get_goal_with_details(goal_id, current_user.id)
 
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
@@ -246,10 +251,13 @@ async def update_goal(
     goal_id: int,
     goal_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update goal details."""
-    goal = db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == current_user.id).first()
+    result = await db.execute(
+        select(Goal).where(Goal.id == goal_id, Goal.user_id == current_user.id)
+    )
+    goal = result.scalar_one_or_none()
 
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
@@ -257,7 +265,7 @@ async def update_goal(
     for key, value in goal_data.items():
         setattr(goal, key, value)
 
-    db.commit()
+    await db.commit()
     return {"message": "Goal updated successfully"}
 
 
@@ -266,13 +274,15 @@ async def update_goal(
 async def get_schedule(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get daily schedule for a goal."""
-    schedule = db.query(DailySchedule).filter(
-        DailySchedule.goal_id == goal_id
-    ).order_by(DailySchedule.sort_order).all()
-
+    result = await db.execute(
+        select(DailySchedule).where(
+            DailySchedule.goal_id == goal_id
+        ).order_by(DailySchedule.sort_order)
+    )
+    schedule = result.scalars().all()
     return schedule
 
 
@@ -281,7 +291,7 @@ async def create_schedule_item(
     goal_id: int,
     schedule_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Add new schedule item."""
     schedule_item = DailySchedule(
@@ -294,7 +304,7 @@ async def create_schedule_item(
     )
 
     db.add(schedule_item)
-    db.commit()
+    await db.commit()
     return {"message": "Schedule item created"}
 
 
@@ -304,17 +314,19 @@ async def get_daily_logs(
     goal_id: int,
     days: int = 30,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get daily completion logs."""
     start_date = date.today() - timedelta(days=days)
 
-    logs = db.query(DailyLog).filter(
-        DailyLog.goal_id == goal_id,
-        DailyLog.user_id == current_user.id,
-        DailyLog.date >= start_date
-    ).order_by(DailyLog.date.desc()).all()
-
+    result = await db.execute(
+        select(DailyLog).where(
+            DailyLog.goal_id == goal_id,
+            DailyLog.user_id == current_user.id,
+            DailyLog.date >= start_date
+        ).order_by(DailyLog.date.desc())
+    )
+    logs = result.scalars().all()
     return logs
 
 
@@ -323,18 +335,20 @@ async def log_daily_completion(
     goal_id: int,
     log_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Log today's completion."""
     goal_service = GoalService(db)
 
-    # Update or create today's log
     today = date.today()
-    existing_log = db.query(DailyLog).filter(
-        DailyLog.goal_id == goal_id,
-        DailyLog.user_id == current_user.id,
-        DailyLog.date == today
-    ).first()
+    existing_result = await db.execute(
+        select(DailyLog).where(
+            DailyLog.goal_id == goal_id,
+            DailyLog.user_id == current_user.id,
+            DailyLog.date == today
+        )
+    )
+    existing_log = existing_result.scalar_one_or_none()
 
     if existing_log:
         existing_log.completed_items = json.dumps(log_data["completed_items"])
@@ -349,10 +363,9 @@ async def log_daily_completion(
         )
         db.add(daily_log)
 
-    # Update streak
-    goal_service.update_streak(goal_id, current_user.id)
-
-    db.commit()
+    # Flush so update_streak can query today's log (autoflush=False on session)
+    await db.flush()
+    await goal_service.update_streak(goal_id, current_user.id)
     return {"message": "Daily log updated"}
 
 
@@ -361,12 +374,12 @@ async def log_daily_completion(
 async def use_streak_freeze(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Use a streak freeze for today."""
     goal_service = GoalService(db)
 
-    success = goal_service.use_streak_freeze(goal_id, current_user.id)
+    success = await goal_service.use_streak_freeze(goal_id, current_user.id)
 
     if not success:
         raise HTTPException(status_code=400, detail="No freezes available or already used today")
@@ -379,10 +392,13 @@ async def use_streak_freeze(
 async def get_phases(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get goal phases with unlock status."""
-    phases = db.query(GoalPhase).filter(GoalPhase.goal_id == goal_id).order_by(GoalPhase.phase_number).all()
+    result = await db.execute(
+        select(GoalPhase).where(GoalPhase.goal_id == goal_id).order_by(GoalPhase.phase_number)
+    )
+    phases = result.scalars().all()
     return phases
 
 
@@ -392,10 +408,13 @@ async def toggle_phase_task(
     phase_id: int,
     task_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Toggle completion of a phase task."""
-    task = db.query(PhaseTask).filter(PhaseTask.id == task_id, PhaseTask.phase_id == phase_id).first()
+    result = await db.execute(
+        select(PhaseTask).where(PhaseTask.id == task_id, PhaseTask.phase_id == phase_id)
+    )
+    task = result.scalar_one_or_none()
 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -403,7 +422,7 @@ async def toggle_phase_task(
     task.is_completed = not task.is_completed
     task.completed_at = datetime.now() if task.is_completed else None
 
-    db.commit()
+    await db.commit()
     return {"message": "Task toggled"}
 
 
@@ -412,14 +431,16 @@ async def toggle_phase_task(
 async def get_weekly_reviews(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get weekly reviews for a goal."""
-    reviews = db.query(WeeklyReview).filter(
-        WeeklyReview.goal_id == goal_id,
-        WeeklyReview.user_id == current_user.id
-    ).order_by(WeeklyReview.week_start_date.desc()).all()
-
+    result = await db.execute(
+        select(WeeklyReview).where(
+            WeeklyReview.goal_id == goal_id,
+            WeeklyReview.user_id == current_user.id
+        ).order_by(WeeklyReview.week_start_date.desc())
+    )
+    reviews = result.scalars().all()
     return reviews
 
 
@@ -428,22 +449,21 @@ async def submit_weekly_review(
     goal_id: int,
     review_data: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Submit weekly review."""
-    # Get start of current week (Sunday)
     today = date.today()
     days_since_sunday = today.weekday() + 1 if today.weekday() != 6 else 0
     week_start = today - timedelta(days=days_since_sunday)
 
-    # Check if review already exists for this week
-    existing = db.query(WeeklyReview).filter(
-        WeeklyReview.goal_id == goal_id,
-        WeeklyReview.user_id == current_user.id,
-        WeeklyReview.week_start_date == week_start
-    ).first()
-
-    if existing:
+    existing_result = await db.execute(
+        select(WeeklyReview).where(
+            WeeklyReview.goal_id == goal_id,
+            WeeklyReview.user_id == current_user.id,
+            WeeklyReview.week_start_date == week_start
+        )
+    )
+    if existing_result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Review already submitted for this week")
 
     review = WeeklyReview(
@@ -454,7 +474,7 @@ async def submit_weekly_review(
     )
 
     db.add(review)
-    db.commit()
+    await db.commit()
     return {"message": "Weekly review submitted"}
 
 
@@ -463,9 +483,9 @@ async def submit_weekly_review(
 async def get_goal_analytics(
     goal_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get goal analytics and insights."""
     goal_service = GoalService(db)
-    analytics = goal_service.get_analytics(goal_id, current_user.id)
+    analytics = await goal_service.get_analytics(goal_id, current_user.id)
     return analytics

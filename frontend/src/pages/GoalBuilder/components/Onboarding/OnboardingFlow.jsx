@@ -8,17 +8,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '../../../../services/apiClient';
 import WelcomeStep from './steps/WelcomeStep';
 import GoalStep from './steps/GoalStep';
+import GoalProfileStep from './steps/GoalProfileStep';
 import AIQuestionsStep from './steps/AIQuestionsStep';
 import ScheduleStep from './steps/ScheduleStep';
 import LaunchStep from './steps/LaunchStep';
 import styles from './OnboardingFlow.module.css';
 
-const steps = ['welcome', 'goal', 'aiquestions', 'schedule', 'launch'];
+const steps = ['welcome', 'goal', 'goalprofile', 'aiquestions', 'schedule', 'launch'];
 export const ONBOARDING_DRAFT_KEY = 'serenity_goal_draft';
 
 const DEFAULT_FORM = () => ({
   theme: 'balanced',
   goal: { title: '', description: '', voice_input: false },
+  goalProfile: {
+    goal_type: null,
+    domains: [],
+    domain_priorities: {},
+    motivation: '',
+    baselines: {},
+  },
   aiQuestions: { questions: [], answers: {} },
   timeline: { duration_days: 180, start_date: new Date().toISOString().split('T')[0] },
   schedule: { items: [], templates_used: [], ai_generated: false },
@@ -70,6 +78,8 @@ export default function OnboardingFlow({ onComplete, onSkip, initialStep = 0, in
         title: formData.goal.title,
         description: formData.goal.description,
         theme: formData.theme,
+        goal_type: formData.goalProfile?.goal_type,
+        domains: formData.goalProfile?.domains,
         duration_days: formData.timeline.duration_days,
         answers: formData.aiQuestions.answers,
         schedule_items: formData.schedule.items,
@@ -96,6 +106,8 @@ export default function OnboardingFlow({ onComplete, onSkip, initialStep = 0, in
         return <WelcomeStep {...stepProps} />;
       case 'goal':
         return <GoalStep {...stepProps} />;
+      case 'goalprofile':
+        return <GoalProfileStep {...stepProps} />;
       case 'aiquestions':
         return <AIQuestionsStep {...stepProps} />;
       case 'schedule':
@@ -148,7 +160,7 @@ export default function OnboardingFlow({ onComplete, onSkip, initialStep = 0, in
       </AnimatePresence>
 
       {/* Skip option (only on first few steps) */}
-      {currentStep < 3 && (
+      {currentStep < 4 && (
         <button
           className={styles.skipButton}
           onClick={() => { clearDraft(); onSkip(); }}

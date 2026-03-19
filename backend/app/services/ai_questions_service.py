@@ -395,28 +395,57 @@ Return ONLY valid JSON:"""
         return "\n".join(context_lines)
 
     def _extract_json(self, response: str) -> Any:
-        """Extract JSON from LLM response."""
+        """
+        Extract JSON from LLM response with a three-pass repair chain:
+        1. Direct parse (fast path)
+        2. Regex cleanup (trailing commas, JS comments, Python booleans)
+        3. json-repair library (handles missing commas, unquoted keys, etc.)
+        """
+        import re
+
+        # Locate the outermost JSON structure
+        start_obj = response.find('{')
+        start_arr = response.find('[')
+
+        if start_obj != -1 and (start_arr == -1 or start_obj < start_arr):
+            end = response.rfind('}') + 1
+            json_str = response[start_obj:end]
+        elif start_arr != -1:
+            end = response.rfind(']') + 1
+            json_str = response[start_arr:end]
+        else:
+            raise ValueError("No JSON found in response")
+
+        # Pass 1 — raw parse
         try:
-            # Try to find JSON object or array
-            start_obj = response.find('{')
-            start_arr = response.find('[')
-
-            # Determine which comes first
-            if start_obj != -1 and (start_arr == -1 or start_obj < start_arr):
-                end = response.rfind('}') + 1
-                json_str = response[start_obj:end]
-            elif start_arr != -1:
-                end = response.rfind(']') + 1
-                json_str = response[start_arr:end]
-            else:
-                raise ValueError("No JSON found in response")
-
             return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
 
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.error(f"JSON extraction failed: {e}")
-            logger.debug(f"Response was: {response[:500]}")
-            raise Exception(f"Failed to parse LLM response: {e}")
+        # Pass 2 — regex cleanup for common LLM mistakes
+        cleaned = json_str
+        cleaned = re.sub(r'//[^\n]*', '', cleaned)              # strip // comments
+        cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL)  # strip /* */ comments
+        cleaned = re.sub(r',\s*([}\]])', r'\1', cleaned)        # trailing commas
+        cleaned = re.sub(r'\bTrue\b', 'true', cleaned)
+        cleaned = re.sub(r'\bFalse\b', 'false', cleaned)
+        cleaned = re.sub(r'\bNone\b', 'null', cleaned)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+
+        # Pass 3 — json-repair handles missing commas, unquoted keys, etc.
+        try:
+            from json_repair import repair_json
+            repaired = repair_json(cleaned)
+            result = json.loads(repaired)
+            logger.warning("JSON required repair — LLM output was malformed but recoverable")
+            return result
+        except Exception as e:
+            logger.error(f"JSON extraction failed all repair passes: {e}")
+            logger.debug(f"Raw response (first 600 chars): {response[:600]}")
+            raise Exception(f"Failed to parse LLM response after repair: {e}")
 
     def _normalize_questions(self, raw: List[Dict]) -> List[Dict]:
         """

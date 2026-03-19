@@ -19,6 +19,9 @@ const GROUP_META = [
   { id: 'preferences', name: 'Preferences & Approach', icon: 'settings', color: '#9F7AEA', description: 'Intensity, tracking style, and motivation' },
 ];
 
+const GROUP_COLORS = ['#C9A84C', '#5A9CF5', '#52A97A', '#E05252', '#A855F7', '#F59E0B'];
+const GROUP_ICONS = ['⚡', '🧠', '🌿', '🎯', '💡', '📊'];
+
 // View states: 'loading' | 'question' | 'group-summary' | 'final-summary'
 export default function AIQuestionsStep({ formData, updateFormData, nextStep, prevStep }) {
   const [view, setView] = useState('loading');
@@ -27,6 +30,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showTooltip, setShowTooltip] = useState(null);
+  const [groupMeta, setGroupMeta] = useState({});
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -36,12 +40,28 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   const fetchAllQuestions = async () => {
     try {
       const data = await apiClient.post('/api/goals/generate-questions', {
-        title: formData.goal.title,
-        description: formData.goal.description,
-        theme: formData.theme,
+        title: formData.goal?.title || '',
+        description: formData.goal?.description || '',
+        theme: formData.theme || 'balanced',
+        domains: formData.goalProfile?.domains || [],
+        domain_priorities: formData.goalProfile?.domain_priorities || {},
+        motivation: formData.goalProfile?.motivation || '',
+        baselines: formData.goalProfile?.baselines || {},
+        goal_type: formData.goalProfile?.goal_type || null,
       });
-      if (data.categories?.length === 4) {
+      if (data.categories?.length > 0) {
         setCategories(data.categories);
+        // Build dynamic group meta from API response
+        const dynamicGroupMeta = {};
+        (data.categories || []).forEach((cat, i) => {
+          dynamicGroupMeta[cat.id] = {
+            label: cat.name,
+            description: cat.description || '',
+            color: GROUP_COLORS[i % GROUP_COLORS.length],
+            icon: GROUP_ICONS[i % GROUP_ICONS.length],
+          };
+        });
+        setGroupMeta(dynamicGroupMeta);
       } else {
         throw new Error('Invalid structure');
       }
@@ -53,11 +73,21 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   };
 
 
-  const group = GROUP_META[currentGroup];
+  const activeGroupMeta = Object.keys(groupMeta).length > 0
+    ? categories.map((cat, i) => ({
+        id: cat.id,
+        name: groupMeta[cat.id]?.label || cat.name,
+        icon: cat.icon || 'sparkle',
+        color: groupMeta[cat.id]?.color || GROUP_COLORS[i % GROUP_COLORS.length],
+        description: groupMeta[cat.id]?.description || '',
+      }))
+    : GROUP_META;
+
+  const group = activeGroupMeta[currentGroup] || GROUP_META[currentGroup];
   const category = categories[currentGroup];
   const questions = category?.questions || [];
   const question = questions[currentQ];
-  const totalGroups = GROUP_META.length;
+  const totalGroups = activeGroupMeta.length || GROUP_META.length;
 
   const handleAnswer = useCallback(
     (value, multiSelect = false) => {
@@ -95,7 +125,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   }, [currentQ, questions.length]);
 
   const fetchSmartQuestions = async (groupIndex) => {
-    const groupId = GROUP_META[groupIndex].id;
+    const groupId = (activeGroupMeta[groupIndex] || GROUP_META[groupIndex])?.id;
     try {
       const data = await apiClient.post('/api/goals/generate-category-questions', {
         title: formData.goal.title,
@@ -160,7 +190,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
    *  LOADING VIEW
    * ════════════════════════════════════════════ */
   if (view === 'loading') {
-    return <AILoadingScreen groupIndex={currentGroup} goalTitle={formData.goal.title} />;
+    return <AILoadingScreen groupIndex={currentGroup} goalTitle={formData.goal?.title || ''} groupMeta={activeGroupMeta} />;
   }
 
   /* ════════════════════════════════════════════
@@ -260,7 +290,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
             style={{ width: '100%', justifyContent: 'center' }}
           >
             {currentGroup < totalGroups - 1 ? (
-              <>Next: {GROUP_META[currentGroup + 1].name} <SvgIcon name="chevronRight" size={13} color="currentColor" /></>
+              <>Next: {(activeGroupMeta[currentGroup + 1] || GROUP_META[currentGroup + 1])?.name} <SvgIcon name="chevronRight" size={13} color="currentColor" /></>
             ) : (
               <>Review All Answers <SvgIcon name="chevronRight" size={13} color="currentColor" /></>
             )}
@@ -303,7 +333,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
           </div>
 
           {/* Category sections */}
-          {GROUP_META.map((gm, gi) => {
+          {activeGroupMeta.map((gm, gi) => {
             const ga = answers[gm.id] || {};
             const cat = categories[gi];
             if (!cat) return null;
@@ -414,7 +444,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
       {/* Top: progress segments + Q counter */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', gap: 5, marginBottom: 18 }}>
-          {GROUP_META.map((gm, i) => (
+          {activeGroupMeta.map((gm, i) => (
             <div key={gm.id} style={{
               flex: 1, height: 2, borderRadius: 1,
               background: i < currentGroup ? gm.color : i === currentGroup ? `${gm.color}55` : 'rgba(237,229,212,0.05)',
@@ -796,7 +826,8 @@ const BETWEEN_STAGES = [
   { label: 'Almost ready', sub: 'Personalizing for your exact situation' },
 ];
 
-function AILoadingScreen({ groupIndex, goalTitle }) {
+function AILoadingScreen({ groupIndex, goalTitle, groupMeta: passedGroupMeta }) {
+  const displayMeta = (passedGroupMeta && passedGroupMeta.length > 0) ? passedGroupMeta : GROUP_META;
   const [stageIdx, setStageIdx] = useState(0);
   const stages = groupIndex === 0 ? INITIAL_STAGES : BETWEEN_STAGES;
 
@@ -894,7 +925,7 @@ function AILoadingScreen({ groupIndex, goalTitle }) {
       {/* Category icons — initial load only */}
       {groupIndex === 0 && (
         <div style={{ display: 'flex', gap: 24 }}>
-          {GROUP_META.map((gm, i) => {
+          {displayMeta.map((gm, i) => {
             const lit = stageIdx >= i + 2;
             return (
               <motion.div
@@ -910,7 +941,10 @@ function AILoadingScreen({ groupIndex, goalTitle }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all 0.9s ease',
                 }}>
-                  <SvgIcon name={gm.icon} size={15} color={lit ? gm.color : 'rgba(237,229,212,0.15)'} />
+                  {gm.icon && gm.icon.length <= 2
+                    ? <span style={{ fontSize: 15 }}>{gm.icon}</span>
+                    : <SvgIcon name={gm.icon} size={15} color={lit ? gm.color : 'rgba(237,229,212,0.15)'} />
+                  }
                 </div>
                 <div style={{
                   fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase',

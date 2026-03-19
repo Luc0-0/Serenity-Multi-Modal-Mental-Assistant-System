@@ -13,6 +13,16 @@ from app.models.message import Message
 from app.models.emotion_log import EmotionLog
 from app.models.journal_entry import JournalEntry
 from app.models.crisis_event import CrisisEvent
+from app.models.goal import (
+    Goal,
+    GoalPhase,
+    DailySchedule,
+    DailyLog,
+    PhaseTask,
+    WeeklyReview,
+    StreakFreeze
+)
+from app.models.meditation_session import MeditationSession
 from app.models.memory import (
     ConversationContextCache,
     SemanticMemory,

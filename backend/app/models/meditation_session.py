@@ -1,21 +1,27 @@
-import uuid
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime, Text
 from sqlalchemy.sql import func
 from app.db.base import Base
 
 class MeditationSession(Base):
     __tablename__ = "meditation_sessions"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
-    # E.g., "box", "calm", "deep", "wim_hof", "coherent", or "guided"
-    pattern_used = Column(String, nullable=False)
-    
-    # Emotion associated with the session (if any)
-    emotion = Column(String, nullable=True)
-    
-    duration_seconds = Column(Integer, nullable=False, default=0)
-    completed = Column(Boolean, nullable=False, default=False)
-    
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    # Session type: "box", "calm", "deep", "wim_hof", "coherent", "guided"
+    session_type = Column(String(50), nullable=False)
+
+    # Duration in minutes
+    duration_minutes = Column(Integer, nullable=False)
+
+    # When session was completed
+    completed_at = Column(DateTime(timezone=True), nullable=False)
+
+    # Mood before/after tracking
+    mood_before = Column(String(50), nullable=True)
+    mood_after = Column(String(50), nullable=True)
+
+    # Optional session notes
+    notes = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

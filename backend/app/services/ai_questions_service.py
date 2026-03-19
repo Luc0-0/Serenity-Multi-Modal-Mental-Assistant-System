@@ -25,140 +25,113 @@ class AIQuestionsService:
     ) -> List[Dict[str, Any]]:
         """Generate personalized questions for 4 fixed categories."""
 
-        system_prompt = f"""You are an expert goal achievement strategist. Generate personalized questions to understand the user's context.
+        system_prompt = f"""You are an expert goal achievement strategist. Generate personalized onboarding questions for a user's goal.
 
-GOAL CONTEXT:
+GOAL:
 - Title: {goal_title}
 - Description: {goal_description}
 - Theme: {theme}
 
-TASK: Generate 3-4 relevant questions for EACH of the 4 categories below. Questions should be highly specific to their goal, not generic.
+OUTPUT: A JSON array of exactly 4 category objects, in this exact order, with these exact IDs:
+1. "physical" — Physical & Energy
+2. "mental" — Mental & Focus
+3. "lifestyle" — Lifestyle & Constraints
+4. "preferences" — Preferences & Approach
 
-IMPORTANT RULES:
-1. Questions MUST have OPTIONS (not open-ended text)
-2. Use mix of question types: radio, checkbox, slider, time
-3. Mark ONE option as "recommended" with clear reasoning
-4. Recommendations should be evidence-based and goal-specific
-5. Options should be realistic and actionable
-6. Generate questions that will help build a personalized schedule
-
-QUESTION TYPES:
-
-**radio**: Single choice from 3-4 options
+Each category object:
 {{
-  "id": "wake_time",
+  "id": "<one of: physical | mental | lifestyle | preferences>",
+  "name": "<category display name>",
+  "description": "<one-line description>",
+  "questions": [ /* 3 to 4 question objects */ ]
+}}
+
+QUESTION SCHEMAS (use exactly these fields, no extras):
+
+TYPE "radio" — user picks ONE option:
+{{
+  "id": "<snake_case_unique_id>",
   "type": "radio",
-  "question": "What time can you realistically wake up daily?",
+  "question": "<question text>",
   "options": [
-    {{"value": "06:00", "label": "6:00 AM - Early Start", "recommended": true, "reason": "Aligns with natural circadian rhythm for your goal type"}},
-    {{"value": "08:00", "label": "8:00 AM - Standard", "recommended": false}}
+    {{"value": "<string>", "label": "<display label>", "recommended": true, "reason": "<why AI recommends this>"}},
+    {{"value": "<string>", "label": "<display label>", "recommended": false}},
+    {{"value": "<string>", "label": "<display label>", "recommended": false}}
   ]
 }}
+Rules: 3–4 options. Exactly ONE option has "recommended": true with a "reason" string. Others have "recommended": false (no "reason").
 
-**checkbox**: Multiple selections from 3-4 options
+TYPE "checkbox" — user picks MULTIPLE options:
 {{
-  "id": "meal_prep",
+  "id": "<snake_case_unique_id>",
   "type": "checkbox",
-  "question": "Which meal strategies can you implement?",
+  "question": "<question text>",
   "options": [
-    {{"value": "batch_cooking", "label": "Sunday batch cooking", "recommended": true, "reason": "Saves 5-7 hours weekly"}},
-    {{"value": "meal_service", "label": "Meal delivery", "recommended": false}}
+    {{"value": "<string>", "label": "<display label>", "recommended": true, "reason": "<why recommended>"}},
+    {{"value": "<string>", "label": "<display label>", "recommended": false}},
+    {{"value": "<string>", "label": "<display label>", "recommended": false}},
+    {{"value": "<string>", "label": "<display label>", "recommended": false}}
   ]
 }}
+Rules: 3–5 options. Exactly ONE has "recommended": true with "reason". Others have "recommended": false.
 
-**slider**: Numeric range with unit
+TYPE "slider" — numeric range the user drags:
 {{
-  "id": "work_duration",
+  "id": "<snake_case_unique_id>",
   "type": "slider",
-  "question": "Maximum focused work duration (without break)?",
-  "min": 30,
-  "max": 180,
-  "step": 15,
-  "unit": "minutes",
-  "defaultValue": 90,
-  "recommended": 90,
-  "reason": "Research shows 90min optimal for deep work cycles"
+  "question": "<question text>",
+  "min": <integer>,
+  "max": <integer>,
+  "step": <integer>,
+  "unit": "<unit label, e.g. min or kg or days — empty string if none>",
+  "defaultValue": <integer within min–max>,
+  "recommended": <integer within min–max>,
+  "reason": "<why this value>"
 }}
 
-**time**: Time picker with HH:MM
+TYPE "time" — 24-hour time picker:
 {{
-  "id": "sleep_time",
+  "id": "<snake_case_unique_id>",
   "type": "time",
-  "question": "Ideal bedtime for 7-8 hours sleep?",
-  "defaultValue": "22:30",
-  "recommended": "22:30",
-  "reason": "Ensures quality rest for 6:30 AM wake time"
+  "question": "<question text>",
+  "defaultValue": "<HH:MM in 24h format>",
+  "recommended": "<HH:MM in 24h format>",
+  "reason": "<why this time>"
 }}
 
-OUTPUT FORMAT (JSON Array):
-[
-  {{
-    "id": "physical",
-    "name": "Physical & Energy",
-    "icon": "💪",
-    "color": "#E53E3E",
-    "description": "Optimize your physical routines and energy levels",
-    "questions": [
-      // 3-4 questions here using types above
-    ]
-  }},
-  {{
-    "id": "mental",
-    "name": "Mental & Focus",
-    "icon": "🧠",
-    "color": "#3182CE",
-    "description": "Understand your focus patterns and cognitive peaks",
-    "questions": [
-      // 3-4 questions here
-    ]
-  }},
-  {{
-    "id": "lifestyle",
-    "name": "Lifestyle & Constraints",
-    "icon": "🏡",
-    "color": "#38A169",
-    "description": "Map your obligations and available resources",
-    "questions": [
-      // 3-4 questions here
-    ]
-  }},
-  {{
-    "id": "preferences",
-    "name": "Preferences & Approach",
-    "icon": "⚡",
-    "color": "#9F7AEA",
-    "description": "Customize your journey style and tracking",
-    "questions": [
-      // 3-4 questions here
-    ]
-  }}
-]
+CATEGORY RULES:
+- "physical": wake time (time), exercise frequency (radio or slider), energy peak (radio), physical intensity (slider or radio)
+- "mental": focus session length (slider), biggest distractions (checkbox), learning style (radio)
+- "lifestyle": schedule type (radio), available resources (checkbox), bedtime (time), constraints (radio or checkbox)
+- "preferences": schedule intensity 1–10 (slider), tracking detail (radio), motivators (checkbox)
 
-QUALITY CRITERIA:
-- Each question must be DIRECTLY relevant to achieving their specific goal
-- Recommendations must have clear, logical reasoning
-- Mix question types appropriately (not all radio)
-- Options should be mutually exclusive for radio, complementary for checkbox
-- Use slider for numeric ranges (time, intensity, frequency)
-- Use time picker for scheduling questions
+PERSONALIZATION RULES:
+- Every question must be DIRECTLY relevant to "{goal_title}" — not generic
+- Recommended values must reflect the specific demands of this goal and theme
+- Use "time" type for wake/sleep/session start times only
+- Use "slider" for durations, intensities, frequencies that need fine control
+- Use "radio" for clear mutually-exclusive choices
+- Use "checkbox" for complementary options (resources, habits, motivators)
+- Mix types — never use all radio
 
-Generate the JSON array now. Return ONLY valid JSON, no other text:"""
+Return ONLY a valid JSON array. No markdown, no explanation, no trailing text."""
 
         try:
             response = await self.engine.generate(system_prompt, [])
             logger.info(f"Question generation response length: {len(response)}")
 
-            # Extract and parse JSON
-            questions = self._extract_json(response)
+            # Extract, normalize, then validate
+            raw = self._extract_json(response)
+            questions = self._normalize_questions(raw)
 
-            # Validate structure
             if not self._validate_questions(questions):
-                raise ValueError("Generated questions don't match required structure")
+                raise ValueError("Normalization could not produce usable structure")
 
+            logger.info(f"[AI] Personalized questions generated for goal: '{goal_title}' (theme={theme})")
             return questions
 
         except Exception as e:
-            logger.error(f"Question generation failed: {e}")
+            logger.error(f"[FALLBACK] Question generation failed — using hardcoded defaults. Reason: {e}")
             return self._get_fallback_questions()
 
     async def generate_schedule_and_phases(
@@ -298,10 +271,11 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
             if not self._validate_schedule_and_phases(result):
                 raise ValueError("Generated schedule/phases don't match required structure")
 
+            logger.info(f"[AI] Personalized schedule+phases generated from user answers for goal: '{goal_title}' ({len(answers)} answer categories used)")
             return result
 
         except Exception as e:
-            logger.error(f"Schedule/phase generation failed: {e}")
+            logger.error(f"[FALLBACK] Schedule/phase generation failed — using generic defaults. Reason: {e}")
             return self._get_fallback_schedule_and_phases(theme)
 
     async def generate_category_questions(
@@ -315,49 +289,59 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
 
         prev_context = self._format_answers_context(previous_answers) if previous_answers else "No previous answers yet."
 
-        system_prompt = f"""You are an expert goal achievement strategist. Generate 3-4 FOLLOW-UP questions for the "{category}" category.
+        system_prompt = f"""You are an expert goal strategist generating adaptive follow-up questions.
 
 GOAL: {goal_title} (theme: {theme})
+CATEGORY TO GENERATE FOR: {category}
 
-PREVIOUS ANSWERS FROM USER:
+WHAT THE USER ALREADY ANSWERED:
 {prev_context}
 
-TASK: Based on what the user already told you, generate 3-4 SMART follow-up questions for the "{category}" category.
-These questions should ADAPT to their previous answers — don't repeat what's already known.
+TASK: Generate 3–4 follow-up questions for the "{category}" category that DIG DEEPER based on the user's previous answers.
+Do NOT repeat anything already asked. Adapt the questions to what you know about them.
 
-For example:
-- If they said they wake at 5 AM, ask about their morning routine specifics
-- If they exercise 6 days/week, ask about workout types and recovery
-- If they're a student, ask about study patterns and exam schedules
+Examples of adaptation:
+- If they said they wake at 5 AM → ask about their specific morning activities, not wake time again
+- If they selected "gym access" → ask about their preferred workout style or split
+- If they said "student" schedule → ask about class hours, exam periods, study environment
 
-RULES:
-1. Questions MUST have options (radio, checkbox, slider, or time types)
-2. Mark ONE option as "recommended" with reasoning tied to their previous answers
-3. Be SPECIFIC to their situation, not generic
-4. Each question should unlock deeper personalization
+Each question must use one of these exact schemas:
 
-OUTPUT FORMAT (JSON Array of question objects):
-[
-  {{
-    "id": "unique_id",
-    "type": "radio|checkbox|slider|time",
-    "question": "...",
-    "options": [...]  // for radio/checkbox
-    // or min/max/step/unit/defaultValue/recommended/reason for slider
-    // or defaultValue/recommended/reason for time
-  }}
-]
+radio (single choice, 3–4 options, exactly one recommended:true with reason):
+{{"id":"<id>","type":"radio","question":"...","options":[{{"value":"...","label":"...","recommended":true,"reason":"..."}},{{"value":"...","label":"...","recommended":false}}]}}
 
-Return ONLY valid JSON:"""
+checkbox (multi-choice, 3–5 options, exactly one recommended:true with reason):
+{{"id":"<id>","type":"checkbox","question":"...","options":[{{"value":"...","label":"...","recommended":true,"reason":"..."}},{{"value":"...","label":"...","recommended":false}}]}}
+
+slider (numeric drag):
+{{"id":"<id>","type":"slider","question":"...","min":<int>,"max":<int>,"step":<int>,"unit":"<string>","defaultValue":<int>,"recommended":<int>,"reason":"..."}}
+
+time (24h time picker):
+{{"id":"<id>","type":"time","question":"...","defaultValue":"HH:MM","recommended":"HH:MM","reason":"..."}}
+
+STRICT RULES:
+- Return a JSON array of 3–4 question objects only
+- "recommended" must be boolean true/false for radio/checkbox options, integer for slider, "HH:MM" string for time
+- IDs must be unique snake_case strings
+- Questions must be specific to "{goal_title}" and informed by the user's prior answers
+- Mix types — do not use all radio
+
+Return ONLY valid JSON array, no other text:"""
 
         try:
             response = await self.engine.generate(system_prompt, [])
-            questions = self._extract_json(response)
-            if isinstance(questions, list):
-                return questions
-            raise ValueError("Expected list of questions")
+            raw = self._extract_json(response)
+            if not isinstance(raw, list):
+                raise ValueError("Expected list of questions")
+            # Normalize by wrapping in a fake category, then extracting questions back
+            normalized_cats = self._normalize_questions([{'id': category, 'questions': raw}])
+            questions = normalized_cats[0]['questions'] if normalized_cats else []
+            if not questions:
+                raise ValueError("Normalization produced no valid questions")
+            logger.info(f"[AI] Category follow-up questions generated for '{category}' using {len(previous_answers)} previous answer categories")
+            return questions
         except Exception as e:
-            logger.error(f"Category question generation failed: {e}")
+            logger.error(f"[FALLBACK] Category question generation failed for '{category}' — returning empty. Reason: {e}")
             return []
 
     async def analyze_pulse_check(
@@ -434,15 +418,127 @@ Return ONLY valid JSON:"""
             logger.debug(f"Response was: {response[:500]}")
             raise Exception(f"Failed to parse LLM response: {e}")
 
+    def _normalize_questions(self, raw: List[Dict]) -> List[Dict]:
+        """
+        Sanitize AI output into exactly what the UI expects.
+        Fixes common LLM mistakes: string booleans, wrong field names,
+        out-of-range slider values, wrong time format, extra/missing fields.
+        """
+        REQUIRED_IDS = ['physical', 'mental', 'lifestyle', 'preferences']
+        VALID_TYPES = {'radio', 'checkbox', 'slider', 'time'}
+        import re
+
+        # Index categories by id so order doesn't matter
+        by_id = {cat.get('id'): cat for cat in raw if isinstance(cat, dict)}
+
+        result = []
+        for cat_id in REQUIRED_IDS:
+            cat = by_id.get(cat_id, {})
+            raw_questions = cat.get('questions', [])
+            clean_questions = []
+
+            for q in raw_questions:
+                if not isinstance(q, dict):
+                    continue
+                qtype = str(q.get('type', '')).lower()
+                if qtype not in VALID_TYPES:
+                    continue
+                qid = str(q.get('id', f'{cat_id}_{len(clean_questions)}'))
+                question_text = str(q.get('question', ''))
+                if not question_text:
+                    continue
+
+                if qtype in ('radio', 'checkbox'):
+                    raw_opts = q.get('options', [])
+                    if not isinstance(raw_opts, list) or len(raw_opts) < 2:
+                        continue
+
+                    options = []
+                    for opt in raw_opts:
+                        if not isinstance(opt, dict):
+                            continue
+                        # Normalize recommended to strict bool
+                        rec_raw = opt.get('recommended', False)
+                        if isinstance(rec_raw, str):
+                            rec = rec_raw.strip().lower() == 'true'
+                        else:
+                            rec = bool(rec_raw)
+                        options.append({
+                            'value': str(opt.get('value', opt.get('label', ''))),
+                            'label': str(opt.get('label', opt.get('value', ''))),
+                            'recommended': rec,
+                            **(({'reason': str(opt['reason'])} if opt.get('reason') else {})),
+                        })
+
+                    # Ensure exactly one recommended — if none, mark first; if multiple, keep first only
+                    rec_indices = [i for i, o in enumerate(options) if o['recommended']]
+                    if not rec_indices:
+                        options[0]['recommended'] = True
+                        options[0].setdefault('reason', 'Best default for most users')
+                    elif len(rec_indices) > 1:
+                        for i in rec_indices[1:]:
+                            options[i]['recommended'] = False
+                            options[i].pop('reason', None)
+
+                    clean_questions.append({'id': qid, 'type': qtype, 'question': question_text, 'options': options})
+
+                elif qtype == 'slider':
+                    try:
+                        mn = int(q.get('min', 0))
+                        mx = int(q.get('max', 100))
+                        step = int(q.get('step', 1))
+                        dv = int(q.get('defaultValue', (mn + mx) // 2))
+                        rec = int(q.get('recommended', dv))
+                        dv = max(mn, min(mx, dv))
+                        rec = max(mn, min(mx, rec))
+                    except (TypeError, ValueError):
+                        continue
+                    clean_questions.append({
+                        'id': qid, 'type': 'slider', 'question': question_text,
+                        'min': mn, 'max': mx, 'step': step,
+                        'unit': str(q.get('unit', '')),
+                        'defaultValue': dv, 'recommended': rec,
+                        'reason': str(q.get('reason', '')),
+                    })
+
+                elif qtype == 'time':
+                    def coerce_time(val, fallback='08:00'):
+                        s = str(val or '').strip()
+                        # Accept HH:MM or H:MM
+                        m = re.match(r'^(\d{1,2}):(\d{2})$', s)
+                        if m:
+                            h, mi = int(m.group(1)), int(m.group(2))
+                            if 0 <= h <= 23 and 0 <= mi <= 59:
+                                return f'{h:02d}:{mi:02d}'
+                        return fallback
+                    dv = coerce_time(q.get('defaultValue'), '08:00')
+                    rec = coerce_time(q.get('recommended'), dv)
+                    clean_questions.append({
+                        'id': qid, 'type': 'time', 'question': question_text,
+                        'defaultValue': dv, 'recommended': rec,
+                        'reason': str(q.get('reason', '')),
+                    })
+
+            result.append({
+                'id': cat_id,
+                'name': str(cat.get('name', cat_id.replace('_', ' ').title())),
+                'description': str(cat.get('description', '')),
+                'questions': clean_questions,
+            })
+
+        return result
+
     def _validate_questions(self, questions: List[Dict]) -> bool:
-        """Validate questions structure."""
+        """Validate that normalization produced usable output."""
         if not isinstance(questions, list) or len(questions) != 4:
             return False
-
-        required_categories = {'physical', 'mental', 'lifestyle', 'preferences'}
-        found_categories = {q.get('id') for q in questions}
-
-        return required_categories == found_categories
+        required = {'physical', 'mental', 'lifestyle', 'preferences'}
+        found = {q.get('id') for q in questions}
+        if required != found:
+            return False
+        # At least 2 categories must have questions
+        populated = sum(1 for q in questions if len(q.get('questions', [])) >= 1)
+        return populated >= 2
 
     def _validate_schedule_and_phases(self, result: Dict) -> bool:
         """Validate schedule and phases structure."""

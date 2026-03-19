@@ -107,8 +107,8 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
         return { ...prev, [groupId]: { ...groupAnswers, [question.id]: value } };
       });
 
-      // Auto-advance for radio/time (single-select)
-      if (!multiSelect && question.type !== 'slider') {
+      // Auto-advance for radio only — slider/time have their own Next buttons
+      if (!multiSelect && question.type !== 'slider' && question.type !== 'time') {
         setTimeout(() => advanceQuestion(), 400);
       }
     },
@@ -562,6 +562,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
                 value={groupAnswers[question.id]}
                 color={group.color}
                 onChange={(v) => handleAnswer(v)}
+                onNext={advanceQuestion}
                 showTooltip={showTooltip}
                 setShowTooltip={setShowTooltip}
                 tooltipKey={`${group.id}-${question.id}-time`}
@@ -737,38 +738,65 @@ function SliderQuestion({ question, value, color, onChange, onNext, showTooltip,
 }
 
 /* ── Time Question ── */
-function TimeQuestion({ question, value, color, onChange, showTooltip, setShowTooltip, tooltipKey }) {
+function TimeQuestion({ question, value, color, onChange, onNext, showTooltip, setShowTooltip, tooltipKey }) {
   const v = value || question.defaultValue;
 
+  const handleConfirm = () => {
+    // Ensure current value (even unchanged default) is saved before advancing
+    onChange(v);
+    onNext();
+  };
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-      <input
-        type="time"
-        value={v}
-        onChange={(e) => onChange(e.target.value)}
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+        <input
+          type="time"
+          value={v}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            flex: 1,
+            padding: '14px 18px',
+            background: 'rgba(255,255,255,0.02)',
+            border: `1px solid rgba(255,255,255,0.08)`,
+            borderRadius: 12,
+            color: '#F5F0E8',
+            fontSize: 16,
+            fontFamily: 'inherit',
+            outline: 'none',
+            cursor: 'pointer',
+          }}
+        />
+        {question.recommended === v && (
+          <div
+            style={{ position: 'relative' }}
+            onMouseEnter={() => setShowTooltip(tooltipKey)}
+            onMouseLeave={() => setShowTooltip(null)}
+          >
+            <SvgIcon name="sparkle" size={18} color="#FCD34D" />
+            {showTooltip === tooltipKey && <div style={tooltipStyle}>AI Pick: {question.reason}</div>}
+          </div>
+        )}
+      </div>
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={handleConfirm}
         style={{
-          flex: 1,
-          padding: '14px 18px',
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 12,
-          color: '#F5F0E8',
-          fontSize: 16,
-          fontFamily: 'inherit',
-          outline: 'none',
+          padding: '10px 20px',
+          background: 'rgba(200,169,110,0.12)',
+          border: '1px solid rgba(200,169,110,0.25)',
+          borderRadius: 10,
+          color: '#C8A96E',
+          fontSize: 13,
+          fontWeight: 600,
           cursor: 'pointer',
+          float: 'right',
         }}
-      />
-      {question.recommended === v && (
-        <div
-          style={{ position: 'relative' }}
-          onMouseEnter={() => setShowTooltip(tooltipKey)}
-          onMouseLeave={() => setShowTooltip(null)}
-        >
-          <SvgIcon name="sparkle" size={18} color="#FCD34D" />
-          {showTooltip === tooltipKey && <div style={tooltipStyle}>AI Pick: {question.reason}</div>}
-        </div>
-      )}
+      >
+        Confirm <SvgIcon name="chevronRight" size={12} color="#C8A96E" />
+      </motion.button>
+      <div style={{ clear: 'both' }} />
     </div>
   );
 }

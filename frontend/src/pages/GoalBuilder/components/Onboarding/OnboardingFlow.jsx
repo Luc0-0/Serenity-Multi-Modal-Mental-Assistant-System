@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../../../../services/apiClient';
 import WelcomeStep from './steps/WelcomeStep';
 import GoalStep from './steps/GoalStep';
 import AIQuestionsStep from './steps/AIQuestionsStep';
@@ -60,29 +61,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const handleComplete = async () => {
     try {
-      const response = await fetch('/api/goals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          title: formData.goal.title,
-          description: formData.goal.description,
-          theme: formData.theme,
-          duration_days: formData.timeline.duration_days,
-          answers: formData.aiQuestions.answers,
-          schedule_items: formData.schedule.items,
-          phases: formData.phases
-        })
+      const result = await apiClient.post('/api/goals', {
+        title: formData.goal.title,
+        description: formData.goal.description,
+        theme: formData.theme,
+        duration_days: formData.timeline.duration_days,
+        answers: formData.aiQuestions.answers,
+        schedule_items: formData.schedule.items,
+        phases: formData.phases,
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        onComplete(result.goal_id);
-      } else {
-        throw new Error('Failed to create goal');
-      }
+      onComplete(result.goal_id);
     } catch (error) {
       console.error('Goal creation error:', error);
     }

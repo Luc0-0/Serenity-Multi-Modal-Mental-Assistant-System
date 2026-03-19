@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../../../../../services/apiClient';
 import styles from '../OnboardingFlow.module.css';
 
 const spring = { type: 'spring', stiffness: 350, damping: 30 };
@@ -29,24 +30,13 @@ export default function ScheduleStep({ formData, updateFormData, nextStep, prevS
     setError(null);
 
     try {
-      const response = await fetch('/api/goals/generate-schedule-from-answers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          title: formData.goal.title,
-          description: formData.goal.description,
-          theme: formData.theme,
-          duration_days: formData.timeline.duration_days,
-          answers: formData.aiQuestions.answers,
-        }),
+      const data = await apiClient.post('/api/goals/generate-schedule-from-answers', {
+        title: formData.goal.title,
+        description: formData.goal.description,
+        theme: formData.theme,
+        duration_days: formData.timeline.duration_days,
+        answers: formData.aiQuestions.answers,
       });
-
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
-      const data = await response.json();
       const schedule = data.daily_schedule || [];
       const phases = data.phases || [];
 

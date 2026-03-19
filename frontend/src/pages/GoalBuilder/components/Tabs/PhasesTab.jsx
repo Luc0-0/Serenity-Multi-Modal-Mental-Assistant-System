@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../../../../services/apiClient';
 import styles from './PhasesTab.module.css';
 
 const PHASE_THEMES = [
@@ -167,14 +168,8 @@ export default function PhasesTab({ goalData, onUpdate }) {
       setTimeout(() => setJustCompleted(null), 600);
 
       try {
-        const res = await fetch(
-          `/api/goals/${goal.id}/phases/${phaseId}/tasks/${taskId}/complete`,
-          {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          }
-        );
-        if (res.ok && onUpdate) onUpdate(goal.id);
+        await apiClient.post(`/api/goals/${goal.id}/phases/${phaseId}/tasks/${taskId}/complete`);
+        if (onUpdate) onUpdate(goal.id);
       } catch (err) {
         console.error('Task toggle failed:', err);
       }

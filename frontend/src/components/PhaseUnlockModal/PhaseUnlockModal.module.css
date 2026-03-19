@@ -1,0 +1,192 @@
+/*
+ * Phase Unlock Celebration Modal
+ * Full-screen overlay with confetti, blur backdrop, and spring-animated card
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Blur backdrop — sits behind card */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 0;
+}
+
+/* ── Confetti ── */
+.confettiContainer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: -12px;
+  will-change: transform, opacity;
+}
+
+/* ── Card ── */
+.card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  background: rgba(15, 15, 20, 0.75);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(200, 169, 110, 0.15);
+  border-radius: 28px;
+  padding: 48px 32px 36px;
+  text-align: center;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(200, 169, 110, 0.08);
+  overflow: hidden;
+}
+
+/* Subtle inner glow at top */
+.card::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 120%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(200, 169, 110, 0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* ── Phase Badge ── */
+.badge {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--phase-color, #C8A96E),
+    color-mix(in srgb, var(--phase-color, #C8A96E) 70%, #000)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 40px color-mix(in srgb, var(--phase-color, #C8A96E) 30%, transparent);
+  position: relative;
+}
+
+/* Outer ring pulse */
+.badge::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--phase-color, #C8A96E) 25%, transparent);
+  animation: ringPulse 2s ease-in-out infinite;
+}
+
+.badgeNumber {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
+}
+
+/* ── Unlock Icon ── */
+.unlockIcon {
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+/* ── Typography ── */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: #C8A96E;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 24px;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Streak Info ── */
+.streakInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #C8A96E;
+  background: rgba(200, 169, 110, 0.08);
+  border: 1px solid rgba(200, 169, 110, 0.12);
+  border-radius: 20px;
+  padding: 6px 16px;
+  margin-bottom: 28px;
+}
+
+/* ── Continue Button ── */
+.continueButton {
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #0a0a0f;
+  background: linear-gradient(135deg, #C8A96E, #D4B87A);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 4px 20px rgba(200, 169, 110, 0.25);
+}
+
+.continueButton:hover {
+  box-shadow: 0 6px 28px rgba(200, 169, 110, 0.35);
+}
+
+.continueButton:active {
+  box-shadow: 0 2px 12px rgba(200, 169, 110, 0.2);
+}
+
+/* ── Animations ── */
+@keyframes ringPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.06); }
+}

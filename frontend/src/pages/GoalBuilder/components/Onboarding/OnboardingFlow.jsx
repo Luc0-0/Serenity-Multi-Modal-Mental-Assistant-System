@@ -8,12 +8,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeStep from './steps/WelcomeStep';
 import GoalStep from './steps/GoalStep';
 import AIQuestionsStep from './steps/AIQuestionsStep';
-import TimelineStep from './steps/TimelineStep';
 import ScheduleStep from './steps/ScheduleStep';
 import LaunchStep from './steps/LaunchStep';
 import styles from './OnboardingFlow.module.css';
 
-const steps = ['welcome', 'goal', 'aiquestions', 'timeline', 'schedule', 'launch'];
+const steps = ['welcome', 'goal', 'aiquestions', 'schedule', 'launch'];
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -36,7 +35,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       items: [],
       templates_used: [],
       ai_generated: false
-    }
+    },
+    phases: []
   });
 
   const nextStep = () => {
@@ -60,7 +60,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const handleComplete = async () => {
     try {
-      // Create goal via API
       const response = await fetch('/api/goals', {
         method: 'POST',
         headers: {
@@ -71,7 +70,10 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           title: formData.goal.title,
           description: formData.goal.description,
           theme: formData.theme,
-          duration_days: formData.timeline.duration_days
+          duration_days: formData.timeline.duration_days,
+          answers: formData.aiQuestions.answers,
+          schedule_items: formData.schedule.items,
+          phases: formData.phases
         })
       });
 
@@ -83,7 +85,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       }
     } catch (error) {
       console.error('Goal creation error:', error);
-      // Handle error - show toast or error state
     }
   };
 
@@ -103,8 +104,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         return <GoalStep {...stepProps} />;
       case 'aiquestions':
         return <AIQuestionsStep {...stepProps} />;
-      case 'timeline':
-        return <TimelineStep {...stepProps} />;
       case 'schedule':
         return <ScheduleStep {...stepProps} />;
       case 'launch':

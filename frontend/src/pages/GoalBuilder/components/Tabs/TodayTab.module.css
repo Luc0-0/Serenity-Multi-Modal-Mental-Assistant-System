@@ -92,6 +92,55 @@
   background: rgba(110, 231, 183, 0.05);
 }
 
+/* Current activity spotlight */
+.scheduleItem.spotlight {
+  border-color: rgba(200, 169, 110, 0.35);
+  background: rgba(200, 169, 110, 0.06);
+  box-shadow: 0 0 24px rgba(200, 169, 110, 0.08), inset 0 0 0 1px rgba(200, 169, 110, 0.08);
+}
+
+.spotlightBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #C8A96E;
+  background: rgba(200, 169, 110, 0.1);
+  border: 1px solid rgba(200, 169, 110, 0.2);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.timeBlock {
+  display: flex;
+  align-items: center;
+}
+
+.freezeButton,
+.freezeUsed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.motivationalText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.celebrationEmoji {
+  display: flex;
+  justify-content: center;
+}
+
 .itemHeader {
   display: flex;
   justify-content: space-between;

@@ -1,0 +1,43 @@
+/*
+ * Momentum Bar — thin gold progress indicator
+ */
+
+.track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(200, 169, 110, 0.5), #C8A96E, #D4B87A);
+  position: relative;
+}
+
+/* 80%+ pulse glow */
+.fill.pulse {
+  background: linear-gradient(90deg, #C8A96E, #6EE7B7);
+  box-shadow: 0 0 12px rgba(200, 169, 110, 0.4);
+  animation: pulseGlow 1.5s ease-in-out infinite;
+}
+
+/* 100% shimmer sweep */
+.fill.shimmer {
+  background: linear-gradient(90deg, #C8A96E, #6EE7B7, #C8A96E);
+  animation: shimmerSweep 2s linear infinite;
+  background-size: 200% 100%;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(200, 169, 110, 0.3); }
+  50% { box-shadow: 0 0 18px rgba(110, 231, 183, 0.5); }
+}
+
+@keyframes shimmerSweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

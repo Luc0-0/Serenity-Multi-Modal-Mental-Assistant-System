@@ -24,6 +24,8 @@ class Goal(Base):
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
     freezes_available = Column(Integer, default=0)
+    total_completed_days = Column(Integer, default=0)
+    answers_json = Column(Text, nullable=True)  # JSON: onboarding answers for LLM re-use
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

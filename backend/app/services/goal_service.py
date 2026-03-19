@@ -28,39 +28,79 @@ class GoalService:
         theme: str,
         duration_days: int,
         start_date: date,
-        schedule_items: List[Dict]
+        schedule_items: List[Dict],
+        phases_data: Optional[List[Dict]] = None,
+        answers_json: Optional[str] = None
     ) -> Goal:
-        """Create a new goal with schedule and default phases."""
+        """Create a new goal with schedule and phases.
 
-        # Create goal
+        If phases_data is provided (from LLM personalization), creates
+        phases/domains/tasks from it. Otherwise falls back to theme defaults.
+        """
+
         goal = Goal(
             user_id=user_id,
             title=title,
             description=description,
             theme=theme,
             duration_days=duration_days,
-            start_date=start_date
+            start_date=start_date,
+            answers_json=answers_json
         )
         self.db.add(goal)
-        self.db.flush()  # Get goal.id
+        self.db.flush()
 
         # Create schedule items
-        for item in schedule_items:
+        for idx, item in enumerate(schedule_items):
             schedule_item = DailySchedule(
                 goal_id=goal.id,
                 time=item["time"],
                 activity=item["activity"],
                 description=item.get("description", ""),
                 tags=json.dumps(item.get("tags", [])),
-                sort_order=item.get("sort_order", 0)
+                sort_order=item.get("sort_order", idx)
             )
             self.db.add(schedule_item)
 
-        # Create default phases
-        self._create_default_phases(goal.id, theme)
+        # Create phases — personalized if available, defaults otherwise
+        if phases_data:
+            self._create_phases_from_llm(goal.id, phases_data)
+        else:
+            self._create_default_phases(goal.id, theme)
 
         self.db.commit()
         return goal
+
+    def _create_phases_from_llm(self, goal_id: int, phases_data: List[Dict]):
+        """Create phases, domains, and tasks from LLM-generated data."""
+
+        for phase_data in phases_data:
+            phase = GoalPhase(
+                goal_id=goal_id,
+                phase_number=phase_data.get("phase_number", 0),
+                title=phase_data.get("title", "Phase"),
+                description=phase_data.get("description", ""),
+                unlock_streak_required=phase_data.get("unlock_streak_required", 0),
+                is_unlocked=phase_data.get("phase_number", 0) == 0
+            )
+            self.db.add(phase)
+            self.db.flush()
+
+            for domain in phase_data.get("domains", []):
+                domain_name = domain.get("name", "General")
+                for task_data in domain.get("tasks", []):
+                    subtasks = task_data.get("subtasks", [])
+                    # Handle subtasks as list of strings or list of dicts
+                    if subtasks and isinstance(subtasks[0], dict):
+                        subtasks = [s.get("title", str(s)) for s in subtasks]
+
+                    task = PhaseTask(
+                        phase_id=phase.id,
+                        domain_name=domain_name,
+                        task_title=task_data.get("title", "Task"),
+                        subtasks=json.dumps(subtasks)
+                    )
+                    self.db.add(task)
 
     def _create_default_phases(self, goal_id: int, theme: str):
         """Create 3 default phases for the goal."""
@@ -225,6 +265,9 @@ class GoalService:
                 goal.current_streak += 1
             else:
                 goal.current_streak = 1
+
+            # Track cumulative completed days (never resets)
+            goal.total_completed_days = (goal.total_completed_days or 0) + 1
 
             # Update longest streak
             goal.longest_streak = max(goal.longest_streak, goal.current_streak)

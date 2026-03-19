@@ -1,0 +1,287 @@
+/*
+ * Pulse Check Modal — Sunday weekly reflection
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 0;
+}
+
+/* ── Card ── */
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  background: rgba(15, 15, 20, 0.8);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(200, 169, 110, 0.12);
+  border-radius: 24px;
+  padding: 32px 28px 28px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.headerIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(200, 169, 110, 0.1);
+  border: 1px solid rgba(200, 169, 110, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerLabel {
+  font-size: 16px;
+  font-weight: 700;
+  color: #F5F0E8;
+  flex: 1;
+}
+
+.headerProgress {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(200, 169, 110, 0.7);
+  letter-spacing: 0.5px;
+}
+
+/* ── Progress Dots ── */
+.dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.dotActive {
+  background: #C8A96E;
+  box-shadow: 0 0 10px rgba(200, 169, 110, 0.4);
+  transform: scale(1.2);
+}
+
+.dotDone {
+  background: rgba(200, 169, 110, 0.4);
+}
+
+/* ── Question ── */
+.questionArea {
+  text-align: center;
+  min-height: 280px;
+}
+
+.questionIcon {
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+.questionText {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F5F0E8;
+  margin: 0 0 24px;
+  line-height: 1.4;
+}
+
+/* ── Options ── */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.option:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.optionSelected {
+  border-width: 1.5px;
+}
+
+.optionLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #F5F0E8;
+}
+
+.optionRadio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.optionDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* ── Submit ── */
+.submitButton {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0a0a0f;
+  background: linear-gradient(135deg, #C8A96E, #D4B87A);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(200, 169, 110, 0.25);
+  transition: box-shadow 0.2s;
+}
+
+.submitButton:hover {
+  box-shadow: 0 6px 28px rgba(200, 169, 110, 0.35);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Insights View ── */
+.insightsView {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.insightsIcon {
+  margin-bottom: 12px;
+}
+
+.insightsLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: #C8A96E;
+  margin-bottom: 16px;
+}
+
+.encouragement {
+  font-size: 16px;
+  font-weight: 500;
+  color: #F5F0E8;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.tipCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 14px 16px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.tipCard span {
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.7);
+  line-height: 1.5;
+}
+
+.focusBadge {
+  display: inline-block;
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.6);
+  background: rgba(200, 169, 110, 0.06);
+  border: 1px solid rgba(200, 169, 110, 0.1);
+  border-radius: 20px;
+  padding: 6px 16px;
+  margin-bottom: 24px;
+}
+
+.focusBadge strong {
+  color: #C8A96E;
+}
+
+.doneButton {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0a0a0f;
+  background: linear-gradient(135deg, #C8A96E, #D4B87A);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(200, 169, 110, 0.25);
+}

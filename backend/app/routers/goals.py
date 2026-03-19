@@ -64,6 +64,103 @@ async def generate_schedule_from_answers(
         raise HTTPException(status_code=500, detail=f"Schedule generation failed: {str(e)}")
 
 
+@router.post("/generate-category-questions")
+async def generate_category_questions(
+    request_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate follow-up questions for a category based on previous answers."""
+    ai_service = AIQuestionsService()
+
+    try:
+        questions = await ai_service.generate_category_questions(
+            goal_title=request_data.get("title", ""),
+            theme=request_data.get("theme", "balanced"),
+            category=request_data.get("category", ""),
+            previous_answers=request_data.get("previous_answers", {})
+        )
+        return {"questions": questions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Category question generation failed: {str(e)}")
+
+
+# Pulse Check (Sunday weekly reflection)
+@router.get("/{goal_id}/pulse-check")
+async def get_pulse_check(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Check if pulse check is due (Sunday) and return status."""
+    today = date.today()
+    is_sunday = today.weekday() == 6
+
+    # Check if already submitted this week
+    days_since_sunday = today.weekday() + 1 if today.weekday() != 6 else 0
+    week_start = today - timedelta(days=days_since_sunday)
+
+    existing = db.query(WeeklyReview).filter(
+        WeeklyReview.goal_id == goal_id,
+        WeeklyReview.user_id == current_user.id,
+        WeeklyReview.week_start_date == week_start
+    ).first()
+
+    return {
+        "is_due": is_sunday and not existing,
+        "already_submitted": existing is not None,
+        "week_start": week_start.isoformat()
+    }
+
+
+@router.post("/{goal_id}/pulse-check")
+async def submit_pulse_check(
+    goal_id: int,
+    pulse_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Submit weekly pulse check (3 quick questions)."""
+    today = date.today()
+    days_since_sunday = today.weekday() + 1 if today.weekday() != 6 else 0
+    week_start = today - timedelta(days=days_since_sunday)
+
+    existing = db.query(WeeklyReview).filter(
+        WeeklyReview.goal_id == goal_id,
+        WeeklyReview.user_id == current_user.id,
+        WeeklyReview.week_start_date == week_start
+    ).first()
+
+    if existing:
+        raise HTTPException(status_code=400, detail="Pulse check already submitted this week")
+
+    review = WeeklyReview(
+        user_id=current_user.id,
+        goal_id=goal_id,
+        week_start_date=week_start,
+        answers=json.dumps(pulse_data.get("answers", {}))
+    )
+
+    db.add(review)
+    db.commit()
+
+    # Optionally feed back into LLM for schedule refinement
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if goal and goal.answers_json:
+        try:
+            ai_service = AIQuestionsService()
+            insights = await ai_service.analyze_pulse_check(
+                goal_title=goal.title,
+                theme=goal.theme,
+                pulse_answers=pulse_data.get("answers", {}),
+                original_answers=json.loads(goal.answers_json)
+            )
+            return {"message": "Pulse check submitted", "insights": insights}
+        except Exception:
+            pass
+
+    return {"message": "Pulse check submitted", "insights": None}
+
+
 # Goal Management
 @router.post("/")
 async def create_goal(
@@ -71,17 +168,37 @@ async def create_goal(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create a new goal with LLM-generated schedule."""
+    """Create a new goal with personalized or LLM-generated schedule."""
     goal_service = GoalService(db)
-    llm_service = LLMScheduleService()
 
-    # Generate optimized schedule via LLM
-    schedule_items = await llm_service.generate_schedule(
-        goal_title=goal_data["title"],
-        goal_description=goal_data["description"],
-        duration_days=goal_data.get("duration_days", 180),
-        theme=goal_data.get("theme", "balanced")
-    )
+    # Use pre-generated schedule from onboarding if available
+    schedule_items = goal_data.get("schedule_items")
+    phases_data = goal_data.get("phases")
+
+    if not schedule_items:
+        # Fallback: generate via LLM if no pre-generated schedule
+        # This handles legacy clients or direct API calls
+        answers = goal_data.get("answers")
+        if answers:
+            # Generate personalized schedule + phases from answers
+            ai_service = AIQuestionsService()
+            result = await ai_service.generate_schedule_and_phases(
+                goal_title=goal_data["title"],
+                goal_description=goal_data["description"],
+                theme=goal_data.get("theme", "balanced"),
+                duration_days=goal_data.get("duration_days", 180),
+                answers=answers
+            )
+            schedule_items = result.get("daily_schedule", [])
+            phases_data = result.get("phases")
+        else:
+            llm_service = LLMScheduleService()
+            schedule_items = await llm_service.generate_schedule(
+                goal_title=goal_data["title"],
+                goal_description=goal_data["description"],
+                duration_days=goal_data.get("duration_days", 180),
+                theme=goal_data.get("theme", "balanced")
+            )
 
     goal = goal_service.create_goal(
         user_id=current_user.id,
@@ -90,7 +207,9 @@ async def create_goal(
         theme=goal_data.get("theme", "balanced"),
         duration_days=goal_data.get("duration_days", 180),
         start_date=date.today(),
-        schedule_items=schedule_items
+        schedule_items=schedule_items,
+        phases_data=phases_data,
+        answers_json=json.dumps(goal_data.get("answers")) if goal_data.get("answers") else None
     )
 
     return {"goal_id": goal.id, "message": "Goal created successfully"}

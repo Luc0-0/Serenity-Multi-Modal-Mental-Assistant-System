@@ -304,6 +304,98 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
             logger.error(f"Schedule/phase generation failed: {e}")
             return self._get_fallback_schedule_and_phases(theme)
 
+    async def generate_category_questions(
+        self,
+        goal_title: str,
+        theme: str,
+        category: str,
+        previous_answers: Dict[str, Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Generate smart follow-up questions for a category based on previous answers."""
+
+        prev_context = self._format_answers_context(previous_answers) if previous_answers else "No previous answers yet."
+
+        system_prompt = f"""You are an expert goal achievement strategist. Generate 3-4 FOLLOW-UP questions for the "{category}" category.
+
+GOAL: {goal_title} (theme: {theme})
+
+PREVIOUS ANSWERS FROM USER:
+{prev_context}
+
+TASK: Based on what the user already told you, generate 3-4 SMART follow-up questions for the "{category}" category.
+These questions should ADAPT to their previous answers — don't repeat what's already known.
+
+For example:
+- If they said they wake at 5 AM, ask about their morning routine specifics
+- If they exercise 6 days/week, ask about workout types and recovery
+- If they're a student, ask about study patterns and exam schedules
+
+RULES:
+1. Questions MUST have options (radio, checkbox, slider, or time types)
+2. Mark ONE option as "recommended" with reasoning tied to their previous answers
+3. Be SPECIFIC to their situation, not generic
+4. Each question should unlock deeper personalization
+
+OUTPUT FORMAT (JSON Array of question objects):
+[
+  {{
+    "id": "unique_id",
+    "type": "radio|checkbox|slider|time",
+    "question": "...",
+    "options": [...]  // for radio/checkbox
+    // or min/max/step/unit/defaultValue/recommended/reason for slider
+    // or defaultValue/recommended/reason for time
+  }}
+]
+
+Return ONLY valid JSON:"""
+
+        try:
+            response = await self.engine.generate(system_prompt, [])
+            questions = self._extract_json(response)
+            if isinstance(questions, list):
+                return questions
+            raise ValueError("Expected list of questions")
+        except Exception as e:
+            logger.error(f"Category question generation failed: {e}")
+            return []
+
+    async def analyze_pulse_check(
+        self,
+        goal_title: str,
+        theme: str,
+        pulse_answers: Dict[str, Any],
+        original_answers: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Analyze weekly pulse check answers and generate insights."""
+
+        system_prompt = f"""You are a supportive goal coach. Analyze this weekly pulse check.
+
+GOAL: {goal_title} (theme: {theme})
+
+ORIGINAL SETUP ANSWERS:
+{json.dumps(original_answers, indent=2)}
+
+THIS WEEK'S PULSE CHECK:
+{json.dumps(pulse_answers, indent=2)}
+
+Provide brief, actionable insights in JSON:
+{{
+  "mood": "positive|neutral|struggling",
+  "encouragement": "One warm sentence of encouragement",
+  "adjustment_tip": "One specific tip to improve next week",
+  "focus_area": "The domain they should focus on"
+}}
+
+Return ONLY valid JSON:"""
+
+        try:
+            response = await self.engine.generate(system_prompt, [])
+            return self._extract_json(response)
+        except Exception as e:
+            logger.error(f"Pulse check analysis failed: {e}")
+            return {"mood": "neutral", "encouragement": "Keep going, you're making progress!", "adjustment_tip": None, "focus_area": None}
+
     def _format_answers_context(self, answers: Dict[str, Dict[str, Any]]) -> str:
         """Format user answers for LLM context."""
         context_lines = []
@@ -383,8 +475,8 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
                         "type": "radio",
                         "question": "What time can you realistically wake up every day?",
                         "options": [
-                            {"value": "06:00", "label": "6:00 AM - Early Start", "recommended": true, "reason": "Optimal for goal achievement"},
-                            {"value": "08:00", "label": "8:00 AM - Standard", "recommended": false}
+                            {"value": "06:00", "label": "6:00 AM - Early Start", "recommended": True, "reason": "Optimal for goal achievement"},
+                            {"value": "08:00", "label": "8:00 AM - Standard", "recommended": False}
                         ]
                     }
                 ]

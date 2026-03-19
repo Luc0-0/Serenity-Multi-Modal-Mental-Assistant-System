@@ -14,31 +14,36 @@ import LaunchStep from './steps/LaunchStep';
 import styles from './OnboardingFlow.module.css';
 
 const steps = ['welcome', 'goal', 'aiquestions', 'schedule', 'launch'];
+export const ONBOARDING_DRAFT_KEY = 'serenity_goal_draft';
 
-export default function OnboardingFlow({ onComplete, onSkip }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
-    theme: 'balanced', // tactical, balanced, gentle
-    goal: {
-      title: '',
-      description: '',
-      voice_input: false
-    },
-    aiQuestions: {
-      questions: [],
-      answers: {}
-    },
-    timeline: {
-      duration_days: 180,
-      start_date: new Date().toISOString().split('T')[0]
-    },
-    schedule: {
-      items: [],
-      templates_used: [],
-      ai_generated: false
-    },
-    phases: []
-  });
+const DEFAULT_FORM = () => ({
+  theme: 'balanced',
+  goal: { title: '', description: '', voice_input: false },
+  aiQuestions: { questions: [], answers: {} },
+  timeline: { duration_days: 180, start_date: new Date().toISOString().split('T')[0] },
+  schedule: { items: [], templates_used: [], ai_generated: false },
+  phases: [],
+});
+
+export default function OnboardingFlow({ onComplete, onSkip, initialStep = 0, initialFormData = null }) {
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [formData, setFormData] = useState(initialFormData || DEFAULT_FORM());
+
+  // Persist draft on every step/formData change (skip step 0 — nothing to resume yet)
+  useEffect(() => {
+    if (currentStep === 0) return;
+    try {
+      localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({
+        step: currentStep,
+        formData,
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {}
+  }, [currentStep, formData]);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch {}
+  };
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -70,6 +75,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         schedule_items: formData.schedule.items,
         phases: formData.phases,
       });
+      clearDraft();
       onComplete(result.goal_id);
     } catch (error) {
       console.error('Goal creation error:', error);
@@ -145,7 +151,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       {currentStep < 3 && (
         <button
           className={styles.skipButton}
-          onClick={onSkip}
+          onClick={() => { clearDraft(); onSkip(); }}
         >
           Skip for now
         </button>

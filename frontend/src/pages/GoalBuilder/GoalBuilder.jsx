@@ -14,8 +14,20 @@ import { apiClient } from '../../services/apiClient';
 import { MomentumBar } from '../../components/MomentumBar/MomentumBar';
 import { PhaseUnlockModal } from '../../components/PhaseUnlockModal/PhaseUnlockModal';
 import { PulseCheckModal } from '../../components/PulseCheckModal/PulseCheckModal';
-import OnboardingFlow from './components/Onboarding/OnboardingFlow';
+import OnboardingFlow, { ONBOARDING_DRAFT_KEY } from './components/Onboarding/OnboardingFlow';
 import styles from './GoalBuilder.module.css';
+
+const STEP_NAMES = ['Welcome', 'Your Goal', 'Personalization', 'Schedule', 'Launch'];
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
 
 const TodayTab = React.lazy(() => import('./components/Tabs/TodayTab'));
 const PhasesTab = React.lazy(() => import('./components/Tabs/PhasesTab'));
@@ -35,6 +47,8 @@ export default function GoalBuilder() {
   const [goalData, setGoalData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingDraft, setOnboardingDraft] = useState(null); // { step, formData, savedAt }
+  const [onboardingInitial, setOnboardingInitial] = useState({ step: 0, formData: null });
 
   // Phase unlock celebration
   const [phaseUnlock, setPhaseUnlock] = useState(null);
@@ -51,6 +65,19 @@ export default function GoalBuilder() {
     try {
       const goals = await apiClient.get('/api/goals');
       if (goals.length === 0) {
+        // Check for an in-progress draft before launching fresh onboarding
+        try {
+          const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
+          if (raw) {
+            const draft = JSON.parse(raw);
+            // Only offer resume if they got past the welcome step (have a goal title)
+            if (draft?.step > 0 && draft?.formData?.goal?.title) {
+              setOnboardingDraft(draft);
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch {}
         setShowOnboarding(true);
       } else {
         const activeGoal = goals.find((g) => g.is_active) || goals[0];
@@ -116,9 +143,107 @@ export default function GoalBuilder() {
     );
   }
 
+  // Draft resume prompt
+  if (onboardingDraft) {
+    const stepName = STEP_NAMES[onboardingDraft.step] || `Step ${onboardingDraft.step + 1}`;
+    const goalTitle = onboardingDraft.formData?.goal?.title;
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: '#0A0A0F', padding: '24px',
+      }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+          style={{
+            width: '100%', maxWidth: 440,
+            background: 'rgba(15,15,20,0.95)',
+            border: '1px solid rgba(200,169,110,0.2)',
+            borderRadius: 24, padding: '36px 32px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+          }}
+        >
+          {/* Icon */}
+          <div style={{
+            width: 52, height: 52, borderRadius: 16,
+            background: 'rgba(200,169,110,0.1)',
+            border: '1px solid rgba(200,169,110,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 24,
+          }}>
+            <SvgIcon name="target" size={26} color="#C8A96E" />
+          </div>
+
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#F5F0E8', marginBottom: 8 }}>
+            Pick up where you left off
+          </div>
+          <div style={{ fontSize: 14, color: 'rgba(245,240,232,0.5)', marginBottom: 24, lineHeight: 1.6 }}>
+            You were setting up{goalTitle ? ` "${goalTitle}"` : ' a goal'} and stopped at{' '}
+            <span style={{ color: '#C8A96E', fontWeight: 600 }}>{stepName}</span>
+            {onboardingDraft.savedAt && (
+              <span style={{ color: 'rgba(245,240,232,0.35)' }}> · {timeAgo(onboardingDraft.savedAt)}</span>
+            )}
+          </div>
+
+          {/* Step progress dots */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
+            {STEP_NAMES.map((_, i) => (
+              <div key={i} style={{
+                flex: 1, height: 3, borderRadius: 2,
+                background: i < onboardingDraft.step
+                  ? '#C8A96E'
+                  : i === onboardingDraft.step
+                  ? 'rgba(200,169,110,0.4)'
+                  : 'rgba(255,255,255,0.06)',
+                transition: 'all 0.3s',
+              }} />
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setOnboardingInitial({ step: onboardingDraft.step, formData: onboardingDraft.formData });
+                setOnboardingDraft(null);
+                setShowOnboarding(true);
+              }}
+              style={{
+                padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg, #C8A96E, #A8874E)',
+                color: '#0A0A0F', fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+              }}
+            >
+              Continue from {stepName}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+              onClick={() => {
+                try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch {}
+                setOnboardingDraft(null);
+                setOnboardingInitial({ step: 0, formData: null });
+                setShowOnboarding(true);
+              }}
+              style={{
+                padding: '12px 20px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(245,240,232,0.5)', fontSize: 14, fontWeight: 500,
+              }}
+            >
+              Start fresh
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (showOnboarding) {
     return (
       <OnboardingFlow
+        initialStep={onboardingInitial.step}
+        initialFormData={onboardingInitial.formData}
         onComplete={handleOnboardingComplete}
         onSkip={() => {
           setShowOnboarding(false);

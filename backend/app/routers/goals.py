@@ -18,6 +18,7 @@ from app.models import User, Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask
 from app.services.goal_service import GoalService
 from app.services.llm_schedule_service import LLMScheduleService
 from app.services.ai_questions_service import AIQuestionsService
+from app.services.goal_classifier import GoalClassifier
 
 router = APIRouter(prefix="/api/goals", tags=["goals"])
 
@@ -35,7 +36,12 @@ async def generate_questions(
         questions = await ai_service.generate_questions(
             goal_title=request_data.get("title", ""),
             goal_description=request_data.get("description", ""),
-            theme=request_data.get("theme", "balanced")
+            theme=request_data.get("theme", "balanced"),
+            domains=request_data.get("domains"),
+            domain_priorities=request_data.get("domain_priorities"),
+            motivation=request_data.get("motivation"),
+            baselines=request_data.get("baselines"),
+            goal_type=request_data.get("goal_type"),
         )
 
         return {"categories": questions}
@@ -83,6 +89,23 @@ async def generate_category_questions(
         return {"questions": questions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Category question generation failed: {str(e)}")
+
+
+@router.post("/classify-goal")
+async def classify_goal(
+    request_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Classify goal type and suggest domains from title+description."""
+    classifier = GoalClassifier()
+    try:
+        result = await classifier.classify(
+            title=request_data.get("title", ""),
+            description=request_data.get("description", "")
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
 
 
 # Pulse Check (Sunday weekly reflection)

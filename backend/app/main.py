@@ -7,6 +7,8 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
@@ -24,6 +26,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Middleware to trust X-Forwarded-Proto from Railway proxy
+class TrustedProxyMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        # If behind proxy and X-Forwarded-Proto is set, update the scheme
+        if "x-forwarded-proto" in request.headers:
+            request.scope["scheme"] = request.headers["x-forwarded-proto"]
+        response = await call_next(request)
+        return response
+
 app = FastAPI(
     title="Serenity Backend",
     version="0.2.0",
@@ -34,6 +45,15 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add proxy middleware FIRST to handle scheme detection
+app.add_middleware(TrustedProxyMiddleware)
+
+# Trust Railway's reverse proxy hosts
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["serenity.nipun.space", "serenity-frontend-production-a34e.up.railway.app", "localhost"],
+)
 
 app.add_middleware(
     CORSMiddleware,

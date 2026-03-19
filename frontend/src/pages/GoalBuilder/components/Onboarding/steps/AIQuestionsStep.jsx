@@ -37,7 +37,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
   const fetchQuestions = async () => {
     setView('loading');
     try {
-      const data = await apiClient.post('/goals/generate-questions', {
+      const data = await apiClient.post('/api/goals/generate-questions', {
         title: formData.goal.title,
         description: formData.goal.description,
         theme: formData.theme,
@@ -61,7 +61,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     const groupId = GROUP_META[groupIndex].id;
 
     try {
-      const data = await apiClient.post('/goals/generate-category-questions', {
+      const data = await apiClient.post('/api/goals/generate-category-questions', {
         title: formData.goal.title,
         theme: formData.theme,
         category: groupId,

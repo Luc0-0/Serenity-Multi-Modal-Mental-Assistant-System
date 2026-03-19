@@ -49,7 +49,7 @@ export default function GoalBuilder() {
 
   const checkUserGoals = async () => {
     try {
-      const goals = await apiClient.get('/goals');
+      const goals = await apiClient.get('/api/goals');
       if (goals.length === 0) {
         setShowOnboarding(true);
       } else {
@@ -66,7 +66,7 @@ export default function GoalBuilder() {
 
   const loadGoalDetails = useCallback(async (goalId) => {
     try {
-      const data = await apiClient.get(`/goals/${goalId}`);
+      const data = await apiClient.get(`/api/goals/${goalId}`);
 
       // Detect newly unlocked phases (compare with previous state)
       if (goalData?.phases && data.phases) {
@@ -89,7 +89,7 @@ export default function GoalBuilder() {
 
   const checkPulseCheck = async (goalId) => {
     try {
-      const data = await apiClient.get(`/goals/${goalId}/pulse-check`);
+      const data = await apiClient.get(`/api/goals/${goalId}/pulse-check`);
       if (data.is_due) {
         setTimeout(() => setShowPulseCheck(true), 2000); // Slight delay for UX
       }

@@ -71,7 +71,7 @@ export function PulseCheckModal({ isOpen, goalId, onClose, onSubmit }) {
     setSubmitting(true);
 
     try {
-      const data = await apiClient.post(`/goals/${goalId}/pulse-check`, { answers });
+      const data = await apiClient.post(`/api/goals/${goalId}/pulse-check`, { answers });
       if (data.insights) {
         setInsights(data.insights);
       } else {

@@ -57,7 +57,7 @@ export default function TodayTab({ goalData, onUpdate }) {
       const count = Object.values(completed).filter(Boolean).length;
       const pct = schedule.length > 0 ? (count / schedule.length) * 100 : 0;
 
-      await apiClient.post(`/goals/${goal.id}/logs`, { completed_items: completed, completion_percentage: pct });
+      await apiClient.post(`/api/goals/${goal.id}/logs`, { completed_items: completed, completion_percentage: pct });
       onUpdate(goal.id);
     } catch (err) {
       console.error('Failed to log:', err);
@@ -68,7 +68,7 @@ export default function TodayTab({ goalData, onUpdate }) {
 
   const useStreakFreeze = async () => {
     try {
-      await apiClient.post(`/goals/${goal.id}/freeze`);
+      await apiClient.post(`/api/goals/${goal.id}/freeze`);
       onUpdate(goal.id);
     } catch (err) {
       console.error('Freeze failed:', err);

@@ -75,7 +75,11 @@ RULES — violations mean the output is wrong:
 Output the array now:"""
 
         try:
-            response = await self.engine.generate(system_prompt, [])
+            response = await self.engine.generate(
+                system_prompt,
+                [{"role": "user", "content": "Output the JSON array now."}],
+                temperature=0.1,
+            )
             logger.info(f"Question generation response length: {len(response)}")
 
             # Extract, normalize, then validate
@@ -83,6 +87,7 @@ Output the array now:"""
             questions = self._normalize_questions(raw)
 
             if not self._validate_questions(questions):
+                logger.error(f"[BAD_STRUCTURE] LLM response was: {response[:800]}")
                 raise ValueError("Normalization could not produce usable structure")
 
             logger.info(f"[AI] Personalized questions generated for goal: '{goal_title}' (theme={theme})")
@@ -290,7 +295,11 @@ Rules:
 Output the array now:"""
 
         try:
-            response = await self.engine.generate(system_prompt, [])
+            response = await self.engine.generate(
+                system_prompt,
+                [{"role": "user", "content": "Output the JSON array now."}],
+                temperature=0.1,
+            )
             raw = self._extract_json(response)
             if not isinstance(raw, list):
                 raise ValueError("Expected list of questions")
@@ -298,6 +307,7 @@ Output the array now:"""
             normalized_cats = self._normalize_questions([{'id': category, 'questions': raw}])
             questions = normalized_cats[0]['questions'] if normalized_cats else []
             if not questions:
+                logger.error(f"[BAD_STRUCTURE] Category '{category}' LLM response: {response[:600]}")
                 raise ValueError("Normalization produced no valid questions")
             logger.info(f"[AI] Category follow-up questions generated for '{category}' using {len(previous_answers)} previous answer categories")
             return questions
@@ -375,6 +385,7 @@ Return ONLY valid JSON:"""
             end = response.rfind(']') + 1
             json_str = response[start_arr:end]
         else:
+            logger.error(f"[RAW_RESPONSE] No JSON found. Model said: {response[:800]}")
             raise ValueError("No JSON found in response")
 
         # Pass 1 — raw parse
@@ -405,7 +416,7 @@ Return ONLY valid JSON:"""
             return result
         except Exception as e:
             logger.error(f"JSON extraction failed all repair passes: {e}")
-            logger.debug(f"Raw response (first 600 chars): {response[:600]}")
+            logger.error(f"[RAW_RESPONSE] {response[:800]}")
             raise Exception(f"Failed to parse LLM response after repair: {e}")
 
     def _normalize_questions(self, raw: List[Dict]) -> List[Dict]:

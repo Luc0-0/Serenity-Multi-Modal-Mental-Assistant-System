@@ -126,6 +126,6 @@ def get_config():
         "app_name": settings.app_name,
         "environment": settings.environment,
         "database_url": "***" if settings.database_url else None,
-        "ollama_endpoint": settings.ollama_endpoint,
+        "gemini_endpoint": settings.gemini_endpoint,
         "cors_origins": settings.cors_origins,
     }

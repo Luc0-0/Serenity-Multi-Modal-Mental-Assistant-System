@@ -31,7 +31,7 @@ class GeminiLLMEngine(LLMEngine):
         messages: List[Dict[str, str]],
         **kwargs
     ) -> str:
-        """Generate LLM response via Ollama Cloud API."""
+        """Generate LLM response via Gemini API."""
         if not self._available:
             raise RuntimeError("Gemini engine not available")
 

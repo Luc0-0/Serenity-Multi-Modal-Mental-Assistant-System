@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 # Initialize Gemini service for title generation
-ollama_service = GeminiService()
+gemini_service = GeminiService()
 journal_service = JournalService()
 
 router = APIRouter(prefix="/api/journal", tags=["journal"])
@@ -115,27 +115,27 @@ async def get_dominant_emotion_summary(db: AsyncSession, user_id: int):
 
 async def generate_smart_title(content: str) -> str:
     """
-    Generate a meaningful title from journal content using Ollama.
-    
-    Falls back to first sentence if Ollama fails (non-blocking).
+    Generate a meaningful title from journal content using Gemini.
+
+    Falls back to first sentence if Gemini fails (non-blocking).
     """
     try:
-        # If content is short, don't call Ollama
+        # If content is short, don't call Gemini
         if len(content) < 50:
             return content.split("\n")[0][:100]
-        
-        # Call Ollama to generate title
-        title = await ollama_service.generate_conversation_title(content)
-        
+
+        # Call Gemini to generate title
+        title = await gemini_service.generate_conversation_title(content)
+
         # Ensure title isn't empty and isn't too long
         if not title or len(title.strip()) == 0:
             return content.split(".")[0][:100]
-        
+
         return title[:100]  # Max 100 chars
-        
+
     except Exception as e:
         # Non-blocking: fallback to first sentence
-        logger.warning(f"Failed to generate smart title with Ollama: {str(e)}")
+        logger.warning(f"Failed to generate smart title with Gemini: {str(e)}")
         first_sentence = content.split(".")[0]
         return first_sentence[:100] if first_sentence else "Journal Entry"
 

@@ -49,7 +49,7 @@ async def generate_title_async(conversation_id: int, user_message: str):
             
             if not title or title == "New Conversation":
                 logger.error(f"[TITLE] ✗ TITLE GENERATION FAILED - returned default for {conversation_id}")
-                logger.error(f"[TITLE] ✗ Check if Ollama endpoint is running and accessible")
+                logger.error(f"[TITLE] ✗ Check if Gemini endpoint is running and accessible")
                 return
             
             logger.info(f"[TITLE] ✓ Updating database for conversation {conversation_id}")

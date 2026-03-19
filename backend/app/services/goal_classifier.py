@@ -5,18 +5,13 @@
 
 import json
 import logging
-import re
+import time
 from typing import Dict, Any
 from app.services.engines.factory import get_llm_engine
 
 logger = logging.getLogger(__name__)
 
 GOAL_TYPES = ["skill", "health", "academic", "multi_domain", "creative", "financial", "lifestyle"]
-
-
-def _to_id(domain_name: str) -> str:
-    """Convert domain name to snake_case id."""
-    return re.sub(r'[^a-z0-9]+', '_', domain_name.lower()).strip('_')
 
 
 class GoalClassifier:
@@ -51,7 +46,6 @@ Rules:
 
 Output now:"""
 
-        import time
         logger.info(f"[CLASSIFIER] Classifying goal='{title}'")
         try:
             t0 = time.monotonic()
@@ -86,7 +80,7 @@ Output now:"""
             logger.error(f"[CLASSIFIER] FALLBACK — reason={e}")
             return {"goal_type": "lifestyle", "suggested_domains": self._fallback_domains(title)}
 
-    def _fallback_domains(self, title: str) -> list:
+    def _fallback_domains(self, title: str) -> list[str]:
         """Generic fallback if LLM fails."""
         title_lower = title.lower()
         if any(w in title_lower for w in ["chess", "poker", "game"]):

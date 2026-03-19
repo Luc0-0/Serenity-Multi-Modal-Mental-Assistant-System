@@ -42,14 +42,18 @@ class OllamaLLMEngine(LLMEngine):
         }
         
         full_messages = [{"role": "system", "content": system_prompt}] + messages
-        
+        max_tok = kwargs.get('max_tokens', self.max_tokens)
+        temp = kwargs.get('temperature', 0.7)
+
         payload = {
             "model": self.model,
             "messages": full_messages,
-            "max_tokens": kwargs.get('max_tokens', self.max_tokens),
-            "temperature": kwargs.get('temperature', 0.7),
+            "max_tokens": max_tok,
+            "temperature": temp,
         }
-        
+
+        logger.info(f"[OLLAMA] REQUEST model={self.model} max_tokens={max_tok} temp={temp} messages={len(full_messages)}")
+
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(

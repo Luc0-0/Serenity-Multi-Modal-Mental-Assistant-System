@@ -74,14 +74,18 @@ RULES — violations mean the output is wrong:
 
 Output the array now:"""
 
+        import time
+        logger.info(f"[QUESTIONS] START goal='{goal_title}' theme={theme}")
         try:
+            t0 = time.monotonic()
             response = await self.engine.generate(
                 system_prompt,
                 [{"role": "user", "content": "Output the JSON array now."}],
                 temperature=0.1,
                 max_tokens=4000,
             )
-            logger.info(f"Question generation response length: {len(response)}")
+            elapsed = time.monotonic() - t0
+            logger.info(f"[QUESTIONS] LLM response: {len(response)} chars in {elapsed:.1f}s")
 
             # Extract, normalize, then validate
             raw = self._extract_json(response)
@@ -91,23 +95,22 @@ Output the array now:"""
             ai_count = sum(1 for q in questions if len(q.get('questions', [])) >= 1)
 
             if ai_count == 0:
-                logger.error(f"[BAD_STRUCTURE] No usable categories. LLM response: {response[:800]}")
+                logger.error(f"[QUESTIONS] BAD_STRUCTURE — no usable categories. Raw (single-line): {response[:600].replace(chr(10), ' ')}")
                 raise ValueError("Normalization could not produce usable structure")
 
             if ai_count < 4:
-                # Partial success — fill gaps with category-specific fallbacks
-                logger.warning(f"[PARTIAL_AI] Got {ai_count}/4 categories — filling gaps with fallbacks")
+                logger.warning(f"[QUESTIONS] PARTIAL — {ai_count}/4 categories from AI, filling gaps with fallback")
                 fallback_map = {q['id']: q for q in self._get_fallback_questions()}
                 questions = [
                     q if len(q.get('questions', [])) >= 1 else fallback_map.get(q['id'], q)
                     for q in questions
                 ]
 
-            logger.info(f"[AI] Questions generated for goal: '{goal_title}' — {ai_count}/4 categories from AI")
+            logger.info(f"[QUESTIONS] OK — {ai_count}/4 AI categories for goal='{goal_title}'")
             return questions
 
         except Exception as e:
-            logger.error(f"[FALLBACK] Question generation failed — using hardcoded defaults. Reason: {e}")
+            logger.error(f"[QUESTIONS] FALLBACK — hardcoded defaults. reason={e}")
             return self._get_fallback_questions()
 
     async def generate_schedule_and_phases(
@@ -236,22 +239,28 @@ PERSONALIZATION:
 
 Generate the JSON now. Return ONLY valid JSON, no other text:"""
 
+        import time
+        logger.info(f"[SCHEDULE] START goal='{goal_title}' theme={theme} duration={duration_days}d answers={len(answers)} categories")
         try:
+            t0 = time.monotonic()
             response = await self.engine.generate(system_prompt, [])
-            logger.info(f"Schedule generation response length: {len(response)}")
+            elapsed = time.monotonic() - t0
+            logger.info(f"[SCHEDULE] LLM response: {len(response)} chars in {elapsed:.1f}s")
 
             # Extract and parse JSON
             result = self._extract_json(response)
 
             # Validate structure
             if not self._validate_schedule_and_phases(result):
+                logger.error(f"[SCHEDULE] BAD_STRUCTURE — invalid schedule/phases. Raw (single-line): {response[:400].replace(chr(10), ' ')}")
                 raise ValueError("Generated schedule/phases don't match required structure")
 
-            logger.info(f"[AI] Personalized schedule+phases generated from user answers for goal: '{goal_title}' ({len(answers)} answer categories used)")
+            schedule_len = len(result.get('daily_schedule', []))
+            logger.info(f"[SCHEDULE] OK — {schedule_len} schedule items + 3 phases for goal='{goal_title}'")
             return result
 
         except Exception as e:
-            logger.error(f"[FALLBACK] Schedule/phase generation failed — using generic defaults. Reason: {e}")
+            logger.error(f"[SCHEDULE] FALLBACK — generic defaults. reason={e}")
             return self._get_fallback_schedule_and_phases(theme)
 
     async def generate_category_questions(
@@ -307,13 +316,19 @@ Rules:
 
 Output the array now:"""
 
+        import time
+        logger.info(f"[CATEGORY] START category={category} goal='{goal_title}' prev_answers={len(previous_answers)}")
         try:
+            t0 = time.monotonic()
             response = await self.engine.generate(
                 system_prompt,
                 [{"role": "user", "content": "Output the JSON array now."}],
                 temperature=0.1,
                 max_tokens=4000,
             )
+            elapsed = time.monotonic() - t0
+            logger.info(f"[CATEGORY] LLM response: {len(response)} chars in {elapsed:.1f}s")
+
             raw = self._extract_json(response)
             if not isinstance(raw, list):
                 raise ValueError("Expected list of questions")
@@ -321,12 +336,12 @@ Output the array now:"""
             normalized_cats = self._normalize_questions([{'id': category, 'questions': raw}])
             questions = normalized_cats[0]['questions'] if normalized_cats else []
             if not questions:
-                logger.error(f"[BAD_STRUCTURE] Category '{category}' LLM response: {response[:600]}")
+                logger.error(f"[CATEGORY] BAD_STRUCTURE — no valid questions for '{category}'. Raw (single-line): {response[:400].replace(chr(10), ' ')}")
                 raise ValueError("Normalization produced no valid questions")
-            logger.info(f"[AI] Category follow-up questions generated for '{category}' using {len(previous_answers)} previous answer categories")
+            logger.info(f"[CATEGORY] OK — {len(questions)} questions for category={category}")
             return questions
         except Exception as e:
-            logger.error(f"[FALLBACK] Category question generation failed for '{category}' — returning empty. Reason: {e}")
+            logger.error(f"[CATEGORY] FALLBACK — empty for category={category}. reason={e}")
             return []
 
     async def analyze_pulse_check(
@@ -399,7 +414,7 @@ Return ONLY valid JSON:"""
             end = response.rfind(']') + 1
             json_str = response[start_arr:end]
         else:
-            logger.error(f"[RAW_RESPONSE] No JSON found. Model said: {response[:800]}")
+            logger.error(f"[JSON] NO_JSON_FOUND — model said: {response[:400].replace(chr(10), ' ')}")
             raise ValueError("No JSON found in response")
 
         # Pass 1 — raw parse
@@ -426,11 +441,10 @@ Return ONLY valid JSON:"""
             from json_repair import repair_json
             repaired = repair_json(cleaned)
             result = json.loads(repaired)
-            logger.warning("JSON required repair — LLM output was malformed but recoverable")
+            logger.warning("[JSON] REPAIRED — LLM output was malformed but json-repair recovered it")
             return result
         except Exception as e:
-            logger.error(f"JSON extraction failed all repair passes: {e}")
-            logger.error(f"[RAW_RESPONSE] {response[:800]}")
+            logger.error(f"[JSON] ALL_REPAIR_PASSES_FAILED: {e} — raw (single-line): {response[:400].replace(chr(10), ' ')}")
             raise Exception(f"Failed to parse LLM response after repair: {e}")
 
     def _normalize_questions(self, raw: List[Dict]) -> List[Dict]:

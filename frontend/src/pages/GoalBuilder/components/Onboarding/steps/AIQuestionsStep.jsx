@@ -19,58 +19,43 @@ const GROUP_META = [
   { id: 'preferences', name: 'Preferences & Approach', icon: 'settings', color: '#9F7AEA', description: 'Intensity, tracking style, and motivation' },
 ];
 
-// View states: 'loading' | 'question' | 'group-summary' | 'final-summary'
+// View states: 'question' | 'group-summary' | 'final-summary'
 export default function AIQuestionsStep({ formData, updateFormData, nextStep, prevStep }) {
-  const [view, setView] = useState('loading');
-  const [categories, setCategories] = useState([]);
+  // Start instantly with fallback — AI upgrades each group in background
+  const [view, setView] = useState('question');
+  const [categories, setCategories] = useState(() => getMinimalFallback());
   const [currentGroup, setCurrentGroup] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showTooltip, setShowTooltip] = useState(null);
+  const [aiUpgraded, setAiUpgraded] = useState({}); // tracks which groups have AI questions
+  const answersRef = useRef({});
   const containerRef = useRef(null);
 
-  // Fetch questions on mount
+  // Keep ref in sync so background fetches can check answers without stale closure
+  useEffect(() => { answersRef.current = answers; }, [answers]);
+
+  // On mount: fetch AI questions for Physical in background (no blocking spinner)
   useEffect(() => {
-    fetchQuestions();
+    fetchAIForGroup(0);
   }, []);
 
-  const fetchQuestions = async () => {
-    setView('loading');
-    try {
-      const data = await apiClient.post('/api/goals/generate-questions', {
-        title: formData.goal.title,
-        description: formData.goal.description,
-        theme: formData.theme,
-      });
-
-      if (data.categories?.length === 4) {
-        setCategories(data.categories);
-      } else {
-        throw new Error('Invalid structure');
-      }
-    } catch {
-      // Use smart branching: fetch first group, then generate follow-ups
-      setCategories(getMinimalFallback());
-    } finally {
-      setView('question');
-    }
-  };
-
-  // Try smart branching for next group based on previous answers
-  const fetchSmartQuestions = async (groupIndex) => {
+  const fetchAIForGroup = async (groupIndex) => {
     const groupId = GROUP_META[groupIndex].id;
-
     try {
       const data = await apiClient.post('/api/goals/generate-category-questions', {
         title: formData.goal.title,
         theme: formData.theme,
         category: groupId,
-        previous_answers: answers,
+        previous_answers: answersRef.current,
       });
 
       if (data.questions?.length > 0) {
-        // Merge smart questions into the category
         setCategories((prev) => {
+          // Only upgrade if user hasn't started answering this group yet
+          const hasAnswers = Object.keys(answersRef.current[groupId] || {}).length > 0;
+          if (hasAnswers) return prev;
+
           const updated = [...prev];
           const catIndex = updated.findIndex((c) => c.id === groupId);
           if (catIndex !== -1) {
@@ -78,11 +63,13 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
           }
           return updated;
         });
+        setAiUpgraded((prev) => ({ ...prev, [groupId]: true }));
       }
     } catch {
-      // Keep existing fallback questions for this category
+      // Keep fallback questions — no visible error
     }
   };
+
 
   const group = GROUP_META[currentGroup];
   const category = categories[currentGroup];
@@ -125,20 +112,19 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     }
   }, [currentQ, questions.length]);
 
-  const handleGroupSummaryNext = useCallback(async () => {
+  const handleGroupSummaryNext = useCallback(() => {
     if (currentGroup < totalGroups - 1) {
       const nextGroupIdx = currentGroup + 1;
       setCurrentGroup(nextGroupIdx);
       setCurrentQ(0);
-      setView('loading');
-
-      // Try to fetch smart questions for next group
-      await fetchSmartQuestions(nextGroupIdx);
       setView('question');
+
+      // Fetch AI questions for next group in background (non-blocking)
+      fetchAIForGroup(nextGroupIdx);
     } else {
       setView('final-summary');
     }
-  }, [currentGroup, totalGroups, answers]);
+  }, [currentGroup, totalGroups]);
 
   const handleComplete = useCallback(() => {
     updateFormData({
@@ -446,7 +432,16 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
             <SvgIcon name={group.icon} size={20} color={group.color} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
+              {aiUpgraded[group.id] && (
+                <div style={{
+                  fontSize: 9, fontWeight: 700, color: '#C8A96E',
+                  background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.25)',
+                  borderRadius: 4, padding: '1px 6px', letterSpacing: 0.8, textTransform: 'uppercase',
+                }}>AI</div>
+              )}
+            </div>
             <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.45)' }}>{group.description}</div>
           </div>
           <div style={{ textAlign: 'right' }}>

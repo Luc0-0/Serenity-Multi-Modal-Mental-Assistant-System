@@ -19,6 +19,7 @@ const API_BASE_URL = (() => {
 
 console.debug('[API Client] Configured with base URL:', API_BASE_URL);
 const TIMEOUT_MS = 10000;
+const AI_TIMEOUT_MS = 120000; // 2 min for AI generation endpoints
 
 class APIClient {
   constructor(baseURL = API_BASE_URL, timeout = TIMEOUT_MS) {
@@ -28,9 +29,10 @@ class APIClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    const { timeout: callTimeout, ...restOptions } = options;
     const headers = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...restOptions.headers,
     };
 
     const token = localStorage.getItem('auth_token');
@@ -39,9 +41,11 @@ class APIClient {
     }
 
     const fetchOptions = {
-      ...options,
+      ...restOptions,
       headers,
     };
+
+    const timeoutMs = callTimeout ?? this.timeout;
 
     try {
       const response = await Promise.race([
@@ -49,7 +53,7 @@ class APIClient {
         new Promise((_, reject) =>
           setTimeout(
             () => reject(new Error('Request timeout')),
-            this.timeout
+            timeoutMs
           )
         ),
       ]);
@@ -78,10 +82,13 @@ class APIClient {
   }
 
   post(endpoint, data, options) {
+    const AI_ENDPOINTS = ['/generate-questions', '/generate-category-questions', '/generate-schedule-from-answers'];
+    const isAI = AI_ENDPOINTS.some((p) => endpoint.includes(p));
     return this.request(endpoint, {
       ...options,
       method: 'POST',
       body: JSON.stringify(data),
+      ...(isAI && { timeout: AI_TIMEOUT_MS }),
     });
   }
 

@@ -84,8 +84,8 @@ class GeminiLLMEngine(LLMEngine):
                 logger.info(f"[RESPONSE_LEN] {len(content)} chars, finish_reason={finish_reason}")
                 return content
         except httpx.HTTPStatusError as e:
-            logger.error(f"Gemini API error: {e.status_code} - {e.response.text}")
-            raise RuntimeError(f"Gemini API failed: {e.status_code}")
+            logger.error(f"LLM API error: {e.response.status_code} - {e.response.text}")
+            raise RuntimeError(f"LLM API failed: {e.response.status_code}")
         except Exception as e:
             logger.error(f"Gemini generation failed: {e}")
             raise
@@ -137,8 +137,8 @@ class GeminiLLMEngine(LLMEngine):
                         except (json.JSONDecodeError, KeyError, IndexError):
                             continue
         except httpx.HTTPStatusError as e:
-            logger.error(f"Gemini streaming API error: {e.status_code} - {e.response.text}")
-            raise RuntimeError(f"Gemini streaming API failed: {e.status_code}")
+            logger.error(f"LLM streaming API error: {e.response.status_code} - {e.response.text}")
+            raise RuntimeError(f"LLM streaming API failed: {e.response.status_code}")
         except Exception as e:
             logger.error(f"Gemini streaming failed: {e}")
             raise

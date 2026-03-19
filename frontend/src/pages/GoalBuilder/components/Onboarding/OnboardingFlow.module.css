@@ -384,3 +384,109 @@
     transition: none;
   }
 }
+
+/* ── Domain Profiling Step ─────────────────────────────── */
+
+.domainChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.6rem 0.4rem 0.8rem;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 100px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.domainChipName {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.priorityTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--priority-color, #C9A84C) 15%, transparent);
+  border: 1px solid var(--priority-color, #C9A84C);
+  color: var(--priority-color, #C9A84C);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0;
+  padding: 0;
+}
+
+.priorityTag:hover {
+  opacity: 0.75;
+  transform: scale(1.1);
+}
+
+.domainRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.domainRemove:hover {
+  color: #E05252;
+}
+
+.textareaField {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: 0.5rem 0;
+  resize: none;
+  outline: none;
+  margin-top: 0.5rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.textareaField:focus {
+  border-bottom-color: var(--gold);
+}
+
+.textareaField::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.feasibilityWarning {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  overflow: hidden;
+}

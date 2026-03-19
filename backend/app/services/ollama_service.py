@@ -13,24 +13,24 @@ logger = logging.getLogger(__name__)
 Assessment: TypeAlias = tuple[int, str]
 
 
-class OllamaService:
-    """Integration with Ollama LLM API for chat responses."""
-    
+class GeminiService:
+    """Integration with Gemini LLM API for chat responses."""
+
     def __init__(self):
-        self.endpoint = settings.ollama_endpoint
-        self.api_key = settings.ollama_api_key
-        self.model = settings.ollama_model
-        self.max_tokens = settings.ollama_max_tokens
+        self.endpoint = settings.gemini_endpoint
+        self.api_key = settings.gemini_api_key
+        self.model = settings.gemini_model
+        self.max_tokens = settings.gemini_max_tokens
         self.timeout = 30.0
-        
-        logger.info(f"OllamaService initialized:")
+
+        logger.info(f"GeminiService initialized:")
         logger.info(f"  Endpoint: {self.endpoint}")
         logger.info(f"  API Key: {'***' + self.api_key[-5:] if self.api_key else 'NOT SET'}")
         logger.info(f"  Model: {self.model}")
         logger.info(f"  Max Tokens: {self.max_tokens}")
-        
+
         if not self.api_key:
-            logger.error("OLLAMA_API_KEY not set in .env or environment!")
+            logger.error("GEMINI_API_KEY not set in .env or environment!")
     
     async def get_response(
          self,
@@ -57,15 +57,15 @@ class OllamaService:
             user_message
         )
         
-        logger.info(f"Calling Ollama Cloud API with {len(messages)} messages")
-        
+        logger.info(f"Calling Gemini API with {len(messages)} messages")
+
         try:
-            response = await self._call_ollama_cloud(system_prompt, messages, user_message)
-            logger.info(f"[SUCCESS] Ollama Cloud response: {len(response)} chars")
+            response = await self._call_gemini_api(system_prompt, messages, user_message)
+            logger.info(f"[SUCCESS] Gemini API response: {len(response)} chars")
             return response
-        
+
         except Exception as e:
-            logger.error(f"[ERROR] Ollama Cloud API call failed: {type(e).__name__}: {str(e)}")
+            logger.error(f"[ERROR] Gemini API call failed: {type(e).__name__}: {str(e)}")
             import traceback
             logger.error(f"Full traceback:\n{traceback.format_exc()}")
             logger.warning("Returning fallback response")
@@ -257,15 +257,15 @@ RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
                 "reason": f"AI error: {str(e)}"
             }
     
-    async def _call_ollama_cloud(
+    async def _call_gemini_api(
         self,
         system_prompt: str,
         messages: List[Dict],
         user_message: str = None
     ) -> str:
         """
-        Execute the raw HTTP request to the Ollama Cloud API.
-        
+        Execute the raw HTTP request to the Gemini API.
+
         Handles payload construction, dynamic token limit application,
         headers, timeout management, and initial response validation.
         """
@@ -292,7 +292,7 @@ RESPOND WITH THIS JSON ONLY (no markdown, no extra text, valid JSON only):
         
         # Initialize HTTP client
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            logger.info(f"POST to {self.endpoint}")
+            logger.info(f"POST to Gemini API: {self.endpoint}")
             response = await client.post(
                 self.endpoint,
                 json=payload,
@@ -613,7 +613,7 @@ If you need immediate support, please reach out to:
         messages = [{"role": "user", "content": first_message}]
         
         try:
-            title = await self._call_ollama_cloud(system, messages)
+            title = await self._call_gemini_api(system, messages)
             title = title.replace('"', '').replace("'", '').strip()
             if len(title) > 50:
                 title = title[:50]

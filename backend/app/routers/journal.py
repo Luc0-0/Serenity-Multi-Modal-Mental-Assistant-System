@@ -7,14 +7,14 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.routers.auth import get_current_user
-from app.services.ollama_service import OllamaService
+from app.services.ollama_service import GeminiService
 from app.services.journal_service import JournalService
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-# Initialize Ollama service for title generation
-ollama_service = OllamaService()
+# Initialize Gemini service for title generation
+ollama_service = GeminiService()
 journal_service = JournalService()
 
 router = APIRouter(prefix="/api/journal", tags=["journal"])

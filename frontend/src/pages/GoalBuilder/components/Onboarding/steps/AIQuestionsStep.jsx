@@ -19,54 +19,36 @@ const GROUP_META = [
   { id: 'preferences', name: 'Preferences & Approach', icon: 'settings', color: '#9F7AEA', description: 'Intensity, tracking style, and motivation' },
 ];
 
-// View states: 'question' | 'group-summary' | 'final-summary'
+// View states: 'loading' | 'question' | 'group-summary' | 'final-summary'
 export default function AIQuestionsStep({ formData, updateFormData, nextStep, prevStep }) {
-  // Start instantly with fallback — AI upgrades each group in background
-  const [view, setView] = useState('question');
-  const [categories, setCategories] = useState(() => getMinimalFallback());
+  const [view, setView] = useState('loading');
+  const [categories, setCategories] = useState([]);
   const [currentGroup, setCurrentGroup] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showTooltip, setShowTooltip] = useState(null);
-  const [aiUpgraded, setAiUpgraded] = useState({}); // tracks which groups have AI questions
-  const answersRef = useRef({});
   const containerRef = useRef(null);
 
-  // Keep ref in sync so background fetches can check answers without stale closure
-  useEffect(() => { answersRef.current = answers; }, [answers]);
-
-  // On mount: fetch AI questions for Physical in background (no blocking spinner)
   useEffect(() => {
-    fetchAIForGroup(0);
+    fetchAllQuestions();
   }, []);
 
-  const fetchAIForGroup = async (groupIndex) => {
-    const groupId = GROUP_META[groupIndex].id;
+  const fetchAllQuestions = async () => {
     try {
-      const data = await apiClient.post('/api/goals/generate-category-questions', {
+      const data = await apiClient.post('/api/goals/generate-questions', {
         title: formData.goal.title,
+        description: formData.goal.description,
         theme: formData.theme,
-        category: groupId,
-        previous_answers: answersRef.current,
       });
-
-      if (data.questions?.length > 0) {
-        setCategories((prev) => {
-          // Only upgrade if user hasn't started answering this group yet
-          const hasAnswers = Object.keys(answersRef.current[groupId] || {}).length > 0;
-          if (hasAnswers) return prev;
-
-          const updated = [...prev];
-          const catIndex = updated.findIndex((c) => c.id === groupId);
-          if (catIndex !== -1) {
-            updated[catIndex] = { ...updated[catIndex], questions: data.questions };
-          }
-          return updated;
-        });
-        setAiUpgraded((prev) => ({ ...prev, [groupId]: true }));
+      if (data.categories?.length === 4) {
+        setCategories(data.categories);
+      } else {
+        throw new Error('Invalid structure');
       }
     } catch {
-      // Keep fallback questions — no visible error
+      setCategories(getMinimalFallback());
+    } finally {
+      setView('question');
     }
   };
 
@@ -112,19 +94,40 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
     }
   }, [currentQ, questions.length]);
 
-  const handleGroupSummaryNext = useCallback(() => {
+  const fetchSmartQuestions = async (groupIndex) => {
+    const groupId = GROUP_META[groupIndex].id;
+    try {
+      const data = await apiClient.post('/api/goals/generate-category-questions', {
+        title: formData.goal.title,
+        theme: formData.theme,
+        category: groupId,
+        previous_answers: answers,
+      });
+      if (data.questions?.length > 0) {
+        setCategories((prev) => {
+          const updated = [...prev];
+          const catIndex = updated.findIndex((c) => c.id === groupId);
+          if (catIndex !== -1) updated[catIndex] = { ...updated[catIndex], questions: data.questions };
+          return updated;
+        });
+      }
+    } catch {
+      // Keep existing questions for this category
+    }
+  };
+
+  const handleGroupSummaryNext = useCallback(async () => {
     if (currentGroup < totalGroups - 1) {
       const nextGroupIdx = currentGroup + 1;
       setCurrentGroup(nextGroupIdx);
       setCurrentQ(0);
+      setView('loading');
+      await fetchSmartQuestions(nextGroupIdx);
       setView('question');
-
-      // Fetch AI questions for next group in background (non-blocking)
-      fetchAIForGroup(nextGroupIdx);
     } else {
       setView('final-summary');
     }
-  }, [currentGroup, totalGroups]);
+  }, [currentGroup, totalGroups, answers]);
 
   const handleComplete = useCallback(() => {
     updateFormData({
@@ -157,39 +160,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
    *  LOADING VIEW
    * ════════════════════════════════════════════ */
   if (view === 'loading') {
-    return (
-      <div className={styles.stepContent} style={{ textAlign: 'center' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-            style={{ display: 'inline-flex', marginBottom: 28, color: '#C8A96E' }}
-          >
-            <SvgIcon name="sparkle" size={48} color="#C8A96E" />
-          </motion.div>
-
-          <div className={styles.stepTitle} style={{ fontSize: 'clamp(24px, 5vw, 36px)', marginBottom: 12 }}>
-            {currentGroup === 0 ? 'Crafting Your Path' : `Preparing ${GROUP_META[currentGroup]?.name}...`}
-          </div>
-          <div className={styles.stepSubtitle} style={{ marginBottom: 0 }}>
-            {currentGroup === 0
-              ? 'AI is analyzing your goal to create personalized questions...'
-              : 'Adapting questions based on your previous answers...'}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40 }}>
-            {[0, 1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(200,169,110,0.4)' }}
-                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
-              />
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    );
+    return <AILoadingScreen groupIndex={currentGroup} />;
   }
 
   /* ════════════════════════════════════════════
@@ -432,16 +403,7 @@ export default function AIQuestionsStep({ formData, updateFormData, nextStep, pr
             <SvgIcon name={group.icon} size={20} color={group.color} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
-              {aiUpgraded[group.id] && (
-                <div style={{
-                  fontSize: 9, fontWeight: 700, color: '#C8A96E',
-                  background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.25)',
-                  borderRadius: 4, padding: '1px 6px', letterSpacing: 0.8, textTransform: 'uppercase',
-                }}>AI</div>
-              )}
-            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F0E8' }}>{group.name}</div>
             <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.45)' }}>{group.description}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -792,6 +754,136 @@ function TimeQuestion({ question, value, color, onChange, onNext, showTooltip, s
         Confirm <SvgIcon name="chevronRight" size={12} color="#C8A96E" />
       </motion.button>
       <div style={{ clear: 'both' }} />
+    </div>
+  );
+}
+
+/* ── AI Loading Screen ── */
+const INITIAL_STAGES = [
+  { label: 'Reading your goal', sub: 'Understanding what you want to achieve' },
+  { label: 'Mapping your context', sub: 'Identifying key factors for your journey' },
+  { label: 'Crafting Physical questions', sub: 'Energy, routines, and body readiness' },
+  { label: 'Crafting Mental questions', sub: 'Focus, clarity, and cognitive patterns' },
+  { label: 'Crafting Lifestyle questions', sub: 'Schedule, constraints, and resources' },
+  { label: 'Crafting Preferences questions', sub: 'Intensity, tracking, and motivation style' },
+];
+
+const BETWEEN_STAGES = [
+  { label: 'Analyzing your answers', sub: 'Building a picture of your patterns' },
+  { label: 'Adapting next questions', sub: 'Tailoring based on what you shared' },
+  { label: 'Almost ready', sub: 'Personalizing for your exact situation' },
+];
+
+function AILoadingScreen({ groupIndex }) {
+  const [stageIdx, setStageIdx] = useState(0);
+  const stages = groupIndex === 0 ? INITIAL_STAGES : BETWEEN_STAGES;
+
+  useEffect(() => {
+    setStageIdx(0);
+    const interval = setInterval(() => {
+      setStageIdx((i) => (i < stages.length - 1 ? i + 1 : i));
+    }, groupIndex === 0 ? 5500 : 2200);
+    return () => clearInterval(interval);
+  }, [groupIndex]);
+
+  const progress = Math.min(((stageIdx + 1) / stages.length) * 100, 95);
+
+  return (
+    <div className={styles.stepContent} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 420 }}>
+      {/* Orb */}
+      <div style={{ position: 'relative', marginBottom: 48 }}>
+        <motion.div
+          animate={{ scale: [1, 1.12, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 35%, rgba(200,169,110,0.9), rgba(200,169,110,0.1))',
+            boxShadow: '0 0 40px rgba(200,169,110,0.3), 0 0 80px rgba(200,169,110,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          >
+            <SvgIcon name="sparkle" size={30} color="rgba(10,10,15,0.9)" />
+          </motion.div>
+        </motion.div>
+
+        {/* Orbiting dots */}
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: 6, height: 6, borderRadius: '50%',
+              background: `rgba(200,169,110,${0.3 + i * 0.2})`,
+              marginTop: -3, marginLeft: -3,
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3 + i * 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.4 }}
+            transformTemplate={({ rotate }) => `rotate(${rotate}) translateX(${48 + i * 14}px)`}
+          />
+        ))}
+      </div>
+
+      {/* Stage text */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={stageIdx}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.4 }}
+          style={{ textAlign: 'center', marginBottom: 40 }}
+        >
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#F5F0E8', marginBottom: 6 }}>
+            {stages[stageIdx]?.label}
+          </div>
+          <div style={{ fontSize: 13, color: 'rgba(245,240,232,0.45)' }}>
+            {stages[stageIdx]?.sub}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Progress bar */}
+      <div style={{ width: 240, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+        <motion.div
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          style={{ height: '100%', background: 'linear-gradient(90deg, rgba(200,169,110,0.6), #C8A96E)', borderRadius: 2 }}
+        />
+      </div>
+
+      {/* Category dots (only on initial load) */}
+      {groupIndex === 0 && (
+        <div style={{ display: 'flex', gap: 20, marginTop: 32 }}>
+          {GROUP_META.map((gm, i) => {
+            const lit = stageIdx >= i + 2;
+            return (
+              <motion.div
+                key={gm.id}
+                animate={{ opacity: lit ? 1 : 0.25, scale: lit ? 1 : 0.85 }}
+                transition={{ duration: 0.5 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: lit ? `${gm.color}20` : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${lit ? gm.color + '50' : 'rgba(255,255,255,0.06)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.5s',
+                }}>
+                  <SvgIcon name={gm.icon} size={14} color={lit ? gm.color : 'rgba(255,255,255,0.2)'} />
+                </div>
+                <div style={{ fontSize: 9, color: lit ? gm.color : 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, transition: 'color 0.5s' }}>
+                  {gm.name.split(' ')[0]}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

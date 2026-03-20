@@ -334,19 +334,11 @@ Show you've been paying attention."""
         
         date_context = f"This conversation happened on {conversation_date}. " if conversation_date else ""
         
-        prompt = f"""Based on this conversation, generate a concise, meaningful journal entry title.
+        prompt = f"""Write a journal title for this conversation. Under 8 words. Raw, honest, personal — like something you'd actually write in a diary, not a LinkedIn post. No gerunds like "Navigating" or "Finding". Capture the feeling, not just the topic.
 
-    {date_context}
-    Conversation:
-    {conversation_text[:500]}
-    
-    Requirements:
-    - One sentence only (max 10 words)
-    - Captures the emotional or thematic essence
-    - Professional yet personal
-    - Present tense or gerund form (e.g., "Navigating Difficult Conversations", "Finding Peace in Uncertainty")
-    
-    Respond with ONLY the title, nothing else."""
+{date_context}Conversation: {conversation_text[:300]}
+
+Reply with ONLY the title."""
         
         try:
             response = await self.engine.generate(prompt, [])
@@ -368,21 +360,21 @@ Show you've been paying attention."""
         
         date_context = f"This conversation happened on {conversation_date}. " if conversation_date else ""
         
-        prompt = f"""Summarize this conversation as a journal entry. 
-    
-    {date_context}
-    Conversation:
-    {conversation_text[:2000]}
-    
-    Requirements:
-    - Capture key themes, realizations, and emotional journey
-    - 200-400 words
-    - First person perspective (from user's viewpoint)
-    - Professional yet warm tone
-    - Include any breakthrough moments or insights
-    - Organize into clear paragraphs
-    
-    Write the journal entry summary directly."""
+        prompt = f"""You are Serenity. Write this person's journal entry from their conversation. Write AS them, in first person, in their voice.
+
+{date_context}Conversation:
+{conversation_text[:2000]}
+
+Rules:
+- 3-4 tight paragraphs, 120-160 words total
+- Lead with how they felt, not what happened
+- Short punchy sentences — real diary rhythm, not flowing prose
+- Pull 1 raw thought or quote from the convo if something stands out
+- End on the emotional truth of the moment, not a motivational closer
+- No AI-isms: never write "I found myself", "It became clear", "I realized that"
+- Write like a human who just lived this
+
+Write the entry directly. No title."""
         
         try:
             response = await self.engine.generate(prompt, [])
@@ -410,12 +402,19 @@ Show you've been paying attention."""
 
         pattern_text = " → ".join(day_lines) if day_lines else "sporadic check-ins"
 
-        prompt = f"""You are Serenity, a caring AI companion. Write a personal 2-3 sentence reflection on this user's emotional patterns over the past {days} days.
+        prompt = f"""You are Serenity. Write a 2-3 sentence reflection on this person's emotional week.
 
-Dominant emotion: {dominant_emotion} ({dominance_pct:.0%} of {total_logs} check-ins)
-Daily pattern: {pattern_text}
+Dominant: {dominant_emotion} ({dominance_pct:.0%} of {total_logs} check-ins)
+Pattern: {pattern_text}
 
-Write like a friend who has been paying attention — notice shifts, acknowledge what you see, end with something grounded. No headers, no bullets. Don't start with "This week" or "Over the past". Write only the reflection."""
+Rules:
+- Notice what shifted, not just what dominated
+- Sound like someone who's been watching closely, not reading a spreadsheet
+- End grounded — not inspirational, not clinical
+- Never start with: "This week", "Over the past", "It looks like", "I notice", "Your emotions"
+- No headers, no bullets
+
+Write only the reflection."""
 
         try:
             response = await self.engine.generate(prompt, [])
@@ -426,22 +425,20 @@ Write like a friend who has been paying attention — notice shifts, acknowledge
 
     async def generate_serenity_thought(self, summary: str, emotion_label: str = "neutral") -> str:
         """Generate professional insight/reflection as Serenity Thought."""
-        prompt = f"""Based on this conversation summary and emotional context, generate a brief, professional insight.
+        prompt = f"""You are Serenity. Read this and write one quiet insight — the kind a very wise, perceptive friend might offer after really listening.
 
-Summary:
-{summary[:500]}
-
+Summary: {summary[:500]}
 Emotion: {emotion_label}
 
-Requirements:
-- One short paragraph (3-5 sentences max)
-- Professional yet compassionate tone
-- Focus on insight, wisdom, or forward-looking perspective
-- Start with a reflective phrase like "In this moment..." or "This journey reveals..."
-- Avoid being preachy or dismissive
-- Contribute wisdom without judgment
+Rules:
+- 2-4 sentences, no more
+- Don't label or name what they're feeling
+- Don't start with "In this moment", "This journey", "It seems", or "I notice"
+- Speak TO them directly, not about them
+- Say something specific and true they may not have said to themselves yet
+- No comfort-food wisdom: not "you're stronger than you think", not "it's okay to feel this way"
 
-Write only the insight paragraph."""
+Write only the insight."""
         
         try:
             response = await self.engine.generate(prompt, [])

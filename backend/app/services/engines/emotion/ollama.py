@@ -12,12 +12,14 @@ class GeminiEmotionEngine(EmotionEngine):
     VALID_EMOTIONS = {"sadness", "joy", "fear", "anger", "surprise", "disgust", "neutral"}
 
     SYSTEM_PROMPT = (
-        "You are an emotion classifier for a mental health app. "
-        "Given a user's message, analyze the emotional tone and classify it.\n\n"
-        "Available emotions: sadness, joy, fear, anger, surprise, disgust, neutral\n\n"
-        "You may think about what the user is expressing and write out your reasoning. "
-        "When you are finished, you MUST output the final emotion word wrapped in XML tags "
-        "on a new line like this: <emotion>label</emotion>"
+        "Classify the primary emotion in this mental health app message.\n\n"
+        "Labels: sadness, joy, fear, anger, surprise, disgust, neutral\n\n"
+        "Rules:\n"
+        "- Pick the DOMINANT emotion, even in mixed states\n"
+        "- 'neutral' = genuinely calm or fine, NOT when uncertain\n"
+        "- Context over literal words: 'I'm so tired' = sadness; 'I can't do this' = sadness or fear\n"
+        "- Fear covers: anxious, stressed, overwhelmed, worried\n\n"
+        "Output ONLY: <emotion>label</emotion>"
     )
 
     def __init__(self):

@@ -2,8 +2,9 @@
  * Copyright (c) 2026 Nipun Sujesh. All rights reserved.
  * Licensed under the AGPLv3. See LICENSE file in the project root for details.
  *
- * GoalBuilder — Obsidian Command aesthetic
- * Flex-column layout · DM Serif Display × Outfit · No absolute-position fragility
+ * GoalBuilder — Sanctum aesthetic
+ * Playfair Display × Cormorant Garamond × DM Sans
+ * Warm dark #0d0a08 · Amber glass · Fireflies · Quote cycling
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -12,11 +13,23 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { SvgIcon } from '../../components/icons/SvgIcon';
 import { apiClient } from '../../services/apiClient';
-import { MomentumBar } from '../../components/MomentumBar/MomentumBar';
 import { PhaseUnlockModal } from '../../components/PhaseUnlockModal/PhaseUnlockModal';
 import { PulseCheckModal } from '../../components/PulseCheckModal/PulseCheckModal';
 import OnboardingFlow, { ONBOARDING_DRAFT_KEY } from './components/Onboarding/OnboardingFlow';
 import styles from './GoalBuilder.module.css';
+
+// ── Motivational quotes (Cormorant Garamond italic) ──────────────────────────
+
+const QUOTES = [
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Excellence is not a destination but a continuous journey that never ends.", author: "Brian Tracy" },
+  { text: "Small disciplines repeated with consistency every day lead to great achievements.", author: "John C. Maxwell" },
+  { text: "Do not wait; the time will never be just right. Start where you stand.", author: "Napoleon Hill" },
+  { text: "What you do today can improve all your tomorrows.", author: "Ralph Marston" },
+  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+  { text: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
+  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+];
 
 const STEP_NAMES = ['Welcome', 'Your Goal', 'Personalization', 'Schedule', 'Launch'];
 
@@ -42,7 +55,19 @@ const TABS = [
   { id: 'rules',  label: 'Rules',    icon: 'compass'  },
 ];
 
-// ── Icon components (inline SVG, no external deps) ──────────────────────────
+// ── Fireflies ─────────────────────────────────────────────────────────────────
+
+function Fireflies() {
+  return (
+    <div className={styles.fireflies} aria-hidden="true">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className={styles.firefly} />
+      ))}
+    </div>
+  );
+}
+
+// ── Inline SVG icons ──────────────────────────────────────────────────────────
 
 function ChevronLeft() {
   return (
@@ -111,36 +136,39 @@ function RefreshIcon() {
   );
 }
 
-// ── Arc Ring ────────────────────────────────────────────────────────────────
+// ── Hero Arc Ring (96px, Playfair numbers) ────────────────────────────────────
 
 function ArcRing({ progress, daysRemaining }) {
-  const r = 22;
+  const r    = 42;
   const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - Math.min(progress, 100) / 100);
+  const off  = circ * (1 - Math.min(progress, 100) / 100);
 
   return (
-    <div className={styles.ringWrap}>
-      <svg width="52" height="52" className={styles.ringSvg}>
+    <div className={styles.ringHero}>
+      <svg width="96" height="96" className={styles.ringSvg}>
         <defs>
-          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#C8A96E"/>
+          <linearGradient id="arcGradHero" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#C8A96E"/>
+            <stop offset="60%"  stopColor="#d4b97e"/>
             <stop offset="100%" stopColor="#6EE7B7"/>
           </linearGradient>
         </defs>
-        <circle cx="26" cy="26" r={r}
-          strokeWidth="3.5" stroke="rgba(255,255,255,0.07)" fill="none"/>
-        <motion.circle cx="26" cy="26" r={r}
-          strokeWidth="3.5" stroke="url(#arcGrad)" fill="none"
+        {/* Track */}
+        <circle cx="48" cy="48" r={r}
+          strokeWidth="3" stroke="rgba(255,255,255,0.06)" fill="none"/>
+        {/* Progress arc */}
+        <motion.circle cx="48" cy="48" r={r}
+          strokeWidth="3" stroke="url(#arcGradHero)" fill="none"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.6, ease: 'easeOut' }}
+          animate={{ strokeDashoffset: off }}
+          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         />
       </svg>
-      <div className={styles.ringLabel}>
-        <span className={styles.ringDays}>{daysRemaining}</span>
-        <span className={styles.ringDaysLabel}>days left</span>
+      <div className={styles.ringCenter}>
+        <span className={styles.ringDaysNum}>{daysRemaining}</span>
+        <span className={styles.ringDaysLbl}>days left</span>
       </div>
     </div>
   );
@@ -149,32 +177,40 @@ function ArcRing({ progress, daysRemaining }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function GoalBuilder() {
-  const { user } = useAuth();
+  const { user }  = useAuth();
   const navigate  = useNavigate();
 
-  const [activeTab,        setActiveTab]        = useState('today');
-  const [goalData,         setGoalData]         = useState(null);
-  const [isLoading,        setIsLoading]        = useState(true);
-  const [showOnboarding,   setShowOnboarding]   = useState(false);
-  const [onboardingDraft,  setOnboardingDraft]  = useState(null);
-  const [onboardingInitial,setOnboardingInitial]= useState({ step: 0, formData: null });
+  const [activeTab,         setActiveTab]         = useState('today');
+  const [goalData,          setGoalData]          = useState(null);
+  const [isLoading,         setIsLoading]         = useState(true);
+  const [showOnboarding,    setShowOnboarding]    = useState(false);
+  const [onboardingDraft,   setOnboardingDraft]   = useState(null);
+  const [onboardingInitial, setOnboardingInitial] = useState({ step: 0, formData: null });
 
   // Phase unlock
-  const [phaseUnlock,  setPhaseUnlock]  = useState(null);
-  const [showPhaseModal,setShowPhaseModal]= useState(false);
+  const [phaseUnlock,    setPhaseUnlock]    = useState(null);
+  const [showPhaseModal, setShowPhaseModal] = useState(false);
 
   // Pulse check
   const [showPulseCheck, setShowPulseCheck] = useState(false);
 
   // Options menu
   const [menuOpen,    setMenuOpen]    = useState(false);
-  const [deleteModal, setDeleteModal] = useState(null); // null | 'delete' | 'restart'
+  const [deleteModal, setDeleteModal] = useState(null);
   const [isDeleting,  setIsDeleting]  = useState(false);
   const menuRef = useRef(null);
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  // Quote cycling
+  const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * QUOTES.length));
+
+  // ── Effects ────────────────────────────────────────────────────────────────
 
   useEffect(() => { fetchGoals(); }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setQuoteIdx(i => (i + 1) % QUOTES.length), 8000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -217,7 +253,6 @@ export default function GoalBuilder() {
   const loadGoal = useCallback(async (id) => {
     try {
       const data = await apiClient.get(`/api/goals/${id}`);
-      // Detect new phase unlock
       if (goalData?.phases && data.phases) {
         const prev = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
         const newP = data.phases.find((p) => p.is_unlocked && !prev.has(p.id));
@@ -275,12 +310,15 @@ export default function GoalBuilder() {
   if (isLoading) {
     return (
       <div className={styles.loadingScreen}>
-        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
+        <div className={styles.bg} />
+        <div className={styles.bgOrb1} />
+        <div className={styles.bgOrb2} />
+        <div className={styles.bgNoise} />
+        <Fireflies />
         <motion.div
           className={styles.spinner}
           animate={{ rotate: 360 }}
           transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
-          style={{ borderRadius: '50%' }}
         />
         <span className={styles.loadingLabel}>Loading your journey</span>
       </div>
@@ -294,7 +332,11 @@ export default function GoalBuilder() {
     const goalTitle = onboardingDraft.formData?.goal?.title;
     return (
       <div className={styles.draftScreen}>
-        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
+        <div className={styles.bg} />
+        <div className={styles.bgOrb1} />
+        <div className={styles.bgOrb2} />
+        <div className={styles.bgNoise} />
+        <Fireflies />
         <motion.div
           className={styles.draftCard}
           initial={{ opacity: 0, scale: 0.94, y: 16 }}
@@ -355,7 +397,7 @@ export default function GoalBuilder() {
     );
   }
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
+  // ── Onboarding ─────────────────────────────────────────────────────────────
 
   if (showOnboarding) {
     return (
@@ -368,12 +410,16 @@ export default function GoalBuilder() {
     );
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────────
+  // ── Empty state ────────────────────────────────────────────────────────────
 
   if (!goalData) {
     return (
       <div className={styles.emptyScreen}>
-        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
+        <div className={styles.bg} />
+        <div className={styles.bgOrb1} />
+        <div className={styles.bgOrb2} />
+        <div className={styles.bgNoise} />
+        <Fireflies />
         <motion.button
           className={styles.emptyBackBtn}
           onClick={handleBack}
@@ -407,38 +453,44 @@ export default function GoalBuilder() {
     );
   }
 
-  // ── Main view ─────────────────────────────────────────────────────────────
+  // ── Derived values ─────────────────────────────────────────────────────────
 
-  const goal          = goalData.goal;
-  const todayLog      = goalData.recent_logs?.[0] || {};
-  const completedItems= todayLog.completed_items
+  const goal           = goalData.goal;
+  const todayLog       = goalData.recent_logs?.[0] || {};
+  const completedItems = todayLog.completed_items
     ? typeof todayLog.completed_items === 'string'
       ? JSON.parse(todayLog.completed_items)
       : todayLog.completed_items
     : {};
   const completedToday  = Object.values(completedItems).filter(Boolean).length;
   const totalSchedule   = goalData.schedule?.length || 0;
-  const completionPct   = totalSchedule > 0 ? (completedToday / totalSchedule) * 100 : 0;
 
   const dayNumber       = Math.floor((new Date() - new Date(goal.start_date)) / 86400000) + 1;
   const daysRemaining   = Math.max(goal.duration_days - dayNumber, 0);
-  const overallProgress = (dayNumber / goal.duration_days) * 100;
+  const overallProgress = Math.min((dayNumber / goal.duration_days) * 100, 100);
+
+  const currentQuote = QUOTES[quoteIdx];
+
+  // ── Main view ──────────────────────────────────────────────────────────────
 
   return (
     <div className={styles.container}>
-      {/* Background layers */}
-      <div className={styles.bg} aria-hidden />
-      <div className={styles.bgOrb1} aria-hidden />
-      <div className={styles.bgOrb2} aria-hidden />
-      <div className={styles.bgNoise} aria-hidden />
 
-      {/* ── Header Shell ─────────────────────────────────────────────────── */}
+      {/* ── Background layers ─────────────────────────────────────────────── */}
+      <div className={styles.bg}      aria-hidden />
+      <div className={styles.bgOrb1}  aria-hidden />
+      <div className={styles.bgOrb2}  aria-hidden />
+      <div className={styles.bgNoise} aria-hidden />
+      <Fireflies />
+
+      {/* ── Header Shell ──────────────────────────────────────────────────── */}
       <motion.div
         className={styles.headerShell}
-        initial={{ opacity: 0, y: -12 }}
+        initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
       >
+
         {/* Top chrome: Back + Options */}
         <div className={styles.topChrome}>
           <motion.button
@@ -468,16 +520,22 @@ export default function GoalBuilder() {
               {menuOpen && (
                 <motion.div
                   className={styles.dropdown}
-                  initial={{ opacity: 0, scale: 0.9, y: -6 }}
+                  initial={{ opacity: 0, scale: 0.88, y: -6 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -6 }}
-                  transition={{ duration: 0.16, ease: [0.34, 1.56, 0.64, 1] }}
+                  exit={{ opacity: 0, scale: 0.88, y: -6 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <button className={styles.dropItem} onClick={() => { setMenuOpen(false); setDeleteModal('restart'); }}>
+                  <button
+                    className={styles.dropItem}
+                    onClick={() => { setMenuOpen(false); setDeleteModal('restart'); }}
+                  >
                     <RestartIcon /> Start New Journey
                   </button>
                   <div className={styles.dropDivider} />
-                  <button className={`${styles.dropItem} ${styles.dropItemDanger}`} onClick={() => { setMenuOpen(false); setDeleteModal('delete'); }}>
+                  <button
+                    className={`${styles.dropItem} ${styles.dropItemDanger}`}
+                    onClick={() => { setMenuOpen(false); setDeleteModal('delete'); }}
+                  >
                     <TrashIcon /> Delete Goal
                   </button>
                 </motion.div>
@@ -486,87 +544,123 @@ export default function GoalBuilder() {
           </div>
         </div>
 
-        {/* Goal identity */}
-        <div className={styles.goalBlock}>
-          <motion.div
-            className={styles.goalTitle}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            {goal.title}
-          </motion.div>
-
-          <div className={styles.goalMeta}>
-            <span className={styles.themeBadge}>{goal.theme}</span>
-            <span className={styles.metaDot} />
-            <span>Day {dayNumber} of {goal.duration_days}</span>
+        {/* Title + Ring row */}
+        <div className={styles.titleRingRow}>
+          <div className={styles.titleBlock}>
+            <motion.div
+              className={styles.goalTitle}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {goal.title}
+            </motion.div>
+            <motion.div
+              className={styles.goalMeta}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.16 }}
+            >
+              <span className={styles.themeBadge}>{goal.theme}</span>
+              <span className={styles.metaSep} />
+              <span className={styles.metaDay}>Day {dayNumber} of {goal.duration_days}</span>
+            </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <ArcRing progress={overallProgress} daysRemaining={daysRemaining} />
+          </motion.div>
         </div>
 
-        {/* Stats row */}
+        {/* Stat Cards */}
         <motion.div
-          className={styles.statsRow}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.18 }}
+          className={styles.statCards}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Streak */}
-          <div className={styles.statChip}>
-            <div className={styles.statNumGroup}>
-              <span className={styles.statNum}>{goal.current_streak}</span>
-              <span className={styles.statLabel}>Streak</span>
-            </div>
+          <div className={styles.statCard}>
+            <span className={styles.statCardValue}>{goal.current_streak}</span>
+            <span className={styles.statCardSub}>Day Streak</span>
           </div>
 
-          <div className={styles.statDot} />
+          {/* Today */}
+          <div className={styles.statCard}>
+            <span className={`${styles.statCardValue} ${styles.statCardValueIce}`}>
+              {totalSchedule > 0 ? `${completedToday}/${totalSchedule}` : '—'}
+            </span>
+            <span className={styles.statCardSub}>Today</span>
+          </div>
 
           {/* Freezes */}
-          <div className={styles.statChip}>
-            <div className={styles.statNumGroup}>
-              <span className={`${styles.statNum} ${styles.statIceNum}`}>{goal.freezes_available || 0}</span>
-              <span className={styles.statLabel}>Freezes</span>
-            </div>
+          <div className={styles.statCard}>
+            <span className={`${styles.statCardValue} ${styles.statCardValueNeutral}`}>
+              {goal.freezes_available || 0}
+            </span>
+            <span className={styles.statCardSub}>Freezes Left</span>
           </div>
-
-          <div className={styles.statDot} />
-
-          {/* Arc ring */}
-          <ArcRing progress={overallProgress} daysRemaining={daysRemaining} />
-
-          {/* Streak recovery note */}
-          {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
-            <div className={styles.streakRecovery} style={{ marginLeft: 'auto' }}>
-              <SvgIcon name="chart" size={11} color="currentColor" />
-              {goal.total_completed_days} total days
-            </div>
-          )}
         </motion.div>
 
-        {/* Journey timeline — overall day progress */}
-        <div className={styles.journeyBar}>
-          <div className={styles.journeyBarTrack}>
+        {/* Streak recovery note */}
+        {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
+          <div className={styles.streakNote}>
+            <SvgIcon name="chart" size={11} color="currentColor" />
+            {goal.total_completed_days} total days completed
+          </div>
+        )}
+
+        {/* Journey timeline */}
+        <motion.div
+          className={styles.journeySection}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.28 }}
+        >
+          <div className={styles.journeyHead}>
+            <span className={styles.journeyLabel}>Overall Journey</span>
+            <span className={styles.journeyPct}>{Math.round(overallProgress)}%</span>
+          </div>
+          <div className={styles.journeyTrack}>
             <motion.div
-              className={styles.journeyBarFill}
+              className={styles.journeyFill}
               initial={{ width: '0%' }}
-              animate={{ width: `${Math.max(overallProgress, 0.4)}%` }}
-              transition={{ duration: 1.4, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+              animate={{ width: `${Math.max(overallProgress, 0.5)}%` }}
+              transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
             />
           </div>
+        </motion.div>
+
+        {/* Motivational quote — Cormorant Garamond italic, cycling */}
+        <div className={styles.quoteSection}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={quoteIdx}
+              className={styles.quoteInner}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className={styles.quoteMark}>"</span>
+              <span className={styles.quoteText}>{currentQuote.text}</span>
+              <span className={styles.quoteAuthor}>— {currentQuote.author}</span>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Today's completion momentum */}
-        <div className={styles.momentumWrap}>
-          <MomentumBar percentage={completionPct} />
-        </div>
       </motion.div>
 
-      {/* ── Tab Navigation ───────────────────────────────────────────────── */}
+      {/* ── Tab Navigation ────────────────────────────────────────────────── */}
       <motion.div
         className={styles.tabNav}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.25 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
       >
         <div className={styles.tabList}>
           {TABS.map((tab, i) => (
@@ -574,10 +668,10 @@ export default function GoalBuilder() {
               key={tab.id}
               className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
               onClick={() => setActiveTab(tab.id)}
-              whileTap={{ scale: 0.96 }}
-              initial={{ opacity: 0, y: 6 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.28 + i * 0.05 }}
+              transition={{ duration: 0.3, delay: 0.32 + i * 0.05 }}
             >
               <SvgIcon name={tab.icon} size={14} color="currentColor" />
               {tab.label}
@@ -593,15 +687,15 @@ export default function GoalBuilder() {
         </div>
       </motion.div>
 
-      {/* ── Tab Content (flex: 1 — fills remaining space) ────────────────── */}
+      {/* ── Tab Content ───────────────────────────────────────────────────── */}
       <div className={styles.content}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             className={styles.tabPanel}
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             <React.Suspense fallback={
@@ -610,7 +704,6 @@ export default function GoalBuilder() {
                   className={styles.spinner}
                   animate={{ rotate: 360 }}
                   transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
-                  style={{ borderRadius: '50%' }}
                 />
               </div>
             }>
@@ -637,7 +730,7 @@ export default function GoalBuilder() {
         onSubmit={() => loadGoal(goal?.id)}
       />
 
-      {/* Delete / Restart confirmation */}
+      {/* Delete / Restart confirmation modal */}
       <AnimatePresence>
         {deleteModal && (
           <motion.div
@@ -650,10 +743,10 @@ export default function GoalBuilder() {
           >
             <motion.div
               className={styles.modalCard}
-              initial={{ opacity: 0, scale: 0.86, y: 20 }}
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.86, y: 20 }}
-              transition={{ duration: 0.28, ease: [0.34, 1.56, 0.64, 1] }}
+              exit={{ opacity: 0, scale: 0.88, y: 24 }}
+              transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
             >
               <div className={`${styles.modalIcon} ${deleteModal === 'delete' ? styles.modalIconRed : styles.modalIconAmber}`}>
                 {deleteModal === 'delete' ? <WarnIcon /> : <RefreshIcon />}
@@ -664,8 +757,8 @@ export default function GoalBuilder() {
               </div>
               <div className={styles.modalBody}>
                 {deleteModal === 'restart'
-                  ? `Your current goal "${goal.title}", streaks, and all logs will be permanently removed. You'll start fresh.`
-                  : `"${goal.title}" and all progress will be permanently deleted. This can't be undone.`
+                  ? `Your current goal "${goal.title}", all streaks, phases and logs will be permanently removed. A fresh start awaits.`
+                  : `"${goal.title}" and all progress will be permanently deleted. This cannot be undone.`
                 }
               </div>
 
@@ -712,6 +805,7 @@ export default function GoalBuilder() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

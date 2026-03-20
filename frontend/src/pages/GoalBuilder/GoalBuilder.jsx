@@ -114,28 +114,28 @@ function RefreshIcon() {
 // ── Arc Ring ────────────────────────────────────────────────────────────────
 
 function ArcRing({ progress, daysRemaining }) {
-  const r = 18;
+  const r = 22;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - Math.min(progress, 100) / 100);
 
   return (
     <div className={styles.ringWrap}>
-      <svg width="44" height="44" className={styles.ringSvg}>
+      <svg width="52" height="52" className={styles.ringSvg}>
         <defs>
           <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#C8A96E"/>
             <stop offset="100%" stopColor="#6EE7B7"/>
           </linearGradient>
         </defs>
-        <circle cx="22" cy="22" r={r}
-          strokeWidth="3" stroke="rgba(255,255,255,0.06)" fill="none"/>
-        <motion.circle cx="22" cy="22" r={r}
-          strokeWidth="3" stroke="url(#arcGrad)" fill="none"
+        <circle cx="26" cy="26" r={r}
+          strokeWidth="3.5" stroke="rgba(255,255,255,0.07)" fill="none"/>
+        <motion.circle cx="26" cy="26" r={r}
+          strokeWidth="3.5" stroke="url(#arcGrad)" fill="none"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.4, ease: 'easeOut' }}
+          transition={{ duration: 1.6, ease: 'easeOut' }}
         />
       </svg>
       <div className={styles.ringLabel}>
@@ -275,7 +275,7 @@ export default function GoalBuilder() {
   if (isLoading) {
     return (
       <div className={styles.loadingScreen}>
-        <div className={styles.bg} /><div className={styles.bgNoise} />
+        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
         <motion.div
           className={styles.spinner}
           animate={{ rotate: 360 }}
@@ -294,7 +294,7 @@ export default function GoalBuilder() {
     const goalTitle = onboardingDraft.formData?.goal?.title;
     return (
       <div className={styles.draftScreen}>
-        <div className={styles.bg} /><div className={styles.bgNoise} />
+        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
         <motion.div
           className={styles.draftCard}
           initial={{ opacity: 0, scale: 0.94, y: 16 }}
@@ -373,7 +373,7 @@ export default function GoalBuilder() {
   if (!goalData) {
     return (
       <div className={styles.emptyScreen}>
-        <div className={styles.bg} /><div className={styles.bgNoise} />
+        <div className={styles.bg} /><div className={styles.bgOrb1} /><div className={styles.bgOrb2} /><div className={styles.bgNoise} />
         <motion.button
           className={styles.emptyBackBtn}
           onClick={handleBack}
@@ -426,8 +426,10 @@ export default function GoalBuilder() {
 
   return (
     <div className={styles.container}>
-      {/* Background (behind everything) */}
+      {/* Background layers */}
       <div className={styles.bg} aria-hidden />
+      <div className={styles.bgOrb1} aria-hidden />
+      <div className={styles.bgOrb2} aria-hidden />
       <div className={styles.bgNoise} aria-hidden />
 
       {/* ── Header Shell ─────────────────────────────────────────────────── */}
@@ -541,7 +543,19 @@ export default function GoalBuilder() {
           )}
         </motion.div>
 
-        {/* Momentum bar */}
+        {/* Journey timeline — overall day progress */}
+        <div className={styles.journeyBar}>
+          <div className={styles.journeyBarTrack}>
+            <motion.div
+              className={styles.journeyBarFill}
+              initial={{ width: '0%' }}
+              animate={{ width: `${Math.max(overallProgress, 0.4)}%` }}
+              transition={{ duration: 1.4, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+            />
+          </div>
+        </div>
+
+        {/* Today's completion momentum */}
         <div className={styles.momentumWrap}>
           <MomentumBar percentage={completionPct} />
         </div>

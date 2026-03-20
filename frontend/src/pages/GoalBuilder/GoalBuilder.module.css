@@ -40,10 +40,52 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% -5%, rgba(200, 169, 110, 0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(110, 180, 220, 0.03) 0%, transparent 60%),
-    var(--bg);
+  background: var(--bg);
+}
+
+/* Breathing ambient orbs */
+.bgOrb1 {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse at center,
+    rgba(200, 169, 110, 0.09) 0%,
+    rgba(200, 169, 110, 0.03) 45%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: breatheAmber 8s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+.bgOrb2 {
+  position: absolute;
+  bottom: -80px;
+  right: -100px;
+  width: 500px;
+  height: 400px;
+  background: radial-gradient(ellipse at center,
+    rgba(100, 200, 210, 0.05) 0%,
+    rgba(100, 200, 210, 0.02) 45%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: breatheTeal 11s ease-in-out infinite;
+  animation-delay: -4s;
+  border-radius: 50%;
+}
+
+@keyframes breatheAmber {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+}
+
+@keyframes breatheTeal {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
 }
 
 .bgNoise {
@@ -185,14 +227,15 @@
 
 .goalTitle {
   font-family: 'DM Serif Display', Georgia, serif;
-  font-size: clamp(20px, 3vw, 26px);
+  font-size: clamp(24px, 3.5vw, 32px);
   font-weight: 400;
   color: var(--text);
-  line-height: 1.15;
-  letter-spacing: -0.3px;
-  margin-bottom: 4px;
-  /* Elegant text shadow for depth */
-  text-shadow: 0 1px 24px rgba(200, 169, 110, 0.12);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+  text-shadow:
+    0 1px 32px rgba(200, 169, 110, 0.18),
+    0 2px 64px rgba(200, 169, 110, 0.06);
 }
 
 .goalMeta {
@@ -230,14 +273,14 @@
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 14px 24px 0;
+  padding: 16px 24px 0;
 }
 
 .statChip {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 0 16px 0 0;
+  padding: 0 20px 0 0;
 }
 
 .statChip:first-child {
@@ -246,9 +289,9 @@
 
 .statDot {
   width: 1px;
-  height: 28px;
+  height: 36px;
   background: var(--border);
-  margin: 0 16px 0 0;
+  margin: 0 20px 0 0;
 }
 
 .statNumGroup {
@@ -256,38 +299,60 @@
   flex-direction: column;
 }
 
+/* Large, emotionally resonant stat number */
 .statNum {
-  font-family: 'Outfit', inherit;
-  font-size: 22px;
-  font-weight: 700;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 38px;
+  font-weight: 400;
   color: var(--gold);
   line-height: 1;
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
+  /* Warm amber glow — streak is alive */
+  text-shadow:
+    0 0 20px rgba(200, 169, 110, 0.35),
+    0 0 40px rgba(200, 169, 110, 0.15);
+  transition: text-shadow 0.4s ease;
+}
+
+.statNum:hover {
+  text-shadow:
+    0 0 24px rgba(200, 169, 110, 0.55),
+    0 0 48px rgba(200, 169, 110, 0.25);
 }
 
 .statIceNum {
   color: var(--ice);
+  text-shadow:
+    0 0 20px rgba(126, 200, 227, 0.35),
+    0 0 40px rgba(126, 200, 227, 0.12);
+}
+
+.statIceNum:hover {
+  text-shadow:
+    0 0 24px rgba(126, 200, 227, 0.55),
+    0 0 48px rgba(126, 200, 227, 0.2);
 }
 
 .statLabel {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 2px;
+  letter-spacing: 1.2px;
+  margin-top: 4px;
 }
 
-/* Progress ring inside stats */
+/* Progress ring inside stats — larger and more prominent */
 .ringWrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ringSvg {
   transform: rotate(-90deg);
   overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(200, 169, 110, 0.2));
 }
 
 .ringLabel {
@@ -296,20 +361,48 @@
 }
 
 .ringDays {
-  font-size: 22px;
-  font-weight: 700;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 38px;
+  font-weight: 400;
   color: var(--text);
   line-height: 1;
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
 }
 
 .ringDaysLabel {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 2px;
+  letter-spacing: 1.2px;
+  margin-top: 4px;
+}
+
+/* Journey progress bar — full-width timeline */
+.journeyBar {
+  padding: 14px 24px 0;
+}
+
+.journeyBarTrack {
+  position: relative;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.journeyBarFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    rgba(200, 169, 110, 0.6),
+    rgba(200, 169, 110, 0.9),
+    rgba(110, 231, 183, 0.6));
+  box-shadow: 0 0 8px rgba(200, 169, 110, 0.4);
+  transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Streak recovery */
@@ -374,14 +467,26 @@
   color: var(--text);
 }
 
+.tabActive::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 120%,
+    rgba(200, 169, 110, 0.08) 0%,
+    transparent 70%);
+  pointer-events: none;
+  border-radius: 0;
+}
+
 .tabIndicator {
   position: absolute;
   bottom: 0;
-  left: 12px;
-  right: 12px;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
   border-radius: 1px;
+  box-shadow: 0 0 8px rgba(200, 169, 110, 0.5), 0 0 16px rgba(200, 169, 110, 0.2);
 }
 
 /* ── Scrollable Content ── */

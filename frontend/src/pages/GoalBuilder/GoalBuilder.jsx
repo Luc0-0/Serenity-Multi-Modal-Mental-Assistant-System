@@ -3,11 +3,12 @@
  * Licensed under the AGPLv3. See LICENSE file in the project root for details.
  *
  * GoalBuilder — Main goal page with hero arc, tabs, phase unlock detection,
- * pulse check trigger, and streak recovery display.
+ * pulse check trigger, streak recovery, back nav, and goal management menu.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { SvgIcon } from '../../components/icons/SvgIcon';
 import { apiClient } from '../../services/apiClient';
@@ -43,11 +44,12 @@ const TABS = [
 
 export default function GoalBuilder() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('today');
   const [goalData, setGoalData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingDraft, setOnboardingDraft] = useState(null); // { step, formData, savedAt }
+  const [onboardingDraft, setOnboardingDraft] = useState(null);
   const [onboardingInitial, setOnboardingInitial] = useState({ step: 0, formData: null });
 
   // Phase unlock celebration
@@ -57,20 +59,37 @@ export default function GoalBuilder() {
   // Pulse check
   const [showPulseCheck, setShowPulseCheck] = useState(false);
 
+  // Goal management menu
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteMode, setDeleteMode] = useState('delete'); // 'delete' | 'restart'
+  const [isDeleting, setIsDeleting] = useState(false);
+  const optionsRef = useRef(null);
+
   useEffect(() => {
     checkUserGoals();
   }, []);
+
+  // Close options menu on outside click
+  useEffect(() => {
+    if (!showOptionsMenu) return;
+    const handler = (e) => {
+      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
+        setShowOptionsMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showOptionsMenu]);
 
   const checkUserGoals = async () => {
     try {
       const goals = await apiClient.get('/api/goals');
       if (goals.length === 0) {
-        // Check for an in-progress draft before launching fresh onboarding
         try {
           const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
           if (raw) {
             const draft = JSON.parse(raw);
-            // Only offer resume if they got past the welcome step (have a goal title)
             if (draft?.step > 0 && draft?.formData?.goal?.title) {
               setOnboardingDraft(draft);
               setIsLoading(false);
@@ -95,7 +114,6 @@ export default function GoalBuilder() {
     try {
       const data = await apiClient.get(`/api/goals/${goalId}`);
 
-      // Detect newly unlocked phases (compare with previous state)
       if (goalData?.phases && data.phases) {
         const prevUnlocked = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
         const newlyUnlocked = data.phases.find((p) => p.is_unlocked && !prevUnlocked.has(p.id));
@@ -106,8 +124,6 @@ export default function GoalBuilder() {
       }
 
       setGoalData(data);
-
-      // Check if pulse check is due
       checkPulseCheck(goalId);
     } catch (error) {
       console.error('Failed to load goal details:', error);
@@ -118,11 +134,9 @@ export default function GoalBuilder() {
     try {
       const data = await apiClient.get(`/api/goals/${goalId}/pulse-check`);
       if (data.is_due) {
-        setTimeout(() => setShowPulseCheck(true), 2000); // Slight delay for UX
+        setTimeout(() => setShowPulseCheck(true), 2000);
       }
-    } catch {
-      // Silent fail
-    }
+    } catch {}
   };
 
   const handleOnboardingComplete = async (goalId) => {
@@ -130,6 +144,42 @@ export default function GoalBuilder() {
     await loadGoalDetails(goalId);
   };
 
+  const handleDeleteGoal = async () => {
+    if (!goalData?.goal?.id) return;
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/api/goals/${goalData.goal.id}`);
+      setGoalData(null);
+      setShowDeleteConfirm(false);
+      setShowOptionsMenu(false);
+      if (deleteMode === 'restart') {
+        try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch {}
+        setOnboardingInitial({ step: 0, formData: null });
+        setShowOnboarding(true);
+      }
+      // On plain delete, show empty state (goalData=null, showOnboarding=false)
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const openDeleteConfirm = (mode) => {
+    setDeleteMode(mode);
+    setShowOptionsMenu(false);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/check-in');
+    }
+  };
+
+  // ── Loading ──
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
@@ -143,7 +193,7 @@ export default function GoalBuilder() {
     );
   }
 
-  // Draft resume prompt
+  // ── Draft resume prompt ──
   if (onboardingDraft) {
     const stepName = STEP_NAMES[onboardingDraft.step] || `Step ${onboardingDraft.step + 1}`;
     const goalTitle = onboardingDraft.formData?.goal?.title;
@@ -164,7 +214,6 @@ export default function GoalBuilder() {
             boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
           }}
         >
-          {/* Icon */}
           <div style={{
             width: 52, height: 52, borderRadius: 16,
             background: 'rgba(200,169,110,0.1)',
@@ -174,7 +223,6 @@ export default function GoalBuilder() {
           }}>
             <SvgIcon name="target" size={26} color="#C8A96E" />
           </div>
-
           <div style={{ fontSize: 22, fontWeight: 700, color: '#F5F0E8', marginBottom: 8 }}>
             Pick up where you left off
           </div>
@@ -185,8 +233,6 @@ export default function GoalBuilder() {
               <span style={{ color: 'rgba(245,240,232,0.35)' }}> · {timeAgo(onboardingDraft.savedAt)}</span>
             )}
           </div>
-
-          {/* Step progress dots */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
             {STEP_NAMES.map((_, i) => (
               <div key={i} style={{
@@ -196,11 +242,9 @@ export default function GoalBuilder() {
                   : i === onboardingDraft.step
                   ? 'rgba(200,169,110,0.4)'
                   : 'rgba(255,255,255,0.06)',
-                transition: 'all 0.3s',
               }} />
             ))}
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <motion.button
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
@@ -256,16 +300,39 @@ export default function GoalBuilder() {
   if (!goalData) {
     return (
       <div className={styles.emptyState}>
-        <div className={styles.emptyStateIcon}>
-          <SvgIcon name="clipboard" size={64} color="#C8A96E" />
+        <div className={styles.background}>
+          <div className={styles.gradientOverlay} />
+          <div className={styles.noiseTexture} />
         </div>
-        <div className={styles.emptyStateTitle}>No active goals found</div>
-        <div className={styles.emptyStateSubtitle}>
-          Create your first goal to begin your transformation journey
-        </div>
-        <button className={styles.createGoalButton} onClick={() => setShowOnboarding(true)}>
-          Create Goal
+        {/* Back button on empty state */}
+        <button className={styles.backButtonEmpty} onClick={handleBack} aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
         </button>
+        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+          >
+            <div className={styles.emptyStateIcon}>
+              <SvgIcon name="target" size={56} color="#C8A96E" />
+            </div>
+            <div className={styles.emptyStateTitle}>No active goal</div>
+            <div className={styles.emptyStateSubtitle}>
+              Define your mission and Serenity will build a personalized roadmap for you.
+            </div>
+            <motion.button
+              className={styles.createGoalButton}
+              onClick={() => setShowOnboarding(true)}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Create Your Goal
+            </motion.button>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -281,12 +348,10 @@ export default function GoalBuilder() {
   const totalSchedule = goalData.schedule?.length || 0;
   const completionPct = totalSchedule > 0 ? (completedToday / totalSchedule) * 100 : 0;
 
-  // Hero arc calculations
   const dayNumber = Math.floor((new Date() - new Date(goal.start_date)) / 86400000) + 1;
   const daysRemaining = Math.max(goal.duration_days - dayNumber, 0);
   const overallProgress = Math.min((dayNumber / goal.duration_days) * 100, 100);
 
-  // Arc SVG parameters
   const arcRadius = 52;
   const arcCircumference = 2 * Math.PI * arcRadius;
   const arcStroke = arcCircumference * (1 - overallProgress / 100);
@@ -306,23 +371,86 @@ export default function GoalBuilder() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
       >
+        {/* Back + Options row */}
+        <div className={styles.headerTopRow}>
+          <motion.button
+            className={styles.backButton}
+            onClick={handleBack}
+            whileHover={{ x: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            aria-label="Go back"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Back</span>
+          </motion.button>
+
+          {/* Options menu */}
+          <div className={styles.optionsWrapper} ref={optionsRef}>
+            <motion.button
+              className={styles.optionsButton}
+              onClick={() => setShowOptionsMenu((v) => !v)}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              aria-label="Goal options"
+              aria-expanded={showOptionsMenu}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+              </svg>
+            </motion.button>
+
+            <AnimatePresence>
+              {showOptionsMenu && (
+                <motion.div
+                  className={styles.optionsDropdown}
+                  initial={{ opacity: 0, scale: 0.92, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: -8 }}
+                  transition={{ duration: 0.18, ease: [0.34, 1.56, 0.64, 1] }}
+                >
+                  <button
+                    className={styles.optionsMenuItem}
+                    onClick={() => openDeleteConfirm('restart')}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Start New Journey
+                  </button>
+                  <div className={styles.optionsDivider} />
+                  <button
+                    className={`${styles.optionsMenuItem} ${styles.optionsMenuItemDanger}`}
+                    onClick={() => openDeleteConfirm('delete')}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Delete Goal
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Main header content */}
         <div className={styles.headerContent}>
           <div className={styles.goalInfo}>
             <div className={styles.goalTitle}>{goal.title}</div>
             <div className={styles.goalMeta}>
               <span style={{ textTransform: 'capitalize' }}>{goal.theme}</span>
-              {' '} Day {dayNumber} of {goal.duration_days}
+              {' · '} Day {dayNumber} of {goal.duration_days}
             </div>
-
-            {/* Streak recovery: show total completed if streak broke */}
             {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
               <div style={{
-                fontSize: 11,
-                color: 'rgba(200,169,110,0.6)',
-                marginTop: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
+                fontSize: 11, color: 'rgba(200,169,110,0.6)', marginTop: 4,
+                display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 <SvgIcon name="chart" size={12} color="rgba(200,169,110,0.5)" />
                 {goal.total_completed_days} total days completed
@@ -331,7 +459,6 @@ export default function GoalBuilder() {
           </div>
 
           <div className={styles.stats}>
-            {/* Streak */}
             <motion.div className={styles.stat} whileHover={{ scale: 1.05 }}>
               <div className={styles.statValue}>
                 <SvgIcon name="flame" size={14} color="#C8A96E" />
@@ -340,7 +467,6 @@ export default function GoalBuilder() {
               <div className={styles.statLabel}>Streak</div>
             </motion.div>
 
-            {/* Freezes */}
             <motion.div className={styles.stat} whileHover={{ scale: 1.05 }}>
               <div className={styles.statValue}>
                 <SvgIcon name="snowflake" size={14} color="#6CCDF0" />
@@ -349,26 +475,14 @@ export default function GoalBuilder() {
               <div className={styles.statLabel}>Freezes</div>
             </motion.div>
 
-            {/* Hero Arc — Days Remaining */}
             <div className={styles.progressRing}>
               <svg width="68" height="68" className={styles.progressSvg}>
-                {/* Track */}
-                <circle
-                  cx="34"
-                  cy="34"
-                  r={arcRadius / 1.04}
-                  strokeWidth="3.5"
-                  stroke="rgba(255,255,255,0.06)"
-                  fill="transparent"
+                <circle cx="34" cy="34" r={arcRadius / 1.04}
+                  strokeWidth="3.5" stroke="rgba(255,255,255,0.06)" fill="transparent"
                 />
-                {/* Progress arc */}
                 <motion.circle
-                  cx="34"
-                  cy="34"
-                  r={arcRadius / 1.04}
-                  strokeWidth="3.5"
-                  stroke="url(#heroArcGradient)"
-                  fill="transparent"
+                  cx="34" cy="34" r={arcRadius / 1.04}
+                  strokeWidth="3.5" stroke="url(#heroArcGradient)" fill="transparent"
                   strokeLinecap="round"
                   strokeDasharray={arcCircumference / 1.04}
                   initial={{ strokeDashoffset: arcCircumference / 1.04 }}
@@ -460,10 +574,7 @@ export default function GoalBuilder() {
       <PhaseUnlockModal
         isOpen={showPhaseModal}
         phase={phaseUnlock}
-        onClose={() => {
-          setShowPhaseModal(false);
-          setPhaseUnlock(null);
-        }}
+        onClose={() => { setShowPhaseModal(false); setPhaseUnlock(null); }}
       />
 
       {/* ── Pulse Check Modal ── */}
@@ -473,6 +584,98 @@ export default function GoalBuilder() {
         onClose={() => setShowPulseCheck(false)}
         onSubmit={() => loadGoalDetails(goal?.id)}
       />
+
+      {/* ── Delete / Restart Confirmation Modal ── */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className={styles.modalOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.target === e.currentTarget && !isDeleting && setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              className={styles.modalCard}
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 24 }}
+              transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+            >
+              {/* Icon */}
+              <div className={`${styles.modalIcon} ${deleteMode === 'delete' ? styles.modalIconDanger : styles.modalIconWarning}`}>
+                {deleteMode === 'restart' ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                )}
+              </div>
+
+              <div className={styles.modalTitle}>
+                {deleteMode === 'restart' ? 'Start a new journey?' : 'Delete this goal?'}
+              </div>
+              <div className={styles.modalBody}>
+                {deleteMode === 'restart'
+                  ? `This will permanently delete "${goal.title}" — your streak, logs, and progress will be lost. You'll start fresh with a new goal setup.`
+                  : `This will permanently delete "${goal.title}" including all your progress, streaks, and activity logs. This cannot be undone.`
+                }
+              </div>
+
+              <div className={styles.modalStats}>
+                <div className={styles.modalStat}>
+                  <div className={styles.modalStatValue}>{goal.current_streak}</div>
+                  <div className={styles.modalStatLabel}>day streak</div>
+                </div>
+                <div className={styles.modalStatDivider} />
+                <div className={styles.modalStat}>
+                  <div className={styles.modalStatValue}>{goal.total_completed_days || 0}</div>
+                  <div className={styles.modalStatLabel}>days logged</div>
+                </div>
+                <div className={styles.modalStatDivider} />
+                <div className={styles.modalStat}>
+                  <div className={styles.modalStatValue}>{dayNumber}</div>
+                  <div className={styles.modalStatLabel}>days into goal</div>
+                </div>
+              </div>
+
+              <div className={styles.modalActions}>
+                <motion.button
+                  className={styles.modalCancel}
+                  onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  disabled={isDeleting}
+                >
+                  Keep Going
+                </motion.button>
+                <motion.button
+                  className={`${styles.modalConfirm} ${deleteMode === 'delete' ? styles.modalConfirmDanger : styles.modalConfirmWarning}`}
+                  onClick={handleDeleteGoal}
+                  whileHover={{ scale: isDeleting ? 1 : 1.02 }}
+                  whileTap={{ scale: isDeleting ? 1 : 0.97 }}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <span className={styles.modalSpinner} />
+                  ) : deleteMode === 'restart' ? (
+                    'Yes, Start Fresh'
+                  ) : (
+                    'Delete Forever'
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

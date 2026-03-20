@@ -292,6 +292,26 @@ async def update_goal(
     return {"message": "Goal updated successfully"}
 
 
+@router.delete("/{goal_id}")
+async def delete_goal(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a goal and all associated data (cascades to phases, schedule, logs)."""
+    result = await db.execute(
+        select(Goal).where(Goal.id == goal_id, Goal.user_id == current_user.id)
+    )
+    goal = result.scalar_one_or_none()
+
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+
+    await db.delete(goal)
+    await db.commit()
+    return {"message": "Goal deleted successfully"}
+
+
 # Daily Schedule
 @router.get("/{goal_id}/schedule")
 async def get_schedule(

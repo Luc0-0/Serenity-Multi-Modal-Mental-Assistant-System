@@ -76,28 +76,38 @@ class AIQuestionsService:
 
         system_prompt = f"""Return a JSON array. Nothing else — no markdown, no prose, no code fences.
 
-You build onboarding questions for a goal-tracking app.
-Goal: "{goal_title}" — "{goal_description}"
-Theme: {theme}
-Goal type: {goal_type or "general"}{motivation_context}{baseline_context}{feasibility_warning}
+You are a world-class transformation coach designing the onboarding questionnaire for a personalized goal-achievement system. Your questions must feel insightful, specific, and purposeful — not generic. Every question should help the AI build a schedule that actually fits this person's life.
+
+GOAL CONTEXT:
+- Title: "{goal_title}"
+- Description: "{goal_description}"
+- Theme: {theme} (tactical=high intensity/discipline, balanced=sustainable progress, gentle=low-pressure growth)
+- Goal type: {goal_type or "general"}{motivation_context}{baseline_context}{feasibility_warning}
 
 The array has EXACTLY {n_cats} objects, one per domain listed below:
 {categories_spec}
 
-Each object: {{"id":"<id>","name":"<name>","description":"<1 sentence about this domain>","questions":[<N questions>]}}
+Each object: {{"id":"<id>","name":"<name>","description":"<1 sentence explaining why this domain matters for achieving this specific goal>","questions":[<N questions>]}}
 where N is the questions count listed above for that domain.
 
+QUESTION DESIGN PRINCIPLES:
+- Questions must be SPECIFIC to "{goal_title}", not generic lifestyle questions
+- Each answer must directly inform the daily schedule or phase structure
+- Prefer concrete, actionable answers over abstract preferences
+- Questions should feel like they're from a coach who deeply understands this goal
+- Avoid redundancy — each question unlocks unique scheduling insight
+
 QUESTION TYPES — pick the right tool for each question:
-• radio    → mutually exclusive choice (experience level, approach style, schedule type)
-• checkbox → pick all that apply (equipment, activities, barriers, motivators)
-• slider   → numeric value (distances, durations, frequencies, intensity 1–10, hours/week)
+• radio    → mutually exclusive choice (current skill level, approach style, primary obstacle)
+• checkbox → pick all that apply (available equipment, preferred activities, known blockers)
+• slider   → numeric value (hours/week available, intensity 1–10, sessions per week, distance)
 • time     → clock picker — ONLY for wake-up time or bedtime. Max 1 per category.
 
 EXACT SCHEMAS (follow precisely, no extra fields):
 
 radio:
 {{"id":"<id>_<name>","type":"radio","question":"...","options":[
-  {{"value":"a","label":"Option A","recommended":true,"reason":"why this fits this goal"}},
+  {{"value":"a","label":"Option A","recommended":true,"reason":"why this is optimal for this specific goal and theme"}},
   {{"value":"b","label":"Option B","recommended":false}},
   {{"value":"c","label":"Option C","recommended":false}}
 ]}}
@@ -109,20 +119,22 @@ checkbox:
 ]}}
 
 slider:
-{{"id":"<id>_<name>","type":"slider","question":"...","min":0,"max":100,"step":5,"unit":"hr/wk","defaultValue":5,"recommended":8,"reason":"why"}}
+{{"id":"<id>_<name>","type":"slider","question":"...","min":0,"max":100,"step":5,"unit":"hr/wk","defaultValue":5,"recommended":8,"reason":"evidence-based recommendation for this goal type"}}
 
 time:
-{{"id":"<id>_<name>","type":"time","question":"...","defaultValue":"06:30","recommended":"06:30","reason":"why"}}
+{{"id":"<id>_<name>","type":"time","question":"...","defaultValue":"06:30","recommended":"06:30","reason":"why this time is optimal for this goal"}}
 
-RULES — violations make the output wrong:
-1. "recommended" in radio/checkbox options MUST be boolean true/false — never a string
-2. Exactly ONE option per radio/checkbox has recommended:true WITH a "reason" — all others have recommended:false and NO "reason" field
+STRICT RULES — violations break the output:
+1. "recommended" in radio/checkbox MUST be boolean true/false — never a string
+2. Exactly ONE radio/checkbox option has recommended:true WITH "reason" — all others: recommended:false, NO "reason"
 3. slider: defaultValue and recommended must be integers within [min, max]
 4. time: defaultValue and recommended must be "HH:MM" 24-hour format
-5. All question IDs unique, snake_case, prefixed with their category id (e.g. "{first_id}_")
-6. Every question must be DIRECTLY relevant to "{goal_title}" and the specific domain
-7. For HIGH priority domains: ask about time commitment, current skill level, and primary obstacle
-8. For domains with baselines provided: skip "current level" questions (already known), go deeper
+5. All question IDs unique, snake_case, prefixed with their category id (e.g. "{first_id}_something")
+6. Every question MUST be directly relevant to "{goal_title}" and its specific domain
+7. HIGH priority domains: must include time commitment, current level, and primary obstacle questions
+8. If baselines provided for a domain: skip "rate your current level" — go deeper (strategies, constraints, preferences)
+9. "reason" fields must be specific to this goal, not generic (e.g. not "most common choice" — explain WHY for THIS goal)
+10. Questions should progressively build a profile: context → constraints → preferences → optimization
 
 Output the array now — {ids_list} in that order:"""
 
@@ -167,15 +179,15 @@ Output the array now — {ids_list} in that order:"""
         # Format answers for context
         answer_context = self._format_answers_context(answers)
 
-        system_prompt = f"""You are a world-class transformation architect. Create a personalized daily schedule and 3-phase roadmap.
+        system_prompt = f"""You are a world-class transformation architect who has designed programs for elite performers. Create a hyper-personalized daily schedule and 3-phase roadmap that this specific person can actually sustain.
 
 GOAL CONTEXT:
 - Title: {goal_title}
 - Description: {goal_description}
-- Theme: {theme}
+- Theme: {theme} (tactical=high intensity, balanced=sustainable, gentle=gradual)
 - Duration: {duration_days} days
 
-USER PROFILE:
+USER PROFILE (extracted from their onboarding answers — build the schedule AROUND these, not despite them):
 {answer_context}
 
 TASK: Generate TWO outputs:

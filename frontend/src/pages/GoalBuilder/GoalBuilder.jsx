@@ -2,8 +2,8 @@
  * Copyright (c) 2026 Nipun Sujesh. All rights reserved.
  * Licensed under the AGPLv3. See LICENSE file in the project root for details.
  *
- * GoalBuilder — Main goal page with hero arc, tabs, phase unlock detection,
- * pulse check trigger, streak recovery, back nav, and goal management menu.
+ * GoalBuilder — Obsidian Command aesthetic
+ * Flex-column layout · DM Serif Display × Outfit · No absolute-position fragility
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -30,59 +30,164 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const TodayTab = React.lazy(() => import('./components/Tabs/TodayTab'));
+const TodayTab  = React.lazy(() => import('./components/Tabs/TodayTab'));
 const PhasesTab = React.lazy(() => import('./components/Tabs/PhasesTab'));
-const LogTab = React.lazy(() => import('./components/Tabs/LogTab'));
-const RulesTab = React.lazy(() => import('./components/Tabs/RulesTab'));
+const LogTab    = React.lazy(() => import('./components/Tabs/LogTab'));
+const RulesTab  = React.lazy(() => import('./components/Tabs/RulesTab'));
 
 const TABS = [
-  { id: 'today', label: 'Today', icon: 'calendar' },
-  { id: 'phases', label: 'Phases', icon: 'target' },
-  { id: 'log', label: 'Progress', icon: 'chart' },
-  { id: 'rules', label: 'Rules', icon: 'compass' },
+  { id: 'today',  label: 'Today',    icon: 'calendar' },
+  { id: 'phases', label: 'Phases',   icon: 'target'   },
+  { id: 'log',    label: 'Progress', icon: 'chart'    },
+  { id: 'rules',  label: 'Rules',    icon: 'compass'  },
 ];
+
+// ── Icon components (inline SVG, no external deps) ──────────────────────────
+
+function ChevronLeft() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2"
+            strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function KebabIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="5"  r="1.4" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+      <circle cx="12" cy="19" r="1.4" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function RestartIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"
+            stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function WarnIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            stroke="currentColor" strokeWidth="1.8"
+            strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="1.8"
+            strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"
+            stroke="currentColor" strokeWidth="1.8"
+            strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// ── Arc Ring ────────────────────────────────────────────────────────────────
+
+function ArcRing({ progress, daysRemaining }) {
+  const r = 18;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - Math.min(progress, 100) / 100);
+
+  return (
+    <div className={styles.ringWrap}>
+      <svg width="44" height="44" className={styles.ringSvg}>
+        <defs>
+          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#C8A96E"/>
+            <stop offset="100%" stopColor="#6EE7B7"/>
+          </linearGradient>
+        </defs>
+        <circle cx="22" cy="22" r={r}
+          strokeWidth="3" stroke="rgba(255,255,255,0.06)" fill="none"/>
+        <motion.circle cx="22" cy="22" r={r}
+          strokeWidth="3" stroke="url(#arcGrad)" fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.4, ease: 'easeOut' }}
+        />
+      </svg>
+      <div className={styles.ringLabel}>
+        <span className={styles.ringDays}>{daysRemaining}</span>
+        <span className={styles.ringDaysLabel}>days left</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function GoalBuilder() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('today');
-  const [goalData, setGoalData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingDraft, setOnboardingDraft] = useState(null);
-  const [onboardingInitial, setOnboardingInitial] = useState({ step: 0, formData: null });
+  const navigate  = useNavigate();
 
-  // Phase unlock celebration
-  const [phaseUnlock, setPhaseUnlock] = useState(null);
-  const [showPhaseModal, setShowPhaseModal] = useState(false);
+  const [activeTab,        setActiveTab]        = useState('today');
+  const [goalData,         setGoalData]         = useState(null);
+  const [isLoading,        setIsLoading]        = useState(true);
+  const [showOnboarding,   setShowOnboarding]   = useState(false);
+  const [onboardingDraft,  setOnboardingDraft]  = useState(null);
+  const [onboardingInitial,setOnboardingInitial]= useState({ step: 0, formData: null });
+
+  // Phase unlock
+  const [phaseUnlock,  setPhaseUnlock]  = useState(null);
+  const [showPhaseModal,setShowPhaseModal]= useState(false);
 
   // Pulse check
   const [showPulseCheck, setShowPulseCheck] = useState(false);
 
-  // Goal management menu
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteMode, setDeleteMode] = useState('delete'); // 'delete' | 'restart'
-  const [isDeleting, setIsDeleting] = useState(false);
-  const optionsRef = useRef(null);
+  // Options menu
+  const [menuOpen,    setMenuOpen]    = useState(false);
+  const [deleteModal, setDeleteModal] = useState(null); // null | 'delete' | 'restart'
+  const [isDeleting,  setIsDeleting]  = useState(false);
+  const menuRef = useRef(null);
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  useEffect(() => { fetchGoals(); }, []);
 
   useEffect(() => {
-    checkUserGoals();
-  }, []);
-
-  // Close options menu on outside click
-  useEffect(() => {
-    if (!showOptionsMenu) return;
+    if (!menuOpen) return;
     const handler = (e) => {
-      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
-        setShowOptionsMenu(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showOptionsMenu]);
+  }, [menuOpen]);
 
-  const checkUserGoals = async () => {
+  // ── Data ──────────────────────────────────────────────────────────────────
+
+  const fetchGoals = async () => {
     try {
       const goals = await apiClient.get('/api/goals');
       if (goals.length === 0) {
@@ -99,169 +204,141 @@ export default function GoalBuilder() {
         } catch {}
         setShowOnboarding(true);
       } else {
-        const activeGoal = goals.find((g) => g.is_active) || goals[0];
-        await loadGoalDetails(activeGoal.id);
+        const active = goals.find((g) => g.is_active) || goals[0];
+        await loadGoal(active.id);
       }
-    } catch (error) {
-      console.error('Failed to fetch goals:', error);
+    } catch {
       setShowOnboarding(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadGoalDetails = useCallback(async (goalId) => {
+  const loadGoal = useCallback(async (id) => {
     try {
-      const data = await apiClient.get(`/api/goals/${goalId}`);
-
+      const data = await apiClient.get(`/api/goals/${id}`);
+      // Detect new phase unlock
       if (goalData?.phases && data.phases) {
-        const prevUnlocked = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
-        const newlyUnlocked = data.phases.find((p) => p.is_unlocked && !prevUnlocked.has(p.id));
-        if (newlyUnlocked) {
-          setPhaseUnlock(newlyUnlocked);
-          setShowPhaseModal(true);
-        }
+        const prev = new Set(goalData.phases.filter((p) => p.is_unlocked).map((p) => p.id));
+        const newP = data.phases.find((p) => p.is_unlocked && !prev.has(p.id));
+        if (newP) { setPhaseUnlock(newP); setShowPhaseModal(true); }
       }
-
       setGoalData(data);
-      checkPulseCheck(goalId);
-    } catch (error) {
-      console.error('Failed to load goal details:', error);
+      checkPulse(id);
+    } catch (err) {
+      console.error('loadGoal error', err);
     }
   }, [goalData]);
 
-  const checkPulseCheck = async (goalId) => {
+  const checkPulse = async (id) => {
     try {
-      const data = await apiClient.get(`/api/goals/${goalId}/pulse-check`);
-      if (data.is_due) {
-        setTimeout(() => setShowPulseCheck(true), 2000);
-      }
+      const d = await apiClient.get(`/api/goals/${id}/pulse-check`);
+      if (d.is_due) setTimeout(() => setShowPulseCheck(true), 2000);
     } catch {}
+  };
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/check-in');
   };
 
   const handleOnboardingComplete = async (goalId) => {
     setShowOnboarding(false);
-    await loadGoalDetails(goalId);
+    await loadGoal(goalId);
   };
 
-  const handleDeleteGoal = async () => {
+  const handleDelete = async () => {
     if (!goalData?.goal?.id) return;
     setIsDeleting(true);
     try {
       await apiClient.delete(`/api/goals/${goalData.goal.id}`);
+      const mode = deleteModal;
       setGoalData(null);
-      setShowDeleteConfirm(false);
-      setShowOptionsMenu(false);
-      if (deleteMode === 'restart') {
+      setDeleteModal(null);
+      setMenuOpen(false);
+      if (mode === 'restart') {
         try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch {}
         setOnboardingInitial({ step: 0, formData: null });
         setShowOnboarding(true);
       }
-      // On plain delete, show empty state (goalData=null, showOnboarding=false)
-    } catch (error) {
-      console.error('Failed to delete goal:', error);
+    } catch (err) {
+      console.error('delete error', err);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const openDeleteConfirm = (mode) => {
-    setDeleteMode(mode);
-    setShowOptionsMenu(false);
-    setShowDeleteConfirm(true);
-  };
+  // ── Loading ────────────────────────────────────────────────────────────────
 
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/check-in');
-    }
-  };
-
-  // ── Loading ──
   if (isLoading) {
     return (
-      <div className={styles.loadingContainer}>
+      <div className={styles.loadingScreen}>
+        <div className={styles.bg} /><div className={styles.bgNoise} />
         <motion.div
-          className={styles.loadingSpinner}
+          className={styles.spinner}
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+          style={{ borderRadius: '50%' }}
         />
-        <div className={styles.loadingText}>Loading your journey...</div>
+        <span className={styles.loadingLabel}>Loading your journey</span>
       </div>
     );
   }
 
-  // ── Draft resume prompt ──
+  // ── Draft resume ──────────────────────────────────────────────────────────
+
   if (onboardingDraft) {
-    const stepName = STEP_NAMES[onboardingDraft.step] || `Step ${onboardingDraft.step + 1}`;
+    const stepName  = STEP_NAMES[onboardingDraft.step] || `Step ${onboardingDraft.step + 1}`;
     const goalTitle = onboardingDraft.formData?.goal?.title;
     return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#0A0A0F', padding: '24px',
-      }}>
+      <div className={styles.draftScreen}>
+        <div className={styles.bg} /><div className={styles.bgNoise} />
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          className={styles.draftCard}
+          initial={{ opacity: 0, scale: 0.94, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-          style={{
-            width: '100%', maxWidth: 440,
-            background: 'rgba(15,15,20,0.95)',
-            border: '1px solid rgba(200,169,110,0.2)',
-            borderRadius: 24, padding: '36px 32px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
-          }}
+          transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
         >
-          <div style={{
-            width: 52, height: 52, borderRadius: 16,
-            background: 'rgba(200,169,110,0.1)',
-            border: '1px solid rgba(200,169,110,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 24,
-          }}>
-            <SvgIcon name="target" size={26} color="#C8A96E" />
+          <div className={styles.draftIcon}>
+            <SvgIcon name="target" size={24} color="currentColor" />
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#F5F0E8', marginBottom: 8 }}>
-            Pick up where you left off
-          </div>
-          <div style={{ fontSize: 14, color: 'rgba(245,240,232,0.5)', marginBottom: 24, lineHeight: 1.6 }}>
+          <div className={styles.draftTitle}>Pick up where you left off</div>
+          <div className={styles.draftBody}>
             You were setting up{goalTitle ? ` "${goalTitle}"` : ' a goal'} and stopped at{' '}
-            <span style={{ color: '#C8A96E', fontWeight: 600 }}>{stepName}</span>
+            <span className={styles.draftStepName}>{stepName}</span>
             {onboardingDraft.savedAt && (
-              <span style={{ color: 'rgba(245,240,232,0.35)' }}> · {timeAgo(onboardingDraft.savedAt)}</span>
+              <span className={styles.draftSavedAt}> · {timeAgo(onboardingDraft.savedAt)}</span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
+
+          <div className={styles.draftProgress}>
             {STEP_NAMES.map((_, i) => (
-              <div key={i} style={{
-                flex: 1, height: 3, borderRadius: 2,
+              <div key={i} className={styles.draftProgressSeg} style={{
                 background: i < onboardingDraft.step
                   ? '#C8A96E'
                   : i === onboardingDraft.step
-                  ? 'rgba(200,169,110,0.4)'
+                  ? 'rgba(200,169,110,0.35)'
                   : 'rgba(255,255,255,0.06)',
-              }} />
+              }}/>
             ))}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          <div className={styles.draftActions}>
             <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className={styles.draftContinueBtn}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={() => {
                 setOnboardingInitial({ step: onboardingDraft.step, formData: onboardingDraft.formData });
                 setOnboardingDraft(null);
                 setShowOnboarding(true);
               }}
-              style={{
-                padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                background: 'linear-gradient(135deg, #C8A96E, #A8874E)',
-                color: '#0A0A0F', fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
-              }}
             >
               Continue from {stepName}
             </motion.button>
             <motion.button
+              className={styles.draftFreshBtn}
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               onClick={() => {
                 try { localStorage.removeItem(ONBOARDING_DRAFT_KEY); } catch {}
@@ -269,13 +346,8 @@ export default function GoalBuilder() {
                 setOnboardingInitial({ step: 0, formData: null });
                 setShowOnboarding(true);
               }}
-              style={{
-                padding: '12px 20px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(245,240,232,0.5)', fontSize: 14, fontWeight: 500,
-              }}
             >
-              Start fresh
+              Start fresh instead
             </motion.button>
           </div>
         </motion.div>
@@ -283,155 +355,128 @@ export default function GoalBuilder() {
     );
   }
 
+  // ── Onboarding ────────────────────────────────────────────────────────────
+
   if (showOnboarding) {
     return (
       <OnboardingFlow
         initialStep={onboardingInitial.step}
         initialFormData={onboardingInitial.formData}
         onComplete={handleOnboardingComplete}
-        onSkip={() => {
-          setShowOnboarding(false);
-          setIsLoading(false);
-        }}
+        onSkip={() => { setShowOnboarding(false); setIsLoading(false); }}
       />
     );
   }
 
+  // ── Empty state ───────────────────────────────────────────────────────────
+
   if (!goalData) {
     return (
-      <div className={styles.emptyState}>
-        <div className={styles.background}>
-          <div className={styles.gradientOverlay} />
-          <div className={styles.noiseTexture} />
-        </div>
-        {/* Back button on empty state */}
-        <button className={styles.backButtonEmpty} onClick={handleBack} aria-label="Go back">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
-        </button>
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+      <div className={styles.emptyScreen}>
+        <div className={styles.bg} /><div className={styles.bgNoise} />
+        <motion.button
+          className={styles.emptyBackBtn}
+          onClick={handleBack}
+          whileHover={{ x: -2 }} whileTap={{ scale: 0.96 }}
+        >
+          <ChevronLeft /> Back
+        </motion.button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        >
+          <div className={styles.emptyIcon}>
+            <SvgIcon name="target" size={26} color="currentColor" />
+          </div>
+          <div className={styles.emptyTitle}>No active goal</div>
+          <div className={styles.emptySubtitle}>
+            Define your mission and Serenity builds a personalized roadmap around your life.
+          </div>
+          <motion.button
+            className={styles.emptyBtn}
+            onClick={() => setShowOnboarding(true)}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
           >
-            <div className={styles.emptyStateIcon}>
-              <SvgIcon name="target" size={56} color="#C8A96E" />
-            </div>
-            <div className={styles.emptyStateTitle}>No active goal</div>
-            <div className={styles.emptyStateSubtitle}>
-              Define your mission and Serenity will build a personalized roadmap for you.
-            </div>
-            <motion.button
-              className={styles.createGoalButton}
-              onClick={() => setShowOnboarding(true)}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Create Your Goal
-            </motion.button>
-          </motion.div>
-        </div>
+            Create Your Goal
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
-  const goal = goalData.goal;
-  const todayLog = goalData.recent_logs?.[0] || {};
-  const completedItems = todayLog.completed_items
+  // ── Main view ─────────────────────────────────────────────────────────────
+
+  const goal          = goalData.goal;
+  const todayLog      = goalData.recent_logs?.[0] || {};
+  const completedItems= todayLog.completed_items
     ? typeof todayLog.completed_items === 'string'
       ? JSON.parse(todayLog.completed_items)
       : todayLog.completed_items
     : {};
-  const completedToday = Object.values(completedItems).filter(Boolean).length;
-  const totalSchedule = goalData.schedule?.length || 0;
-  const completionPct = totalSchedule > 0 ? (completedToday / totalSchedule) * 100 : 0;
+  const completedToday  = Object.values(completedItems).filter(Boolean).length;
+  const totalSchedule   = goalData.schedule?.length || 0;
+  const completionPct   = totalSchedule > 0 ? (completedToday / totalSchedule) * 100 : 0;
 
-  const dayNumber = Math.floor((new Date() - new Date(goal.start_date)) / 86400000) + 1;
-  const daysRemaining = Math.max(goal.duration_days - dayNumber, 0);
-  const overallProgress = Math.min((dayNumber / goal.duration_days) * 100, 100);
-
-  const arcRadius = 52;
-  const arcCircumference = 2 * Math.PI * arcRadius;
-  const arcStroke = arcCircumference * (1 - overallProgress / 100);
+  const dayNumber       = Math.floor((new Date() - new Date(goal.start_date)) / 86400000) + 1;
+  const daysRemaining   = Math.max(goal.duration_days - dayNumber, 0);
+  const overallProgress = (dayNumber / goal.duration_days) * 100;
 
   return (
     <div className={styles.container}>
-      {/* Background */}
-      <div className={styles.background}>
-        <div className={styles.gradientOverlay} />
-        <div className={styles.noiseTexture} />
-      </div>
+      {/* Background (behind everything) */}
+      <div className={styles.bg} aria-hidden />
+      <div className={styles.bgNoise} aria-hidden />
 
-      {/* ── Hero Header ── */}
+      {/* ── Header Shell ─────────────────────────────────────────────────── */}
       <motion.div
-        className={styles.header}
-        initial={{ opacity: 0, y: -20 }}
+        className={styles.headerShell}
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
+        transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
       >
-        {/* Back + Options row */}
-        <div className={styles.headerTopRow}>
+        {/* Top chrome: Back + Options */}
+        <div className={styles.topChrome}>
           <motion.button
-            className={styles.backButton}
+            className={styles.backBtn}
             onClick={handleBack}
-            whileHover={{ x: -2, scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={{ x: -2 }}
+            whileTap={{ scale: 0.95 }}
             aria-label="Go back"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span>Back</span>
+            <ChevronLeft />
+            Back
           </motion.button>
 
-          {/* Options menu */}
-          <div className={styles.optionsWrapper} ref={optionsRef}>
+          <div className={styles.optionsWrap} ref={menuRef}>
             <motion.button
-              className={styles.optionsButton}
-              onClick={() => setShowOptionsMenu((v) => !v)}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.92 }}
+              className={styles.optionsBtn}
+              onClick={() => setMenuOpen((v) => !v)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               aria-label="Goal options"
-              aria-expanded={showOptionsMenu}
+              aria-expanded={menuOpen}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
-                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
-              </svg>
+              <KebabIcon />
             </motion.button>
 
             <AnimatePresence>
-              {showOptionsMenu && (
+              {menuOpen && (
                 <motion.div
-                  className={styles.optionsDropdown}
-                  initial={{ opacity: 0, scale: 0.92, y: -8 }}
+                  className={styles.dropdown}
+                  initial={{ opacity: 0, scale: 0.9, y: -6 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -8 }}
-                  transition={{ duration: 0.18, ease: [0.34, 1.56, 0.64, 1] }}
+                  exit={{ opacity: 0, scale: 0.9, y: -6 }}
+                  transition={{ duration: 0.16, ease: [0.34, 1.56, 0.64, 1] }}
                 >
-                  <button
-                    className={styles.optionsMenuItem}
-                    onClick={() => openDeleteConfirm('restart')}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                      <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Start New Journey
+                  <button className={styles.dropItem} onClick={() => { setMenuOpen(false); setDeleteModal('restart'); }}>
+                    <RestartIcon /> Start New Journey
                   </button>
-                  <div className={styles.optionsDivider} />
-                  <button
-                    className={`${styles.optionsMenuItem} ${styles.optionsMenuItemDanger}`}
-                    onClick={() => openDeleteConfirm('delete')}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                      <polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Delete Goal
+                  <div className={styles.dropDivider} />
+                  <button className={`${styles.dropItem} ${styles.dropItemDanger}`} onClick={() => { setMenuOpen(false); setDeleteModal('delete'); }}>
+                    <TrashIcon /> Delete Goal
                   </button>
                 </motion.div>
               )}
@@ -439,237 +484,214 @@ export default function GoalBuilder() {
           </div>
         </div>
 
-        {/* Main header content */}
-        <div className={styles.headerContent}>
-          <div className={styles.goalInfo}>
-            <div className={styles.goalTitle}>{goal.title}</div>
-            <div className={styles.goalMeta}>
-              <span style={{ textTransform: 'capitalize' }}>{goal.theme}</span>
-              {' · '} Day {dayNumber} of {goal.duration_days}
-            </div>
-            {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
-              <div style={{
-                fontSize: 11, color: 'rgba(200,169,110,0.6)', marginTop: 4,
-                display: 'flex', alignItems: 'center', gap: 4,
-              }}>
-                <SvgIcon name="chart" size={12} color="rgba(200,169,110,0.5)" />
-                {goal.total_completed_days} total days completed
-              </div>
-            )}
-          </div>
+        {/* Goal identity */}
+        <div className={styles.goalBlock}>
+          <motion.div
+            className={styles.goalTitle}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {goal.title}
+          </motion.div>
 
-          <div className={styles.stats}>
-            <motion.div className={styles.stat} whileHover={{ scale: 1.05 }}>
-              <div className={styles.statValue}>
-                <SvgIcon name="flame" size={14} color="#C8A96E" />
-                {goal.current_streak}
-              </div>
-              <div className={styles.statLabel}>Streak</div>
-            </motion.div>
-
-            <motion.div className={styles.stat} whileHover={{ scale: 1.05 }}>
-              <div className={styles.statValue}>
-                <SvgIcon name="snowflake" size={14} color="#6CCDF0" />
-                {goal.freezes_available || 0}
-              </div>
-              <div className={styles.statLabel}>Freezes</div>
-            </motion.div>
-
-            <div className={styles.progressRing}>
-              <svg width="68" height="68" className={styles.progressSvg}>
-                <circle cx="34" cy="34" r={arcRadius / 1.04}
-                  strokeWidth="3.5" stroke="rgba(255,255,255,0.06)" fill="transparent"
-                />
-                <motion.circle
-                  cx="34" cy="34" r={arcRadius / 1.04}
-                  strokeWidth="3.5" stroke="url(#heroArcGradient)" fill="transparent"
-                  strokeLinecap="round"
-                  strokeDasharray={arcCircumference / 1.04}
-                  initial={{ strokeDashoffset: arcCircumference / 1.04 }}
-                  animate={{ strokeDashoffset: arcStroke / 1.04 }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                  style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
-                />
-                <defs>
-                  <linearGradient id="heroArcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#C8A96E" />
-                    <stop offset="100%" stopColor="#6EE7B7" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className={styles.progressText}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#F5F0E8', lineHeight: 1 }}>
-                  {daysRemaining}
-                </div>
-                <div style={{ fontSize: 8, color: 'rgba(245,240,232,0.45)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  days left
-                </div>
-              </div>
-            </div>
+          <div className={styles.goalMeta}>
+            <span className={styles.themeBadge}>{goal.theme}</span>
+            <span className={styles.metaDot} />
+            <span>Day {dayNumber} of {goal.duration_days}</span>
           </div>
         </div>
 
-        {/* Momentum Bar */}
-        <div style={{ marginTop: 12, padding: '0 4px' }}>
+        {/* Stats row */}
+        <motion.div
+          className={styles.statsRow}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+        >
+          {/* Streak */}
+          <div className={styles.statChip}>
+            <div className={styles.statNumGroup}>
+              <span className={styles.statNum}>{goal.current_streak}</span>
+              <span className={styles.statLabel}>Streak</span>
+            </div>
+          </div>
+
+          <div className={styles.statDot} />
+
+          {/* Freezes */}
+          <div className={styles.statChip}>
+            <div className={styles.statNumGroup}>
+              <span className={`${styles.statNum} ${styles.statIceNum}`}>{goal.freezes_available || 0}</span>
+              <span className={styles.statLabel}>Freezes</span>
+            </div>
+          </div>
+
+          <div className={styles.statDot} />
+
+          {/* Arc ring */}
+          <ArcRing progress={overallProgress} daysRemaining={daysRemaining} />
+
+          {/* Streak recovery note */}
+          {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
+            <div className={styles.streakRecovery} style={{ marginLeft: 'auto' }}>
+              <SvgIcon name="chart" size={11} color="currentColor" />
+              {goal.total_completed_days} total days
+            </div>
+          )}
+        </motion.div>
+
+        {/* Momentum bar */}
+        <div className={styles.momentumWrap}>
           <MomentumBar percentage={completionPct} />
         </div>
       </motion.div>
 
-      {/* ── Tab Navigation ── */}
+      {/* ── Tab Navigation ───────────────────────────────────────────────── */}
       <motion.div
         className={styles.tabNav}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.25 }}
       >
-        <div className={styles.tabContainer}>
-          {TABS.map((tab, index) => (
+        <div className={styles.tabList}>
+          {TABS.map((tab, i) => (
             <motion.button
               key={tab.id}
               className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
               onClick={() => setActiveTab(tab.id)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              initial={{ opacity: 0, y: 10 }}
+              whileTap={{ scale: 0.96 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30, delay: 0.2 + index * 0.05 }}
+              transition={{ duration: 0.3, delay: 0.28 + i * 0.05 }}
             >
-              <span className={styles.tabIcon}>
-                <SvgIcon name={tab.icon} size={16} color="currentColor" />
-              </span>
-              <span className={styles.tabLabel}>{tab.label}</span>
+              <SvgIcon name={tab.icon} size={14} color="currentColor" />
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.span
+                  className={styles.tabIndicator}
+                  layoutId="tabLine"
+                  transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                />
+              )}
             </motion.button>
           ))}
         </div>
       </motion.div>
 
-      {/* ── Tab Content ── */}
+      {/* ── Tab Content (flex: 1 — fills remaining space) ────────────────── */}
       <div className={styles.content}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
+            className={styles.tabPanel}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className={styles.tabContent}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
           >
-            <React.Suspense
-              fallback={
-                <div className={styles.tabLoading}>
-                  <div className={styles.loadingSpinner} />
-                </div>
-              }
-            >
-              {activeTab === 'today' && <TodayTab goalData={goalData} onUpdate={loadGoalDetails} />}
-              {activeTab === 'phases' && <PhasesTab goalData={goalData} onUpdate={loadGoalDetails} />}
-              {activeTab === 'log' && <LogTab goalData={goalData} />}
-              {activeTab === 'rules' && <RulesTab goalData={goalData} />}
+            <React.Suspense fallback={
+              <div className={styles.tabLoading}>
+                <motion.div
+                  className={styles.spinner}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+                  style={{ borderRadius: '50%' }}
+                />
+              </div>
+            }>
+              {activeTab === 'today'  && <TodayTab  goalData={goalData} onUpdate={loadGoal} />}
+              {activeTab === 'phases' && <PhasesTab goalData={goalData} onUpdate={loadGoal} />}
+              {activeTab === 'log'    && <LogTab    goalData={goalData} />}
+              {activeTab === 'rules'  && <RulesTab  goalData={goalData} />}
             </React.Suspense>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* ── Phase Unlock Celebration ── */}
+      {/* ── Modals ────────────────────────────────────────────────────────── */}
       <PhaseUnlockModal
         isOpen={showPhaseModal}
         phase={phaseUnlock}
         onClose={() => { setShowPhaseModal(false); setPhaseUnlock(null); }}
       />
 
-      {/* ── Pulse Check Modal ── */}
       <PulseCheckModal
         isOpen={showPulseCheck}
         goalId={goal?.id}
         onClose={() => setShowPulseCheck(false)}
-        onSubmit={() => loadGoalDetails(goal?.id)}
+        onSubmit={() => loadGoal(goal?.id)}
       />
 
-      {/* ── Delete / Restart Confirmation Modal ── */}
+      {/* Delete / Restart confirmation */}
       <AnimatePresence>
-        {showDeleteConfirm && (
+        {deleteModal && (
           <motion.div
             className={styles.modalOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => e.target === e.currentTarget && !isDeleting && setShowDeleteConfirm(false)}
+            onClick={(e) => e.target === e.currentTarget && !isDeleting && setDeleteModal(null)}
           >
             <motion.div
               className={styles.modalCard}
-              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              initial={{ opacity: 0, scale: 0.86, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.88, y: 24 }}
-              transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+              exit={{ opacity: 0, scale: 0.86, y: 20 }}
+              transition={{ duration: 0.28, ease: [0.34, 1.56, 0.64, 1] }}
             >
-              {/* Icon */}
-              <div className={`${styles.modalIcon} ${deleteMode === 'delete' ? styles.modalIconDanger : styles.modalIconWarning}`}>
-                {deleteMode === 'restart' ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                )}
+              <div className={`${styles.modalIcon} ${deleteModal === 'delete' ? styles.modalIconRed : styles.modalIconAmber}`}>
+                {deleteModal === 'delete' ? <WarnIcon /> : <RefreshIcon />}
               </div>
 
               <div className={styles.modalTitle}>
-                {deleteMode === 'restart' ? 'Start a new journey?' : 'Delete this goal?'}
+                {deleteModal === 'restart' ? 'Start a new journey?' : 'Delete this goal?'}
               </div>
               <div className={styles.modalBody}>
-                {deleteMode === 'restart'
-                  ? `This will permanently delete "${goal.title}" — your streak, logs, and progress will be lost. You'll start fresh with a new goal setup.`
-                  : `This will permanently delete "${goal.title}" including all your progress, streaks, and activity logs. This cannot be undone.`
+                {deleteModal === 'restart'
+                  ? `Your current goal "${goal.title}", streaks, and all logs will be permanently removed. You'll start fresh.`
+                  : `"${goal.title}" and all progress will be permanently deleted. This can't be undone.`
                 }
               </div>
 
-              <div className={styles.modalStats}>
+              <div className={styles.modalStatRow}>
                 <div className={styles.modalStat}>
-                  <div className={styles.modalStatValue}>{goal.current_streak}</div>
-                  <div className={styles.modalStatLabel}>day streak</div>
+                  <div className={styles.modalStatVal}>{goal.current_streak}</div>
+                  <div className={styles.modalStatLbl}>day streak</div>
                 </div>
-                <div className={styles.modalStatDivider} />
+                <div className={styles.modalStatLine} />
                 <div className={styles.modalStat}>
-                  <div className={styles.modalStatValue}>{goal.total_completed_days || 0}</div>
-                  <div className={styles.modalStatLabel}>days logged</div>
+                  <div className={styles.modalStatVal}>{goal.total_completed_days || 0}</div>
+                  <div className={styles.modalStatLbl}>days logged</div>
                 </div>
-                <div className={styles.modalStatDivider} />
+                <div className={styles.modalStatLine} />
                 <div className={styles.modalStat}>
-                  <div className={styles.modalStatValue}>{dayNumber}</div>
-                  <div className={styles.modalStatLabel}>days into goal</div>
+                  <div className={styles.modalStatVal}>{dayNumber}</div>
+                  <div className={styles.modalStatLbl}>days in</div>
                 </div>
               </div>
 
               <div className={styles.modalActions}>
                 <motion.button
-                  className={styles.modalCancel}
-                  onClick={() => !isDeleting && setShowDeleteConfirm(false)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
+                  className={styles.modalKeep}
+                  onClick={() => !isDeleting && setDeleteModal(null)}
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   disabled={isDeleting}
                 >
                   Keep Going
                 </motion.button>
                 <motion.button
-                  className={`${styles.modalConfirm} ${deleteMode === 'delete' ? styles.modalConfirmDanger : styles.modalConfirmWarning}`}
-                  onClick={handleDeleteGoal}
+                  className={`${styles.modalConfirm} ${deleteModal === 'delete' ? styles.modalConfirmRed : styles.modalConfirmAmber}`}
+                  onClick={handleDelete}
                   whileHover={{ scale: isDeleting ? 1 : 1.02 }}
                   whileTap={{ scale: isDeleting ? 1 : 0.97 }}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? (
-                    <span className={styles.modalSpinner} />
-                  ) : deleteMode === 'restart' ? (
-                    'Yes, Start Fresh'
-                  ) : (
-                    'Delete Forever'
-                  )}
+                  {isDeleting
+                    ? <span className={styles.btnSpinner} />
+                    : deleteModal === 'restart' ? 'Yes, Start Fresh' : 'Delete Forever'
+                  }
                 </motion.button>
               </div>
             </motion.div>

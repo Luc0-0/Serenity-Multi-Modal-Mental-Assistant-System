@@ -628,11 +628,22 @@
 }
 
 .spinner {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border: 1.5px solid rgba(197, 168, 124, 0.12);
   border-top-color: var(--s-amber);
   border-radius: 50%;
+}
+
+/* ── Loading ring (calm breathing orb, replaces rapid spinner) ── */
+.loadingRing {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(197, 168, 124, 0.28);
+  box-shadow:
+    0 0 24px rgba(197, 168, 124, 0.12),
+    inset 0 0 24px rgba(197, 168, 124, 0.06);
 }
 
 .loadingLabel {

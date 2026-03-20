@@ -328,11 +328,18 @@ export default function GoalBuilder() {
         <div className={styles.bgNoise} />
         <Fireflies />
         <motion.div
-          className={styles.spinner}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+          className={styles.loadingRing}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.35, 0.75, 0.35] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <span className={styles.loadingLabel}>Loading your journey</span>
+        <motion.span
+          className={styles.loadingLabel}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.65, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+        >
+          Loading your journey
+        </motion.span>
       </div>
     );
   }
@@ -498,9 +505,9 @@ export default function GoalBuilder() {
       {/* ── Header Shell ──────────────────────────────────────────────────── */}
       <motion.div
         className={styles.headerShell}
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.75, ease: 'easeOut' }}
       >
 
         {/* Top chrome: Back + mini-stats (when collapsed) + Options */}

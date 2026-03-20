@@ -194,17 +194,29 @@ TASK: Generate TWO outputs:
 1. DAILY SCHEDULE: 15-20 time-based activities optimized for this person
 2. THREE PHASES: Structured phases with domains, tasks, and subtasks
 
-OUTPUT FORMAT (JSON):
+CRITICAL JSON RULES — violations will cause a system failure:
+1. Return ONLY a raw JSON object. No markdown, no code fences, no comments, no explanations.
+2. Every schedule item MUST have ALL five keys: "time", "activity", "description", "tags", "sort_order". No other key names are accepted.
+3. "tags" must be a JSON array of strings, never null.
+4. All three phases must be present with phase_number 0, 1, and 2.
+
+OUTPUT FORMAT — copy this structure exactly:
 {{
   "daily_schedule": [
     {{
       "time": "06:00",
-      "activity": "Morning Routine",
-      "description": "Meditation + goal visualization",
+      "activity": "Wake and Center",
+      "description": "Cold water, journaling, goal review",
       "tags": ["mindfulness", "preparation"],
       "sort_order": 1
+    }},
+    {{
+      "time": "06:30",
+      "activity": "Movement Block",
+      "description": "Exercise aligned to goal domains",
+      "tags": ["physical", "energy"],
+      "sort_order": 2
     }}
-    // 15-20 items total, covering full day
   ],
   "phases": [
     {{
@@ -234,7 +246,19 @@ OUTPUT FORMAT (JSON):
       "description": "Increase intensity and build momentum",
       "unlock_streak_required": 14,
       "domains": [
-        // Same structure with 3-5 domains
+        {{
+          "name": "Mental Sharpening",
+          "tasks": [
+            {{
+              "title": "Deep work practice",
+              "subtasks": [
+                "90-minute focused sessions",
+                "Eliminate distractions protocol",
+                "Track output quality daily"
+              ]
+            }}
+          ]
+        }}
       ]
     }},
     {{
@@ -243,7 +267,19 @@ OUTPUT FORMAT (JSON):
       "description": "Peak performance and optimization",
       "unlock_streak_required": 42,
       "domains": [
-        // Same structure
+        {{
+          "name": "Integration",
+          "tasks": [
+            {{
+              "title": "Synthesize all domains",
+              "subtasks": [
+                "Weekly cross-domain review",
+                "Identify leverage points",
+                "Teach or document learnings"
+              ]
+            }}
+          ]
+        }}
       ]
     }}
   ]
@@ -296,7 +332,7 @@ Generate the JSON now. Return ONLY valid JSON, no other text:"""
         logger.info(f"[SCHEDULE] START goal='{goal_title}' theme={theme} duration={duration_days}d answers={len(answers)} categories")
         try:
             t0 = time.monotonic()
-            response = await self.engine.generate(system_prompt, [], max_tokens=8000)
+            response = await self.engine.generate(system_prompt, [], max_tokens=12000)
             elapsed = time.monotonic() - t0
             logger.info(f"[SCHEDULE] LLM response: {len(response)} chars in {elapsed:.1f}s")
 
@@ -737,6 +773,11 @@ Return ONLY valid JSON:"""
 
         if not isinstance(result['daily_schedule'], list):
             return False
+
+        # Validate each schedule item has required fields
+        for item in result['daily_schedule']:
+            if not isinstance(item, dict) or 'time' not in item or 'activity' not in item:
+                return False
 
         if not isinstance(result['phases'], list) or len(result['phases']) != 3:
             return False

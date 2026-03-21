@@ -92,6 +92,12 @@ async def startup_event():
     
     crisis_service = CrisisService()
     logger.info(f"✓ Crisis service created (using keyword-based detection)")
+
+    # Warm heavy embedding model in background so first chat does not block.
+    from app.services.embedding_service import embedding_service
+
+    embedding_service.start_background_warmup()
+    logger.info("✓ Embedding model warmup scheduled")
     
     logger.info("✓ All services initialized successfully")
 

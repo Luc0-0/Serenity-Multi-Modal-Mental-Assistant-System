@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
-from typing import List
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ class EmbeddingService:
         self._model = None
         self._model_name = "all-MiniLM-L6-v2"
         self._model_lock = asyncio.Lock()
+        self._warmup_task: Optional[asyncio.Task] = None
 
     async def embed(self, text: str) -> List[float]:
         if not text:
@@ -40,22 +41,40 @@ class EmbeddingService:
             logger.warning("Embedding model failed (%s), falling back to hashing", exc)
             return self._hash_embed(text)
 
+    def start_background_warmup(self) -> None:
+        """
+        Start model warmup without blocking request latency.
+        Safe to call repeatedly.
+        """
+        if self._model is not None:
+            return
+        if self._warmup_task and not self._warmup_task.done():
+            return
+        self._warmup_task = asyncio.create_task(self._warm_model_async())
+
     async def _get_model(self):
         if self._model is not None:
             return self._model
 
+        # Do not block the request path on initial heavyweight model load.
+        self.start_background_warmup()
+        return self._model
+
+    async def _warm_model_async(self) -> None:
         async with self._model_lock:
             if self._model is not None:
-                return self._model
+                return
             try:
                 from sentence_transformers import SentenceTransformer
 
-                self._model = SentenceTransformer(self._model_name)
+                self._model = await asyncio.to_thread(
+                    SentenceTransformer,
+                    self._model_name,
+                )
                 logger.info("SentenceTransformer '%s' loaded for embeddings", self._model_name)
             except Exception as exc:  # pragma: no cover
                 logger.warning("Unable to load SentenceTransformer (%s). Using hash embeddings.", exc)
                 self._model = None
-        return self._model
 
     def _hash_embed(self, text: str) -> List[float]:
         """

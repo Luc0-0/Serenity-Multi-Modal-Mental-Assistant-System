@@ -9,6 +9,8 @@ from app.services.journal_service import JournalService
 from app.services.emotion_analytics_service import EmotionAnalyticsService
 from app.services.context_manager import ContextManager
 from app.services.memory_service import memory_service
+from app.services.context_refresh_service import context_refresh_service
+from app.core.config import settings
 from app.db.session import get_db
 from app.routers.auth import get_current_user
 from app.models.user import User
@@ -93,6 +95,22 @@ async def post_process_chat_async(
                     conversation_summary=summary,
                     user_message=user_message,
                 )
+
+                helper_payload = None
+                if settings.feature_journal_delta_extraction:
+                    helper_payload = await journal_service.build_delta_helper_payload(
+                        db=db,
+                        user_id=user_id,
+                        user_message=user_message,
+                    )
+                    should_extract = should_extract and bool(helper_payload.get("should_extract"))
+                    logger.info(
+                        "[JOURNAL-DELTA] user=%s novelty=%.3f should_extract=%s top_changes=%s",
+                        user_id,
+                        helper_payload.get("novelty_score", 0.0),
+                        should_extract,
+                        helper_payload.get("top_changes_this_week", []),
+                    )
                 
                 if should_extract:
                     await journal_service.create_or_update_entry(
@@ -102,7 +120,8 @@ async def post_process_chat_async(
                         conversation_history=history + [{"role": "user", "content": user_message}],
                         emotion_label=emotion_label,
                         llm_service=main_app.llm_service,
-                        ai_confidence=0.95
+                        ai_confidence=0.95,
+                        helper_payload=helper_payload,
                     )
                     logger.info("[JOURNAL] Entry created/updated via background processing")
             except Exception as e:
@@ -137,6 +156,7 @@ async def chat_endpoint(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    context_refresh_service.note_user_activity(current_user.id)
     try:
         if body.conversation_id is None:
             conversation_id = await conversation_service.create_conversation(db, current_user.id)
@@ -282,6 +302,9 @@ async def chat_endpoint(
         user_message=body.message,
         emotion_label=emotion.get("label", "neutral")
     )
+    background_tasks.add_task(context_refresh_service.maybe_prewarm, current_user.id)
+
+    logger.info("[CTX-METRICS] %s", context_refresh_service.metrics())
     
     return ChatResponse(
         reply=reply,
@@ -299,6 +322,7 @@ async def chat_stream_endpoint(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    context_refresh_service.note_user_activity(current_user.id)
     try:
         if body.conversation_id is None:
             conversation_id = await conversation_service.create_conversation(db, current_user.id)
@@ -451,6 +475,9 @@ async def chat_stream_endpoint(
             user_message=body.message,
             emotion_label=emotion.get("label", "neutral"),
         ))
+        asyncio.create_task(context_refresh_service.maybe_prewarm(current_user.id))
+
+        logger.info("[CTX-METRICS] %s", context_refresh_service.metrics())
 
         yield f"data: __END__{conversation_id}__{saved_message_id}\n\n"
 

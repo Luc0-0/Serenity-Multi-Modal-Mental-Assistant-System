@@ -48,6 +48,42 @@ class Settings(BaseSettings):
     # Engine monitoring
     engine_health_check: bool = True
     engine_log_switches: bool = True
+
+    # Reliability workstreams (all OFF by default)
+    feature_semantic_blended_retrieval: bool = False
+    feature_adaptive_memory_weighting: bool = False
+    feature_memory_request_budget: bool = False
+    feature_journal_delta_extraction: bool = False
+    feature_goal_readiness_tuning: bool = False
+    feature_async_context_refresh: bool = False
+
+    # Semantic retrieval tuning
+    memory_semantic_similarity_weight: float = 0.75
+    memory_freshness_weight: float = 0.25
+    memory_recent_days: int = 7
+    memory_recent_channel_limit: int = 2
+    memory_stable_channel_limit: int = 2
+
+    # Adaptive weighting thresholds
+    memory_high_volatility_threshold: float = 0.35
+    memory_low_volatility_threshold: float = 0.15
+
+    # Request budget and tier controls
+    memory_request_budget_ms: int = 120
+    memory_tier2_candidate_limit: int = 50
+    memory_tier2_hard_limit: int = 3
+    memory_refresh_jitter_ms: int = 250
+    memory_refresh_queue_max_depth: int = 100
+
+    # Journal delta extraction tuning
+    journal_delta_novelty_threshold: float = 0.20
+    journal_weekly_top_changes_limit: int = 5
+
+    # Goal readiness tuning bounds
+    goal_readiness_min_intensity_multiplier: float = 0.80
+    goal_readiness_max_intensity_multiplier: float = 1.20
+    goal_readiness_min_load_multiplier: float = 0.85
+    goal_readiness_max_load_multiplier: float = 1.15
     
     class Config:
         env_file = ".env"

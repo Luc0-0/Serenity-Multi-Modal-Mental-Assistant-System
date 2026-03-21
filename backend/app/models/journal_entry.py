@@ -28,3 +28,19 @@ class JournalEntry(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class JournalWeeklyRollup(Base):
+    """Weekly merged signal summaries used for delta-first auto extraction."""
+
+    __tablename__ = "journal_weekly_rollups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    week_start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    compact_summary = Column(Text, nullable=True)
+    top_changes = Column(JSON, nullable=True, default=[])
+    signal_fingerprints = Column(JSON, nullable=True, default=[])
+    merged_count = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

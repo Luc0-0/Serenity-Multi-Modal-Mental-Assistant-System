@@ -2,7 +2,7 @@ from app.models.user import User
 from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
 from app.models.emotion_log import EmotionLog
-from app.models.journal_entry import JournalEntry
+from app.models.journal_entry import JournalEntry, JournalWeeklyRollup
 from app.models.crisis_event import CrisisEvent
 from app.models.meditation_session import MeditationSession
 from app.models.memory import (
@@ -28,6 +28,7 @@ __all__ = [
     "MessageRole",
     "EmotionLog",
     "JournalEntry",
+    "JournalWeeklyRollup",
     "CrisisEvent",
     "MeditationSession",
     "ConversationContextCache",

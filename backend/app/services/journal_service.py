@@ -7,10 +7,12 @@ Non-blocking: journal failures never affect chat flow.
 """
 
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.models.journal_entry import JournalEntry
+from sqlalchemy import select, desc
+from app.models.journal_entry import JournalEntry, JournalWeeklyRollup
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +82,52 @@ class JournalService:
     
     def __init__(self):
         pass
+
+    async def build_delta_helper_payload(
+        self,
+        db: AsyncSession,
+        *,
+        user_id: int,
+        user_message: str,
+    ) -> Dict:
+        """Build novelty decision + compact weekly context payload for extraction."""
+        if not settings.feature_journal_delta_extraction:
+            return {"should_extract": True, "novelty_score": 1.0, "top_changes_this_week": []}
+
+        fingerprint = self._fingerprint(user_message)
+        rollup = await self._get_or_create_weekly_rollup(db=db, user_id=user_id)
+
+        historical = rollup.signal_fingerprints or []
+        best_similarity = 0.0
+        for existing in historical:
+            best_similarity = max(best_similarity, self._jaccard_similarity(fingerprint, existing))
+
+        novelty_score = 1.0 - best_similarity
+        should_extract = novelty_score >= settings.journal_delta_novelty_threshold
+
+        recent_changes = (rollup.top_changes or [])[: max(1, settings.journal_weekly_top_changes_limit)]
+        compact_summary = rollup.compact_summary or ""
+
+        compact_context_messages = []
+        if compact_summary:
+            compact_context_messages.append({
+                "role": "system",
+                "content": f"[WEEKLY COMPACT SUMMARY] {compact_summary}",
+            })
+        if should_extract:
+            compact_context_messages.append({
+                "role": "user",
+                "content": f"[RECENT DELTA] {user_message}",
+            })
+
+        return {
+            "should_extract": should_extract,
+            "novelty_score": novelty_score,
+            "top_changes_this_week": recent_changes,
+            "compact_summary": compact_summary,
+            "compact_context_messages": compact_context_messages,
+            "fingerprint": fingerprint,
+        }
     
     async def find_existing_entry(self, db: AsyncSession, conversation_id: int, user_id: int) -> Optional[JournalEntry]:
         """Find existing auto-extracted entry for conversation."""
@@ -189,7 +237,8 @@ class JournalService:
         emotion_label: str = "neutral",
         llm_service = None,
         ai_confidence: float = 0.95,
-        conversation_date: str = None
+        conversation_date: str = None,
+        helper_payload: Optional[Dict] = None,
     ) -> Optional[int]:
         """
         Create or update journal entry with LLM-generated content.
@@ -230,11 +279,17 @@ class JournalService:
             
             if llm_service:
                 try:
+                    llm_history = conversation_history
+                    if settings.feature_journal_delta_extraction and helper_payload:
+                        compact = helper_payload.get("compact_context_messages") or []
+                        if compact:
+                            llm_history = compact
+
                     # Generate title (1 sentence)
-                    title = await llm_service.generate_journal_title(conversation_history, conversation_date)
+                    title = await llm_service.generate_journal_title(llm_history, conversation_date)
                     
                     # Generate content (full summary)
-                    content = await llm_service.generate_journal_summary(conversation_history, conversation_date)
+                    content = await llm_service.generate_journal_summary(llm_history, conversation_date)
                     
                     # Generate Serenity Thought (professional insight)
                     thought = await llm_service.generate_serenity_thought(content, emotion_label)
@@ -293,12 +348,114 @@ class JournalService:
                     f"Journal entry created: ID={entry_id}, conversation_id={conversation_id}, "
                     f"mood={mood}, tags={entry.tags}"
                 )
+
+            if settings.feature_journal_delta_extraction and helper_payload:
+                latest_change = ""
+                for item in reversed(conversation_history):
+                    if item.get("role") == "user":
+                        latest_change = item.get("content", "")
+                        break
+                await self._merge_weekly_rollup(
+                    db=db,
+                    user_id=user_id,
+                    latest_change=latest_change,
+                    helper_payload=helper_payload,
+                )
             
             return entry_id
             
         except Exception as e:
             logger.error(f"Failed to create/update journal entry: {str(e)}")
             return None  # Don't raise - non-blocking
+
+    async def _get_or_create_weekly_rollup(
+        self, *, db: AsyncSession, user_id: int
+    ) -> JournalWeeklyRollup:
+        now = datetime.now(timezone.utc)
+        week_start = (now - timedelta(days=now.weekday())).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        result = await db.execute(
+            select(JournalWeeklyRollup)
+            .where(
+                JournalWeeklyRollup.user_id == user_id,
+                JournalWeeklyRollup.week_start_date == week_start,
+            )
+            .order_by(desc(JournalWeeklyRollup.id))
+            .limit(1)
+        )
+        row = result.scalar_one_or_none()
+        if row:
+            return row
+
+        row = JournalWeeklyRollup(
+            user_id=user_id,
+            week_start_date=week_start,
+            compact_summary="",
+            top_changes=[],
+            signal_fingerprints=[],
+            merged_count=0,
+        )
+        db.add(row)
+        await db.flush()
+        return row
+
+    async def _merge_weekly_rollup(
+        self,
+        *,
+        db: AsyncSession,
+        user_id: int,
+        latest_change: str,
+        helper_payload: Dict,
+    ) -> None:
+        rollup = await self._get_or_create_weekly_rollup(db=db, user_id=user_id)
+        fingerprint = helper_payload.get("fingerprint") or self._fingerprint(latest_change)
+
+        fingerprints = list(rollup.signal_fingerprints or [])
+        top_changes = list(rollup.top_changes or [])
+
+        duplicate = False
+        for existing in fingerprints:
+            if self._jaccard_similarity(existing, fingerprint) >= 0.85:
+                duplicate = True
+                break
+
+        if not duplicate:
+            fingerprints.append(fingerprint)
+            top_changes.insert(0, latest_change[:220])
+
+        rollup.signal_fingerprints = fingerprints[-20:]
+        rollup.top_changes = top_changes[: max(1, settings.journal_weekly_top_changes_limit)]
+        rollup.merged_count = int(rollup.merged_count or 0) + 1
+
+        compact_summary = " | ".join(rollup.top_changes[:3])
+        rollup.compact_summary = compact_summary
+        rollup.updated_at = datetime.now(timezone.utc)
+        await db.flush()
+
+    def _fingerprint(self, text: str) -> List[str]:
+        tokens = [t.strip(".,!?;:\"'()[]{}") for t in (text or "").lower().split()]
+        tokens = [t for t in tokens if len(t) >= 4]
+        unique = []
+        seen = set()
+        for token in tokens:
+            if token not in seen:
+                seen.add(token)
+                unique.append(token)
+            if len(unique) >= 16:
+                break
+        return unique
+
+    def _jaccard_similarity(self, a: List[str], b: List[str]) -> float:
+        sa = set(a or [])
+        sb = set(b or [])
+        if not sa and not sb:
+            return 1.0
+        union = sa | sb
+        if not union:
+            return 0.0
+        return len(sa & sb) / len(union)
     
     def _basic_summary_from_history(self, conversation_history: List[Dict]) -> str:
         """Fallback: create basic summary from conversation history."""

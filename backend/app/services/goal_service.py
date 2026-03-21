@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 
 from app.models import Goal, GoalPhase, DailySchedule, DailyLog, PhaseTask, WeeklyReview, StreakFreeze
+from app.models.emotion_log import EmotionLog
+from app.core.config import settings
 
 
 class GoalService:
@@ -19,6 +21,133 @@ class GoalService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def apply_readiness_tuning(
+        self,
+        *,
+        user_id: int,
+        schedule_items: List[Dict],
+        user_override_ack: Optional[bool],
+    ) -> List[Dict]:
+        """Phase-1 bounded readiness tuning, explicitly gated by user override acknowledgment."""
+        if not settings.feature_goal_readiness_tuning:
+            return schedule_items
+        if user_override_ack is not True:
+            return schedule_items
+
+        readiness = await self._compute_readiness_score(user_id=user_id)
+        intensity_multiplier = self._clamp(
+            0.8 + (0.4 * readiness),
+            settings.goal_readiness_min_intensity_multiplier,
+            settings.goal_readiness_max_intensity_multiplier,
+        )
+        load_multiplier = self._clamp(
+            0.85 + (0.3 * readiness),
+            settings.goal_readiness_min_load_multiplier,
+            settings.goal_readiness_max_load_multiplier,
+        )
+
+        tuned = self._apply_load_multiplier(schedule_items, load_multiplier)
+        tuned = self._apply_intensity_multiplier(tuned, intensity_multiplier)
+        if readiness < 0.40:
+            tuned = self._insert_recovery_slot(tuned)
+
+        return tuned
+
+    async def _compute_readiness_score(self, *, user_id: int) -> float:
+        now = datetime.utcnow()
+
+        logs_30_result = await self.db.execute(
+            select(EmotionLog.primary_emotion)
+            .where(
+                EmotionLog.user_id == user_id,
+                EmotionLog.created_at >= now - timedelta(days=30),
+            )
+            .order_by(EmotionLog.created_at.asc())
+        )
+        emotions_30 = [row[0] for row in logs_30_result.all() if row and row[0]]
+
+        positive = sum(1 for e in emotions_30 if e in {"joy", "neutral", "surprise"})
+        negative = sum(1 for e in emotions_30 if e in {"sadness", "fear", "anger", "disgust"})
+        total = len(emotions_30) or 1
+        aggregate_30 = self._clamp((positive - (0.5 * negative)) / total + 0.5, 0.0, 1.0)
+
+        logs_7_result = await self.db.execute(
+            select(EmotionLog.primary_emotion)
+            .where(
+                EmotionLog.user_id == user_id,
+                EmotionLog.created_at >= now - timedelta(days=7),
+            )
+            .order_by(EmotionLog.created_at.asc())
+        )
+        emotions_7 = [row[0] for row in logs_7_result.all() if row and row[0]]
+        shifts = 0
+        for idx in range(1, len(emotions_7)):
+            if emotions_7[idx] != emotions_7[idx - 1]:
+                shifts += 1
+        volatility = (shifts / len(emotions_7)) if emotions_7 else 0.0
+        stability_7 = 1.0 - self._clamp(volatility, 0.0, 1.0)
+
+        pulse_result = await self.db.execute(
+            select(WeeklyReview.answers)
+            .where(WeeklyReview.user_id == user_id)
+            .order_by(WeeklyReview.week_start_date.desc())
+            .limit(1)
+        )
+        pulse_answers = pulse_result.scalar_one_or_none()
+        pulse_sentiment = self._estimate_pulse_sentiment(pulse_answers)
+
+        readiness = (0.5 * aggregate_30) + (0.3 * stability_7) + (0.2 * pulse_sentiment)
+        return self._clamp(readiness, 0.0, 1.0)
+
+    def _estimate_pulse_sentiment(self, pulse_answers_raw: Optional[str]) -> float:
+        if not pulse_answers_raw:
+            return 0.5
+        text = str(pulse_answers_raw).lower()
+        positive_markers = ["good", "better", "great", "confident", "stable", "energy"]
+        negative_markers = ["bad", "worse", "overwhelmed", "anxious", "tired", "stressed"]
+        pos = sum(1 for marker in positive_markers if marker in text)
+        neg = sum(1 for marker in negative_markers if marker in text)
+        score = 0.5 + ((pos - neg) * 0.08)
+        return self._clamp(score, 0.0, 1.0)
+
+    def _apply_load_multiplier(self, schedule_items: List[Dict], multiplier: float) -> List[Dict]:
+        if not schedule_items:
+            return []
+        target = max(1, int(round(len(schedule_items) * multiplier)))
+        if target <= len(schedule_items):
+            return schedule_items[:target]
+
+        expanded = list(schedule_items)
+        idx = 0
+        while len(expanded) < target and schedule_items:
+            base = dict(schedule_items[idx % len(schedule_items)])
+            base["activity"] = f"{base.get('activity', 'Task')} (light review)"
+            expanded.append(base)
+            idx += 1
+        return expanded
+
+    def _apply_intensity_multiplier(self, schedule_items: List[Dict], multiplier: float) -> List[Dict]:
+        tuned = []
+        for item in schedule_items:
+            candidate = dict(item)
+            description = candidate.get("description") or ""
+            candidate["description"] = (description + f" [intensity x{multiplier:.2f}]").strip()
+            tuned.append(candidate)
+        return tuned
+
+    def _insert_recovery_slot(self, schedule_items: List[Dict]) -> List[Dict]:
+        recovery = {
+            "time": "20:30",
+            "activity": "Recovery slot",
+            "description": "Low-intensity reset block (breathing + reflection).",
+            "tags": ["recovery"],
+            "sort_order": 999,
+        }
+        return schedule_items + [recovery]
+
+    def _clamp(self, value: float, low: float, high: float) -> float:
+        return max(low, min(high, value))
 
     async def create_goal(
         self,

@@ -52,7 +52,8 @@ async def generate_questions(
 @router.post("/generate-schedule-from-answers")
 async def generate_schedule_from_answers(
     request_data: dict,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Generate daily schedule and phases from AI question answers."""
     ai_service = AIQuestionsService()
@@ -64,6 +65,13 @@ async def generate_schedule_from_answers(
             theme=request_data.get("theme", "balanced"),
             duration_days=request_data.get("duration_days", 180),
             answers=request_data.get("answers", {})
+        )
+
+        goal_service = GoalService(db)
+        result["daily_schedule"] = await goal_service.apply_readiness_tuning(
+            user_id=current_user.id,
+            schedule_items=result.get("daily_schedule", []),
+            user_override_ack=request_data.get("readiness_override_ack"),
         )
 
         return result
@@ -224,6 +232,12 @@ async def create_goal(
                 duration_days=goal_data.get("duration_days", 180),
                 theme=goal_data.get("theme", "balanced")
             )
+
+    schedule_items = await goal_service.apply_readiness_tuning(
+        user_id=current_user.id,
+        schedule_items=schedule_items,
+        user_override_ack=goal_data.get("readiness_override_ack"),
+    )
 
     goal = await goal_service.create_goal(
         user_id=current_user.id,

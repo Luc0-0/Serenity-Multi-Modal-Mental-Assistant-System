@@ -234,47 +234,33 @@ function ChevronUpIcon() {
   );
 }
 
-// ── Vitality Dock ─────────────────────────────────────────────────────────────
+// ── Asymmetric Horizon Tools ──────────────────────────────────────────────────
 
-function VitalityDock({ streak, completedToday, totalSchedule, daysRemaining, progress }) {
+function HeroArcRing({ progress }) {
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const off = circ * (1 - Math.min(progress, 100) / 100);
+
   return (
-    <div className={styles.vitalityDock}>
-      <div className={styles.dockStats}>
-        <div className={styles.dockStat}>
-          <span className={styles.dockVal}>{streak}</span>
-          <span className={styles.dockLbl}>Day Streak</span>
-        </div>
-        <div className={styles.dockDivider} />
-        <div className={styles.dockStat}>
-          <span className={styles.dockValIce}>
-            {totalSchedule > 0 ? `${completedToday}/${totalSchedule}` : "—"}
-          </span>
-          <span className={styles.dockLbl}>Today</span>
-        </div>
-        <div className={styles.dockDivider} />
-        <div className={styles.dockStat}>
-          <span className={styles.dockVal}>{daysRemaining}</span>
-          <span className={styles.dockLbl}>Days Left</span>
-        </div>
-      </div>
-      <div className={styles.dockProgressTrack}>
-        <motion.div
-          className={styles.dockProgressFill}
-          initial={{ width: "0%" }}
-          animate={{ width: `${Math.max(progress, 0.5)}%` }}
-          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+    <div className={styles.heroArcRing}>
+      <svg width="86" height="86" className={styles.heroArcSvg}>
+        <defs>
+          <linearGradient id="arcGradHero" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#C8A96E" />
+            <stop offset="60%" stopColor="#d4b97e" />
+            <stop offset="100%" stopColor="#6EE7B7" />
+          </linearGradient>
+        </defs>
+        <circle cx="43" cy="43" r={r} strokeWidth="2.5" stroke="rgba(255,255,255,0.04)" fill="none" />
+        <motion.circle
+          cx="43" cy="43" r={r} strokeWidth="2.5" stroke="url(#arcGradHero)" fill="none"
+          strokeLinecap="round" strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: off }}
+          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         />
-      </div>
-    </div>
-  );
-}
-
-function WhisperCard({ quote }) {
-  return (
-    <div className={styles.whisperWrap}>
-      <div className={styles.whisperCard}>
-        <span className={styles.whisperQuote}>"{quote.text}"</span>
-        <span className={styles.whisperAuthor}>— {quote.author}</span>
+      </svg>
+      <div className={styles.heroArcCenter}>
+        <SvgIcon name="target" size={18} color="rgba(197, 168, 124, 0.8)" />
       </div>
     </div>
   );
@@ -771,45 +757,73 @@ export default function GoalBuilder() {
               style={{ overflow: "hidden" }}
             >
               <div className={styles.heroSection}>
-                <motion.h1
-                  className={styles.heroTitle}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {goal.title}
-                </motion.h1>
-                <motion.div
-                  className={styles.heroMeta}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.15 }}
-                >
-                  <span className={styles.badge}>{goal.theme}</span>
-                  <span className={styles.metaDot} />
-                  <span className={styles.metaText}>Day {dayNumber} of {goal.duration_days}</span>
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <VitalityDock
-                    streak={goal.current_streak}
-                    completedToday={completedToday}
-                    totalSchedule={totalSchedule}
-                    daysRemaining={daysRemaining}
-                    progress={overallProgress}
-                  />
-                </motion.div>
+                {/* LEFT: Narrative */}
+                <div className={styles.heroLeft}>
+                  <motion.h1
+                    className={styles.heroTitle}
+                    initial={{ opacity: 0, x: -14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {goal.title}
+                  </motion.h1>
 
-                {goal.total_completed_days > 0 && goal.current_streak < goal.total_completed_days && (
-                  <div className={styles.streakNotice}>
-                    <SvgIcon name="chart" size={12} color="currentColor" />
-                    {goal.total_completed_days} total days logged
+                  <motion.div
+                    className={styles.permanentQuote}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.15 }}
+                  >
+                    <span className={styles.quoteText}>"{currentQuote.text}"</span>
+                  </motion.div>
+
+                  <motion.div
+                    className={styles.heroMeta}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.25 }}
+                  >
+                    <span className={styles.badge}>{goal.theme}</span>
+                    <span className={styles.metaDot} />
+                    <span className={styles.metaText}>Day {dayNumber} of {goal.duration_days}</span>
+                  </motion.div>
+
+                  <motion.div 
+                    className={styles.heroJourneyTrack}
+                    initial={{ opacity: 0, width: "0%" }}
+                    animate={{ opacity: 1, width: "100%" }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                  >
+                    <motion.div
+                      className={styles.heroJourneyFill}
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${Math.max(overallProgress, 0.5)}%` }}
+                      transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                    />
+                  </motion.div>
+                </div>
+
+                {/* RIGHT: Data Art */}
+                <motion.div
+                  className={styles.heroRight}
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className={styles.heroDataGroup}>
+                    <div className={styles.heroDataBadge}>
+                      <span className={styles.dataBadgeVal}>{goal.current_streak}</span>
+                      <span className={styles.dataBadgeLbl}>Streak</span>
+                    </div>
+                    <div className={styles.heroDataBadge}>
+                      <span className={styles.dataBadgeValIce}>
+                        {totalSchedule > 0 ? `${completedToday}/${totalSchedule}` : "—"}
+                      </span>
+                      <span className={styles.dataBadgeLbl}>Today</span>
+                    </div>
                   </div>
-                )}
+                  <HeroArcRing progress={overallProgress} />
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -833,19 +847,7 @@ export default function GoalBuilder() {
         </motion.button>
       </motion.div>
 
-      {/* Whisper Quote */}
-      <AnimatePresence mode="wait">
-        {!headerCollapsed && activeTab === "today" && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, height: 0, overflow: "hidden" }}
-            transition={{ duration: 0.4 }}
-          >
-            <WhisperCard quote={currentQuote} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* ── Tab Navigation ────────────────────────────────────────────────── */}
       <motion.div

@@ -364,34 +364,65 @@
   margin: 4px 6px;
 }
 
-/* ── Hero Section (Sanctum 2.0) ── */
+/* ── The Asymmetric Horizon (Sanctum 3.0) ── */
 .heroSection {
   width: 100%;
   max-width: var(--s-rail-max);
   margin: 0 auto;
   box-sizing: border-box;
   display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 32px var(--s-rail-pad) 24px;
+  gap: 24px;
+}
+
+/* ── Left Narrative ── */
+.heroLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
-  padding: 24px var(--s-rail-pad) 0;
+  justify-content: flex-end;
 }
 
 .heroTitle {
   font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-  font-size: clamp(32px, 5vw, 44px);
+  font-size: clamp(34px, 5.5vw, 52px);
   font-weight: 500;
   font-style: italic;
   color: var(--s-cream);
-  line-height: 1.1;
-  letter-spacing: -0.5px;
+  line-height: 1.05;
+  letter-spacing: -0.6px;
   margin: 0 0 12px 0;
   text-shadow: 0 4px 60px rgba(197, 168, 124, 0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.permanentQuote {
+  margin-bottom: 24px;
+  border-left: 2px solid rgba(197, 168, 124, 0.4);
+  padding-left: 14px;
+  max-width: 85%;
+}
+
+.quoteText {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 16.5px;
+  font-weight: 300;
+  color: var(--s-cream-sub);
+  line-height: 1.5;
+  letter-spacing: 0.3px;
 }
 
 .heroMeta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .badge {
@@ -421,143 +452,100 @@
   letter-spacing: 0.2px;
 }
 
-/* ── Vitality Dock ── */
-.vitalityDock {
-  background: rgba(10, 8, 5, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
-  -webkit-backdrop-filter: blur(40px) saturate(1.5);
-  backdrop-filter: blur(40px) saturate(1.5);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+.heroJourneyTrack {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  width: 100%;
+  border-radius: 1px;
   overflow: hidden;
-  transition: all 0.3s var(--s-ease);
 }
 
-.vitalityDock:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+.heroJourneyFill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(197, 168, 124, 0.4), rgba(110, 231, 183, 0.6));
+  box-shadow: 0 0 8px rgba(110, 231, 183, 0.3);
 }
 
-.dockStats {
+/* ── Right Data Art ── */
+.heroRight {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
+  gap: 20px;
 }
 
-.dockStat {
-  flex: 1;
+.heroDataGroup {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.dockStat:nth-child(3) {
-  align-items: center;
-}
-
-.dockStat:nth-child(5) {
+  gap: 10px;
   align-items: flex-end;
 }
 
-.dockVal {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--s-amber);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.dockValIce {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--s-ice);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.dockValNeutral {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--s-cream);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.dockLbl {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--s-cream-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.dockDivider {
-  width: 1px;
-  height: 24px;
-  background: var(--s-border-dim);
-}
-
-.dockProgressTrack {
-  height: 2px;
-  background: rgba(255, 255, 255, 0.03);
-  width: 100%;
-}
-
-.dockProgressFill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--s-amber-dim), var(--s-ice));
-  box-shadow: 0 0 10px rgba(139, 191, 204, 0.3);
-}
-
-.streakNotice {
+.heroDataBadge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  font-size: 11px;
-  color: var(--s-cream-dim);
-  padding-left: 4px;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(10, 8, 5, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* ── Whisper Card (Quote) ── */
-.whisperWrap {
-  width: 100%;
-  max-width: var(--s-rail-max);
-  margin: 0 auto;
-  box-sizing: border-box;
-  padding: 24px var(--s-rail-pad) 0;
+.dataBadgeVal {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--s-amber);
+  line-height: 1;
 }
 
-.whisperCard {
-  padding: 18px 22px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent);
-  border-left: 2px solid var(--s-border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.dataBadgeValIce {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--s-ice);
+  line-height: 1;
 }
 
-.whisperQuote {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
-  font-size: 15.5px;
-  font-weight: 300;
-  color: var(--s-cream-sub);
-  line-height: 1.5;
-  letter-spacing: 0.2px;
-}
-
-.whisperAuthor {
-  font-size: 10px;
+.dataBadgeLbl {
+  font-size: 9px;
   font-weight: 600;
-  color: var(--s-amber-dim);
+  color: var(--s-cream-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* ── Hero Arc Ring ── */
+.heroArcRing {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroArcSvg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 12px rgba(197, 168, 124, 0.25));
+}
+
+.heroArcCenter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(197, 168, 124, 0.05);
+  border: 1px solid rgba(197, 168, 124, 0.1);
 }
 
 /* ── Collapsed Mini Title ── */

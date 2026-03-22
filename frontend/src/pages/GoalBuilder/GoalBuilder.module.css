@@ -367,13 +367,13 @@
 /* ── The Asymmetric Horizon (Sanctum 3.0) ── */
 .heroSection {
   width: 100%;
-  max-width: var(--s-rail-max);
+  max-width: 1440px;
   margin: 0 auto;
   box-sizing: border-box;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 32px var(--s-rail-pad) 24px;
+  padding: 48px 6vw 24px;
   gap: 24px;
 }
 
@@ -590,13 +590,13 @@
 
 .tabList {
   display: flex;
-  max-width: var(--s-rail-max);
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 4px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.04);
-  width: calc(100% - var(--s-rail-pad) * 2);
+  width: calc(100% - 12vw);
 }
 
 .tab {
@@ -665,9 +665,9 @@
 }
 
 .tabPanel {
-  max-width: var(--s-rail-max);
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 30px var(--s-rail-pad) 84px;
+  padding: 40px 6vw 84px;
 }
 
 .tabLoading {

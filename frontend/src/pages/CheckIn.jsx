@@ -9,7 +9,11 @@ import { EmotionalStatusCard } from "../components/EmotionalStatusCard";
 import { CopyButton } from "../components/CopyButton";
 import { AnimatedTooltip } from "../components/AnimatedTooltip";
 import { exportConversationAsMarkdown } from "../services/exportService";
-import { sendChatMessage, getErrorDisplay } from "../services/api";
+import {
+  sendChatMessage,
+  sendChatMessageStream,
+  getErrorDisplay,
+} from "../services/api";
 import { fetchEmotionInsights } from "../services/emotionService";
 import { useVoiceMode } from "../hooks/useVoiceMode";
 import { EnhancedVoiceOverlay } from "../components/EnhancedVoiceOverlay";
@@ -105,7 +109,11 @@ export function CheckIn() {
         text: msg.text,
         timestamp: new Date(),
         crisis: msg.crisis
-          ? { detected: true, severity: msg.crisis.severity, resources: msg.crisis.resources }
+          ? {
+              detected: true,
+              severity: msg.crisis.severity,
+              resources: msg.crisis.resources,
+            }
           : null,
       };
       setMessages((prev) => [...prev, newMsg]);
@@ -217,36 +225,6 @@ export function CheckIn() {
     }
   };
 
-  const displayTextStream = useCallback((messageIndex, fullText) => {
-    if (streamingRef.current) clearTimeout(streamingRef.current);
-    setIsStreaming(true);
-    let charIndex = 0;
-    const charsPerTick = 2;
-    const delay = 18;
-
-    const displayNextChunk = () => {
-      if (charIndex < fullText.length) {
-        charIndex = Math.min(charIndex + charsPerTick, fullText.length);
-        const currentText = fullText.slice(0, charIndex);
-        setMessages((prev) => {
-          if (!prev[messageIndex]) return prev;
-          const updated = [...prev];
-          updated[messageIndex] = {
-            ...updated[messageIndex],
-            text: currentText,
-            isTyping: false,
-          };
-          return updated;
-        });
-        streamingRef.current = setTimeout(displayNextChunk, delay);
-      } else {
-        setIsStreaming(false);
-        setIsLoading(false);
-      }
-    };
-    displayNextChunk();
-  }, []);
-
   /* ── Transition: orb shrinks, then chat appears ── */
   const enterChat = useCallback(() => {
     setIsTransitioning(true);
@@ -296,12 +274,27 @@ export function CheckIn() {
       isTyping: true,
     };
     setMessages((prev) => [...prev, assistantMessage]);
+    setIsStreaming(true);
 
     try {
-      const response = await sendChatMessage({
-        message: trimmedMessage,
-        conversation_id: conversationId,
-      });
+      const response = await sendChatMessageStream(
+        {
+          message: trimmedMessage,
+          conversation_id: conversationId,
+        },
+        (partialText) => {
+          setMessages((prev) => {
+            if (!prev[assistantMessageIndex]) return prev;
+            const updated = [...prev];
+            updated[assistantMessageIndex] = {
+              ...updated[assistantMessageIndex],
+              text: partialText,
+              isTyping: false,
+            };
+            return updated;
+          });
+        },
+      );
 
       if (conversationId === null && response.conversation_id) {
         setConversationId(response.conversation_id);
@@ -317,26 +310,24 @@ export function CheckIn() {
         triggerRefresh();
       }
 
-      displayTextStream(assistantMessageIndex, response.reply);
+      setIsStreaming(false);
+      setIsLoading(false);
 
       if (response.crisis_detected) {
-        const streamDuration = (response.reply.length / 2) * 18;
-        setTimeout(() => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            if (updated[assistantMessageIndex]) {
-              updated[assistantMessageIndex] = {
-                ...updated[assistantMessageIndex],
-                crisis: {
-                  detected: true,
-                  severity: response.crisis_severity,
-                  resources: response.resources,
-                },
-              };
-            }
-            return updated;
-          });
-        }, streamDuration + 500);
+        setMessages((prev) => {
+          const updated = [...prev];
+          if (updated[assistantMessageIndex]) {
+            updated[assistantMessageIndex] = {
+              ...updated[assistantMessageIndex],
+              crisis: {
+                detected: true,
+                severity: response.crisis_severity,
+                resources: response.resources || [],
+              },
+            };
+          }
+          return updated;
+        });
       }
     } catch (err) {
       setIsLoading(false);

@@ -25,7 +25,23 @@ function isCurrentActivity(itemTime, nextItemTime) {
 export default function TodayTab({ goalData, onUpdate }) {
   const [completedItems, setCompletedItems] = useState(() => {
     const log = goalData?.recent_logs?.[0];
-    if (!log?.completed_items) return {};
+    if (!log) return {};
+
+    // Get strictly today's local date in YYYY-MM-DD format
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // Compare with log.date (assumes backend sends YYYY-MM-DD or ISO string)
+    const logDateStr = log.date ? String(log.date).split('T')[0] : '';
+
+    if (logDateStr !== todayStr) {
+      return {}; // It is a new day, start fresh!
+    }
+
+    if (!log.completed_items) return {};
     return typeof log.completed_items === 'string' ? JSON.parse(log.completed_items) : log.completed_items;
   });
   const [isLogging, setIsLogging] = useState(false);

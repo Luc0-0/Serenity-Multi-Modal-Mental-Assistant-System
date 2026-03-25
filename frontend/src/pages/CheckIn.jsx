@@ -612,13 +612,16 @@ export function CheckIn() {
                       <span className={styles.actionBtnBar} />
                       Meditate
                     </button>
-                    <button
-                      className={styles.actionBtn}
-                      onClick={voice.enterVoiceMode}
-                    >
-                      <span className={styles.actionBtnBar} />
-                      Voice
-                    </button>
+                    <AnimatedTooltip content="Voice Coming Soon" placement="top">
+                      <button
+                        className={styles.actionBtn}
+                        style={{ opacity: 0.5, cursor: "not-allowed" }}
+                        onClick={(e) => { e.preventDefault(); }}
+                      >
+                        <span className={styles.actionBtnBar} />
+                        Voice
+                      </button>
+                    </AnimatedTooltip>
                   </div>
                 </div>
               </div>
@@ -828,11 +831,12 @@ export function CheckIn() {
                     )}
                   </button>
                 </AnimatedTooltip>
-                <AnimatedTooltip content="Voice conversation" placement="top">
+                <AnimatedTooltip content="Voice Coming Soon" placement="top">
                   <button
                     className={styles.voiceModeBtn}
-                    onClick={voice.enterVoiceMode}
-                    aria-label="Enter voice conversation mode"
+                    style={{ opacity: 0.5, cursor: "not-allowed" }}
+                    onClick={(e) => { e.preventDefault(); }}
+                    aria-label="Voice conversation coming soon"
                   >
                     <svg
                       width="20"

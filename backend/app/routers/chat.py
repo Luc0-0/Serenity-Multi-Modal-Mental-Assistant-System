@@ -309,7 +309,9 @@ async def chat_endpoint(
     return ChatResponse(
         reply=reply,
         conversation_id=conversation_id,
-        message_id=user_message_id
+        message_id=user_message_id,
+        detected_emotion=emotion.get("label"),
+        emotion_confidence=emotion.get("confidence"),
     )
 
 
@@ -479,6 +481,13 @@ async def chat_stream_endpoint(
 
         logger.info("[CTX-METRICS] %s", context_refresh_service.metrics())
 
+        # Emit the detected emotion so the UI can update the EmotionalStatusCard
+        # immediately instead of waiting for the 7-day aggregate to refresh.
+        yield (
+            f"data: __EMOTION__"
+            f"{emotion.get('label', 'neutral')}__"
+            f"{emotion.get('confidence', 0):.3f}\n\n"
+        )
         yield f"data: __END__{conversation_id}__{saved_message_id}\n\n"
 
     return StreamingResponse(stream_generator(), media_type="text/event-stream")

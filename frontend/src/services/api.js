@@ -399,6 +399,8 @@ export const sendChatMessageStream = async ({ message, conversation_id = null },
     let isCrisis = false;
     let crisisSeverity = null;
     let crisisResourceCount = 0;
+    let detectedEmotion = null;
+    let emotionConfidence = null;
     let fullText = '';
 
     while (true) {
@@ -420,6 +422,12 @@ export const sendChatMessageStream = async ({ message, conversation_id = null },
             crisisSeverity = parts[2];
             crisisResourceCount = parseInt(parts[3], 10);
             isCrisis = true;
+          } else if (data.startsWith('__EMOTION__')) {
+            // "__EMOTION__label__confidence" → ["", "EMOTION", label, confidence]
+            const parts = data.split('__');
+            detectedEmotion = parts[2] || null;
+            emotionConfidence = parseFloat(parts[3]);
+            if (Number.isNaN(emotionConfidence)) emotionConfidence = null;
           } else if (data.startsWith('__END__')) {
             // "__END__convId__msgId".split("__") → ["", "END", convId, msgId]
             const parts = data.split('__');
@@ -439,6 +447,8 @@ export const sendChatMessageStream = async ({ message, conversation_id = null },
       message_id: messageId,
       crisis_detected: isCrisis,
       crisis_severity: crisisSeverity,
+      detected_emotion: detectedEmotion,
+      emotion_confidence: emotionConfidence,
     };
   } catch (error) {
     if (error.name === 'TimeoutError') {

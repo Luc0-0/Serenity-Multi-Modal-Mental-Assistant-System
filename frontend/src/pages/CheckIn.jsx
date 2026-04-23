@@ -203,7 +203,18 @@ export function CheckIn() {
       const fetchEmotions = async () => {
         setEmotionLoading(true);
         try {
-          const data = await fetchEmotionInsights(userId, 7);
+          // Auto-widen: try 7d, then 30d, 90d, 365d — surface any real data.
+          // Prevents the status card from showing "Neutral / 0%" when the user
+          // last checked in more than 7 days ago.
+          let data = null;
+          for (const days of [7, 30, 90, 365]) {
+            const attempt = await fetchEmotionInsights(userId, days);
+            if (attempt && attempt.total_logs > 0) {
+              data = attempt;
+              break;
+            }
+            if (!data) data = attempt; // keep last response as fallback
+          }
           setEmotionData(data);
         } catch (err) {
           console.warn("Failed to fetch emotion insights:", err.message);
@@ -308,6 +319,31 @@ export function CheckIn() {
           console.warn("Failed to save to localStorage:", e.message);
         }
         triggerRefresh();
+      }
+
+      // Reflect the latest detected emotion in the status card immediately.
+      // The 7-day aggregate fetch runs 2s later and may still be empty/neutral,
+      // but the card should show what the user JUST felt.
+      if (response.detected_emotion) {
+        setEmotionData((prev) => {
+          const prevFreq = (prev && prev.emotion_frequency) || {};
+          const nextFreq = {
+            ...prevFreq,
+            [response.detected_emotion]:
+              (prevFreq[response.detected_emotion] || 0) + 1,
+          };
+          const nextTotal = Math.max((prev && prev.total_logs) || 0, 0) + 1;
+          const dominantCount = nextFreq[response.detected_emotion];
+          return {
+            ...(prev || {}),
+            emotion_frequency: nextFreq,
+            dominant_emotion: response.detected_emotion,
+            dominance_pct: dominantCount / nextTotal,
+            total_logs: nextTotal,
+            latest_emotion: response.detected_emotion,
+            latest_confidence: response.emotion_confidence ?? null,
+          };
+        });
       }
 
       setIsStreaming(false);

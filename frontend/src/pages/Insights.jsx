@@ -285,7 +285,10 @@ export function Insights() {
     );
   }
 
-  const moodTrendsForPeriod = insightsData.moodTrends.slice(-period);
+  // After auto-widen the API may have returned a larger window than `period`.
+  // Always render the full returned window — slicing back to the user's selector
+  // would re-create the empty tail we just escaped from.
+  const moodTrendsForPeriod = insightsData.moodTrends;
 
   return (
     <div className={styles.container} id="insights-scroll-container">

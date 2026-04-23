@@ -31,18 +31,25 @@ class ChatResponse(BaseModel):
     reply: str = Field(..., description="Assistant response")
     conversation_id: int = Field(..., description="Conversation ID")
     message_id: int = Field(..., description="User message ID")
-    
+
+    # Per-message emotion detection (lets the UI reflect the latest mood
+    # immediately instead of waiting for 7-day aggregates).
+    detected_emotion: Optional[str] = None
+    emotion_confidence: Optional[float] = None
+
     # Crisis detection fields (optional, populated if crisis detected)
     crisis_detected: Optional[bool] = False
     crisis_severity: Optional[str] = None  # normal|warning|danger|emergency
     resources: Optional[List[CrisisResource]] = None
-    
+
     class Config:
         json_schema_extra = {
             "example": {
                 "reply": "I hear you. That's a challenging emotion to navigate...",
                 "conversation_id": 1,
                 "message_id": 1,
+                "detected_emotion": "sadness",
+                "emotion_confidence": 0.82,
                 "crisis_detected": False
             }
         }

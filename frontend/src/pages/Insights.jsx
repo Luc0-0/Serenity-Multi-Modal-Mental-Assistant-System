@@ -142,8 +142,17 @@ export function Insights() {
     setInsightsData(null);
     setFetchFailed(false);
     try {
-      const data = await authFetch(`${API_BASE_URL}/api/emotions/insights/?days=${days}`);
-      if (data) setInsightsData(transformData(data));
+      // Try the requested window; if empty, auto-widen to surface older history.
+      const windows = [days, 30, 90, 365].filter((w, i, arr) => arr.indexOf(w) === i);
+      let resolved = null;
+      for (const w of windows) {
+        const data = await authFetch(`${API_BASE_URL}/api/emotions/insights/?days=${w}`);
+        if (data && data.total_logs > 0) {
+          resolved = transformData(data);
+          break;
+        }
+      }
+      setInsightsData(resolved);
     } catch {
       setFetchFailed(true);
     } finally {

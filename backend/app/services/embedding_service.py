@@ -21,7 +21,7 @@ class EmbeddingService:
 
     def __init__(self) -> None:
         self._model = None
-        self._model_name = "all-MiniLM-L6-v2"
+        self._model_name = "BAAI/bge-small-en-v1.5"
         self._model_lock = asyncio.Lock()
         self._warmup_task: Optional[asyncio.Task] = None
 
@@ -35,8 +35,8 @@ class EmbeddingService:
 
         try:
             # SentenceTransformer is synchronous; run it off the main loop
-            vector = await asyncio.to_thread(model.encode, [text], normalize_embeddings=True)
-            return vector[0].tolist()
+            embeddings = await asyncio.to_thread(lambda: list(model.embed([text])))
+            return embeddings[0].tolist()
         except Exception as exc:  # pragma: no cover
             logger.warning("Embedding model failed (%s), falling back to hashing", exc)
             return self._hash_embed(text)
@@ -65,15 +65,15 @@ class EmbeddingService:
             if self._model is not None:
                 return
             try:
-                from sentence_transformers import SentenceTransformer
+                from fastembed import TextEmbedding
 
                 self._model = await asyncio.to_thread(
-                    SentenceTransformer,
+                    TextEmbedding,
                     self._model_name,
                 )
-                logger.info("SentenceTransformer '%s' loaded for embeddings", self._model_name)
+                logger.info("FastEmbed '%s' loaded for embeddings", self._model_name)
             except Exception as exc:  # pragma: no cover
-                logger.warning("Unable to load SentenceTransformer (%s). Using hash embeddings.", exc)
+                logger.warning("Unable to load FastEmbed (%s). Using hash embeddings.", exc)
                 self._model = None
 
     def _hash_embed(self, text: str) -> List[float]:

@@ -596,7 +596,8 @@ function MoodAreaChart({ moodTrends, period }) {
 
   const [hoverIdx, setHoverIdx] = useState(null);
 
-  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+  const labelStep = period <= 7 ? 1 : Math.ceil(moodTrends.length / 8);
+  const showLabel = (i) => i % labelStep === 0 || i === moodTrends.length - 1;
 
   const pts = moodTrends.map((day, i) => {
     const entries = Object.entries(day.emotions);
@@ -604,13 +605,12 @@ function MoodAreaChart({ moodTrends, period }) {
     const score = dominant ? (SENTIMENT_SCORE[dominant[0]] ?? 0) : null;
     const x = PAD.left + (moodTrends.length === 1 ? chartW / 2 : (i / (moodTrends.length - 1)) * chartW);
     const y = score !== null ? PAD.top + ((1 - (score + 1) / 2) * chartH) : null;
-    return { x, y, day, dominant, score };
+    return { x, y, day, dominant, score, idx: i };
   });
 
-  const activePts = pts.filter(p => p.y !== null);
+  const activePts = pts.filter(p => p.y !== null && p.dominant !== null);
   const linePath = activePts.length >= 2 ? buildSmoothPath(activePts) : "";
 
-  // Gradient stops shift color seamlessly across the line
   const gradStops = activePts.map(p => ({
     offset: `${((p.x - PAD.left) / chartW * 100).toFixed(1)}%`,
     color: EMOTION_COLORS[p.dominant[0]] || "#8a8a8e",
@@ -698,20 +698,22 @@ function MoodAreaChart({ moodTrends, period }) {
         })}
 
         {/* X Axis Labels */}
-        {pts.map((p, i) =>
-          showLabel(i) ? (
-            <text 
-              key={i} x={p.x} y={H - 5} 
-              textAnchor="middle" 
-              fontSize={period <= 7 ? "11" : "9"} 
+        {pts.map((p, i) => {
+          if (!showLabel(i)) return null;
+          const isActiveHovered = hoverIdx !== null && activePts[hoverIdx]?.day.date === p.day.date;
+          return (
+            <text
+              key={i} x={p.x} y={H - 5}
+              textAnchor="middle"
+              fontSize={period <= 7 ? "11" : "9"}
               fontWeight="500"
-              fill={hoverIdx === activePts.findIndex(ap => ap.day.date === p.day.date) ? "#fff" : "rgba(255,255,255,0.3)"}
+              fill={isActiveHovered ? "#fff" : "rgba(255,255,255,0.3)"}
               style={{ transition: "fill 0.2s" }}
             >
               {period <= 7 ? p.day.day : p.day.date.slice(5)}
             </text>
-          ) : null
-        )}
+          );
+        })}
       </svg>
 
       {/* Floating Glass Tooltip */}
@@ -746,7 +748,8 @@ function MoodAreaChart({ moodTrends, period }) {
 }
 
 function MoodBarChart({ moodTrends, period }) {
-  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+  const labelStep = period <= 7 ? 1 : Math.ceil(moodTrends.length / 8);
+  const showLabel = (i) => i % labelStep === 0 || i === moodTrends.length - 1;
 
   const maxTotal = Math.max(1, ...moodTrends.map(d => Object.values(d.emotions).reduce((s, c) => s + c, 0)));
 
@@ -816,7 +819,8 @@ function MoodDotChart({ moodTrends, period }) {
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
 
-  const showLabel = (i) => period <= 7 ? true : i % 5 === 0 || i === moodTrends.length - 1;
+  const labelStep = period <= 7 ? 1 : Math.ceil(moodTrends.length / 8);
+  const showLabel = (i) => i % labelStep === 0 || i === moodTrends.length - 1;
   const maxTotal = Math.max(1, ...moodTrends.map(d => Object.values(d.emotions).reduce((s, c) => s + c, 0)));
 
   const pts = moodTrends.map((day, i) => {
